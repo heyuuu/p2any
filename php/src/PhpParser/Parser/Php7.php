@@ -8522,7 +8522,7 @@ class Php7 extends ParserAbstract
                 $this->semValue = new Node\NullableType($this->semStack[$stackPos - (2 - 2)], $this->startAttributeStack[$stackPos - (2 - 1)] + $this->endAttributes);
             },
             283 => function ($stackPos) {
-                $this->semValue = new Node\UnionType($this->semStack[$stackPos - (1 - 1)], $this->startAttributeStack[$stackPos - (1 - 1)] + $this->endAttributes);
+                $this->emitNotSupportedError('UnionType (8.0)');
             },
             284 => function ($stackPos) {
                 $this->emitNotSupportedError('IntersectionType(8.1)');
@@ -8577,7 +8577,7 @@ class Php7 extends ParserAbstract
                 $this->semValue = new Node\NullableType($this->semStack[$stackPos - (2 - 2)], $this->startAttributeStack[$stackPos - (2 - 1)] + $this->endAttributes);
             },
             300 => function ($stackPos) {
-                $this->semValue = new Node\UnionType($this->semStack[$stackPos - (1 - 1)], $this->startAttributeStack[$stackPos - (1 - 1)] + $this->endAttributes);
+                $this->emitNotSupportedError('UnionType (8.0)');
             },
             301 => function ($stackPos) {
                 $this->emitNotSupportedError('IntersectionType(8.1)');

@@ -179,12 +179,6 @@ class NameResolver extends NodeVisitorAbstract
             $node->type = $this->resolveType($node->type);
             return $node;
         }
-        if ($node instanceof Node\UnionType) {
-            foreach ($node->types as &$type) {
-                $type = $this->resolveType($type);
-            }
-            return $node;
-        }
         return $node;
     }
 
