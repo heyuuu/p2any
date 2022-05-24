@@ -12,4 +12,11 @@ class PhpFileFinder extends Finder
 
         $this->in($root)->files()->name('*.php');
     }
+
+    public function each(callable $callback)
+    {
+        foreach ($this as $file) {
+            $callback($file);
+        }
+    }
 }

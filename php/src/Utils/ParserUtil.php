@@ -42,4 +42,10 @@ class ParserUtil
         $printer = new Standard();
         return $printer->prettyPrint($ast);
     }
+
+    public static function prettyPrintFile(array $ast): string
+    {
+        $printer = new Standard();
+        return $printer->prettyPrintFile($ast);
+    }
 }
