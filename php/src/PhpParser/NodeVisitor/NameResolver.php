@@ -93,21 +93,14 @@ class NameResolver extends NodeVisitorAbstract
         } elseif ($node instanceof Stmt\Function_) {
             $this->resolveSignature($node);
             $this->addNamespacedName($node);
-        } elseif ($node instanceof Stmt\ClassMethod
-            || $node instanceof Expr\Closure
-        ) {
+        } elseif ($node instanceof Stmt\ClassMethod || $node instanceof Expr\Closure) {
             $this->resolveSignature($node);
-        } elseif ($node instanceof Stmt\Property) {
-            if (null !== $node->type) {
-                $node->type = $this->resolveType($node->type);
-            }
         } elseif ($node instanceof Stmt\Const_) {
             foreach ($node->consts as $const) {
                 $this->addNamespacedName($const);
             }
         } else {
-            if ($node instanceof Stmt\ClassConst) {
-            } elseif ($node instanceof Expr\StaticCall
+            if ($node instanceof Expr\StaticCall
                 || $node instanceof Expr\StaticPropertyFetch
                 || $node instanceof Expr\ClassConstFetch
                 || $node instanceof Expr\New_

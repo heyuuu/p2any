@@ -19,8 +19,7 @@ class Standard extends PrettyPrinterAbstract
 
     protected function pParam(Node\Param $node)
     {
-        return $this->pModifiers($node->flags)
-            . ($node->type ? $this->p($node->type) . ' ' : '')
+        return ($node->type ? $this->p($node->type) . ' ' : '')
             . ($node->byRef ? '&' : '')
             . ($node->variadic ? '...' : '')
             . $this->p($node->var)
@@ -826,7 +825,6 @@ class Standard extends PrettyPrinterAbstract
     protected function pStmt_Property(Stmt\Property $node)
     {
         return (0 === $node->flags ? 'var ' : $this->pModifiers($node->flags))
-            . ($node->type ? $this->p($node->type) . ' ' : '')
             . $this->pCommaSeparated($node->props) . ';';
     }
 
