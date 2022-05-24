@@ -10,19 +10,17 @@ use P2Any\PhpParser\Node\Stmt;
 class Trait_ extends Declaration
 {
     protected $name;
-    protected $uses = [];
+    protected $uses       = [];
     protected $properties = [];
-    protected $methods = [];
-
-    /** @var Node\AttributeGroup[] */
-    protected $attributeGroups = [];
+    protected $methods    = [];
 
     /**
      * Creates an interface builder.
      *
      * @param string $name Name of the interface
      */
-    public function __construct(string $name) {
+    public function __construct(string $name)
+    {
         $this->name = $name;
     }
 
@@ -33,7 +31,8 @@ class Trait_ extends Declaration
      *
      * @return $this The builder instance (for fluid interface)
      */
-    public function addStmt($stmt) {
+    public function addStmt($stmt)
+    {
         $stmt = BuilderHelpers::normalizeNode($stmt);
 
         if ($stmt instanceof Stmt\Property) {
@@ -50,29 +49,18 @@ class Trait_ extends Declaration
     }
 
     /**
-     * Adds an attribute group.
-     *
-     * @param Node\Attribute|Node\AttributeGroup $attribute
-     *
-     * @return $this The builder instance (for fluid interface)
-     */
-    public function addAttribute($attribute) {
-        $this->attributeGroups[] = BuilderHelpers::normalizeAttribute($attribute);
-
-        return $this;
-    }
-
-    /**
      * Returns the built trait node.
      *
      * @return Stmt\Trait_ The built interface node
      */
-    public function getNode() : PhpParser\Node {
+    public function getNode(): PhpParser\Node
+    {
         return new Stmt\Trait_(
-            $this->name, [
+            $this->name,
+            [
                 'stmts' => array_merge($this->uses, $this->properties, $this->methods),
-                'attrGroups' => $this->attributeGroups,
-            ], $this->attributes
+            ],
+            $this->attributes
         );
     }
 }

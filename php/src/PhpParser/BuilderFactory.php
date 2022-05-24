@@ -13,28 +13,14 @@ use P2Any\PhpParser\Node\Stmt\Use_;
 class BuilderFactory
 {
     /**
-     * Creates an attribute node.
-     *
-     * @param string|Name $name Name of the attribute
-     * @param array       $args Attribute named arguments
-     *
-     * @return Node\Attribute
-     */
-    public function attribute($name, array $args = []) : Node\Attribute {
-        return new Node\Attribute(
-            BuilderHelpers::normalizeName($name),
-            $this->args($args)
-        );
-    }
-
-    /**
      * Creates a namespace builder.
      *
      * @param null|string|Node\Name $name Name of the namespace
      *
      * @return Builder\Namespace_ The created namespace builder
      */
-    public function namespace($name) : Builder\Namespace_ {
+    public function namespace($name): Builder\Namespace_
+    {
         return new Builder\Namespace_($name);
     }
 
@@ -45,7 +31,8 @@ class BuilderFactory
      *
      * @return Builder\Class_ The created class builder
      */
-    public function class(string $name) : Builder\Class_ {
+    public function class(string $name): Builder\Class_
+    {
         return new Builder\Class_($name);
     }
 
@@ -56,7 +43,8 @@ class BuilderFactory
      *
      * @return Builder\Interface_ The created interface builder
      */
-    public function interface(string $name) : Builder\Interface_ {
+    public function interface(string $name): Builder\Interface_
+    {
         return new Builder\Interface_($name);
     }
 
@@ -67,7 +55,8 @@ class BuilderFactory
      *
      * @return Builder\Trait_ The created trait builder
      */
-    public function trait(string $name) : Builder\Trait_ {
+    public function trait(string $name): Builder\Trait_
+    {
         return new Builder\Trait_($name);
     }
 
@@ -78,7 +67,8 @@ class BuilderFactory
      *
      * @return Builder\TraitUse The create trait use builder
      */
-    public function useTrait(...$traits) : Builder\TraitUse {
+    public function useTrait(...$traits): Builder\TraitUse
+    {
         return new Builder\TraitUse(...$traits);
     }
 
@@ -90,10 +80,11 @@ class BuilderFactory
      *
      * @return Builder\TraitUseAdaptation The create trait use adaptation builder
      */
-    public function traitUseAdaptation($trait, $method = null) : Builder\TraitUseAdaptation {
+    public function traitUseAdaptation($trait, $method = null): Builder\TraitUseAdaptation
+    {
         if ($method === null) {
             $method = $trait;
-            $trait = null;
+            $trait  = null;
         }
 
         return new Builder\TraitUseAdaptation($trait, $method);
@@ -106,7 +97,8 @@ class BuilderFactory
      *
      * @return Builder\Method The created method builder
      */
-    public function method(string $name) : Builder\Method {
+    public function method(string $name): Builder\Method
+    {
         return new Builder\Method($name);
     }
 
@@ -117,7 +109,8 @@ class BuilderFactory
      *
      * @return Builder\Param The created parameter builder
      */
-    public function param(string $name) : Builder\Param {
+    public function param(string $name): Builder\Param
+    {
         return new Builder\Param($name);
     }
 
@@ -128,7 +121,8 @@ class BuilderFactory
      *
      * @return Builder\Property The created property builder
      */
-    public function property(string $name) : Builder\Property {
+    public function property(string $name): Builder\Property
+    {
         return new Builder\Property($name);
     }
 
@@ -139,7 +133,8 @@ class BuilderFactory
      *
      * @return Builder\Function_ The created function builder
      */
-    public function function(string $name) : Builder\Function_ {
+    public function function (string $name): Builder\Function_
+    {
         return new Builder\Function_($name);
     }
 
@@ -150,7 +145,8 @@ class BuilderFactory
      *
      * @return Builder\Use_ The created use builder
      */
-    public function use($name) : Builder\Use_ {
+    public function use($name): Builder\Use_
+    {
         return new Builder\Use_($name, Use_::TYPE_NORMAL);
     }
 
@@ -161,7 +157,8 @@ class BuilderFactory
      *
      * @return Builder\Use_ The created use function builder
      */
-    public function useFunction($name) : Builder\Use_ {
+    public function useFunction($name): Builder\Use_
+    {
         return new Builder\Use_($name, Use_::TYPE_FUNCTION);
     }
 
@@ -172,7 +169,8 @@ class BuilderFactory
      *
      * @return Builder\Use_ The created use const builder
      */
-    public function useConst($name) : Builder\Use_ {
+    public function useConst($name): Builder\Use_
+    {
         return new Builder\Use_($name, Use_::TYPE_CONSTANT);
     }
 
@@ -184,7 +182,8 @@ class BuilderFactory
      *
      * @return Builder\ClassConst The created use const builder
      */
-    public function classConst($name, $value) : Builder\ClassConst {
+    public function classConst($name, $value): Builder\ClassConst
+    {
         return new Builder\ClassConst($name, $value);
     }
 
@@ -195,7 +194,8 @@ class BuilderFactory
      *
      * @return Expr
      */
-    public function val($value) : Expr {
+    public function val($value): Expr
+    {
         return BuilderHelpers::normalizeValue($value);
     }
 
@@ -206,7 +206,8 @@ class BuilderFactory
      *
      * @return Expr\Variable
      */
-    public function var($name) : Expr\Variable {
+    public function var($name): Expr\Variable
+    {
         if (!\is_string($name) && !$name instanceof Expr) {
             throw new \LogicException('Variable name must be string or Expr');
         }
@@ -223,7 +224,8 @@ class BuilderFactory
      *
      * @return Arg[]
      */
-    public function args(array $args) : array {
+    public function args(array $args): array
+    {
         $normalizedArgs = [];
         foreach ($args as $arg) {
             if (!($arg instanceof Arg)) {
@@ -242,7 +244,8 @@ class BuilderFactory
      *
      * @return Expr\FuncCall
      */
-    public function funcCall($name, array $args = []) : Expr\FuncCall {
+    public function funcCall($name, array $args = []): Expr\FuncCall
+    {
         return new Expr\FuncCall(
             BuilderHelpers::normalizeNameOrExpr($name),
             $this->args($args)
@@ -258,7 +261,8 @@ class BuilderFactory
      *
      * @return Expr\MethodCall
      */
-    public function methodCall(Expr $var, $name, array $args = []) : Expr\MethodCall {
+    public function methodCall(Expr $var, $name, array $args = []): Expr\MethodCall
+    {
         return new Expr\MethodCall(
             $var,
             BuilderHelpers::normalizeIdentifierOrExpr($name),
@@ -275,7 +279,8 @@ class BuilderFactory
      *
      * @return Expr\StaticCall
      */
-    public function staticCall($class, $name, array $args = []) : Expr\StaticCall {
+    public function staticCall($class, $name, array $args = []): Expr\StaticCall
+    {
         return new Expr\StaticCall(
             BuilderHelpers::normalizeNameOrExpr($class),
             BuilderHelpers::normalizeIdentifierOrExpr($name),
@@ -291,7 +296,8 @@ class BuilderFactory
      *
      * @return Expr\New_
      */
-    public function new($class, array $args = []) : Expr\New_ {
+    public function new($class, array $args = []): Expr\New_
+    {
         return new Expr\New_(
             BuilderHelpers::normalizeNameOrExpr($class),
             $this->args($args)
@@ -305,7 +311,8 @@ class BuilderFactory
      *
      * @return Expr\ConstFetch
      */
-    public function constFetch($name) : Expr\ConstFetch {
+    public function constFetch($name): Expr\ConstFetch
+    {
         return new Expr\ConstFetch(BuilderHelpers::normalizeName($name));
     }
 
@@ -317,7 +324,8 @@ class BuilderFactory
      *
      * @return Expr\PropertyFetch
      */
-    public function propertyFetch(Expr $var, $name) : Expr\PropertyFetch {
+    public function propertyFetch(Expr $var, $name): Expr\PropertyFetch
+    {
         return new Expr\PropertyFetch($var, BuilderHelpers::normalizeIdentifierOrExpr($name));
     }
 
@@ -329,7 +337,8 @@ class BuilderFactory
      *
      * @return Expr\ClassConstFetch
      */
-    public function classConstFetch($class, $name): Expr\ClassConstFetch {
+    public function classConstFetch($class, $name): Expr\ClassConstFetch
+    {
         return new Expr\ClassConstFetch(
             BuilderHelpers::normalizeNameOrExpr($class),
             BuilderHelpers::normalizeIdentifier($name)
@@ -343,7 +352,8 @@ class BuilderFactory
      *
      * @return Concat
      */
-    public function concat(...$exprs) : Concat {
+    public function concat(...$exprs): Concat
+    {
         $numExprs = count($exprs);
         if ($numExprs < 2) {
             throw new \LogicException('Expected at least two expressions');
@@ -360,7 +370,8 @@ class BuilderFactory
      * @param string|Expr $expr
      * @return Expr
      */
-    private function normalizeStringExpr($expr) : Expr {
+    private function normalizeStringExpr($expr): Expr
+    {
         if ($expr instanceof Expr) {
             return $expr;
         }

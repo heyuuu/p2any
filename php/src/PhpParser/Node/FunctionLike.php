@@ -33,11 +33,4 @@ interface FunctionLike extends Node
      * @return Stmt[]|null
      */
     public function getStmts();
-
-    /**
-     * Get PHP attribute groups.
-     *
-     * @return AttributeGroup[]
-     */
-    public function getAttrGroups() : array;
 }

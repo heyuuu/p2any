@@ -18,8 +18,6 @@ class Param extends NodeAbstract
     public $default;
     /** @var int */
     public $flags;
-    /** @var AttributeGroup[] PHP attribute groups */
-    public $attrGroups;
 
     /**
      * Constructs a parameter node.
@@ -31,30 +29,32 @@ class Param extends NodeAbstract
      * @param bool                                    $variadic   Whether this is a variadic argument
      * @param array                                   $attributes Additional attributes
      * @param int                                     $flags      Optional visibility flags
-     * @param AttributeGroup[]                        $attrGroups PHP attribute groups
      */
     public function __construct(
-        $var, Expr $default = null, $type = null,
-        bool $byRef = false, bool $variadic = false,
+        $var,
+        Expr $default = null,
+        $type = null,
+        bool $byRef = false,
+        bool $variadic = false,
         array $attributes = [],
-        int $flags = 0,
-        array $attrGroups = []
+        int $flags = 0
     ) {
         $this->attributes = $attributes;
-        $this->type = \is_string($type) ? new Identifier($type) : $type;
-        $this->byRef = $byRef;
-        $this->variadic = $variadic;
-        $this->var = $var;
-        $this->default = $default;
-        $this->flags = $flags;
-        $this->attrGroups = $attrGroups;
+        $this->type       = \is_string($type) ? new Identifier($type) : $type;
+        $this->byRef      = $byRef;
+        $this->variadic   = $variadic;
+        $this->var        = $var;
+        $this->default    = $default;
+        $this->flags      = $flags;
     }
 
-    public function getSubNodeNames() : array {
-        return ['attrGroups', 'flags', 'type', 'byRef', 'variadic', 'var', 'default'];
+    public function getSubNodeNames(): array
+    {
+        return ['flags', 'type', 'byRef', 'variadic', 'var', 'default'];
     }
 
-    public function getType() : string {
+    public function getType(): string
+    {
         return 'Param';
     }
 }

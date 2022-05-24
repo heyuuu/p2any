@@ -19,15 +19,13 @@ class Param implements PhpParser\Builder
 
     protected $variadic = false;
 
-    /** @var Node\AttributeGroup[] */
-    protected $attributeGroups = [];
-
     /**
      * Creates a parameter builder.
      *
      * @param string $name Name of the parameter
      */
-    public function __construct(string $name) {
+    public function __construct(string $name)
+    {
         $this->name = $name;
     }
 
@@ -38,7 +36,8 @@ class Param implements PhpParser\Builder
      *
      * @return $this The builder instance (for fluid interface)
      */
-    public function setDefault($value) {
+    public function setDefault($value)
+    {
         $this->default = BuilderHelpers::normalizeValue($value);
 
         return $this;
@@ -51,7 +50,8 @@ class Param implements PhpParser\Builder
      *
      * @return $this The builder instance (for fluid interface)
      */
-    public function setType($type) {
+    public function setType($type)
+    {
         $this->type = BuilderHelpers::normalizeType($type);
         if ($this->type == 'void') {
             throw new \LogicException('Parameter type cannot be void');
@@ -69,7 +69,8 @@ class Param implements PhpParser\Builder
      *
      * @deprecated Use setType() instead
      */
-    public function setTypeHint($type) {
+    public function setTypeHint($type)
+    {
         return $this->setType($type);
     }
 
@@ -78,7 +79,8 @@ class Param implements PhpParser\Builder
      *
      * @return $this The builder instance (for fluid interface)
      */
-    public function makeByRef() {
+    public function makeByRef()
+    {
         $this->byRef = true;
 
         return $this;
@@ -89,21 +91,9 @@ class Param implements PhpParser\Builder
      *
      * @return $this The builder instance (for fluid interface)
      */
-    public function makeVariadic() {
+    public function makeVariadic()
+    {
         $this->variadic = true;
-
-        return $this;
-    }
-
-    /**
-     * Adds an attribute group.
-     *
-     * @param Node\Attribute|Node\AttributeGroup $attribute
-     *
-     * @return $this The builder instance (for fluid interface)
-     */
-    public function addAttribute($attribute) {
-        $this->attributeGroups[] = BuilderHelpers::normalizeAttribute($attribute);
 
         return $this;
     }
@@ -113,10 +103,11 @@ class Param implements PhpParser\Builder
      *
      * @return Node\Param The built parameter node
      */
-    public function getNode() : Node {
+    public function getNode(): Node
+    {
         return new Node\Param(
             new Node\Expr\Variable($this->name),
-            $this->default, $this->type, $this->byRef, $this->variadic, [], 0, $this->attributeGroups
+            $this->default, $this->type, $this->byRef, $this->variadic, [], 0
         );
     }
 }

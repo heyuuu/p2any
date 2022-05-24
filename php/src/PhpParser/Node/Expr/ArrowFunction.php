@@ -22,8 +22,6 @@ class ArrowFunction extends Expr implements FunctionLike
 
     /** @var Expr */
     public $expr;
-    /** @var Node\AttributeGroup[] */
-    public $attrGroups;
 
     /**
      * @param array $subNodes   Array of the following optional subnodes:
@@ -32,48 +30,49 @@ class ArrowFunction extends Expr implements FunctionLike
      *                          'params'     => array() : Parameters
      *                          'returnType' => null    : Return type
      *                          'expr'       => Expr    : Expression body
-     *                          'attrGroups' => array() : PHP attribute groups
      * @param array $attributes Additional attributes
      */
-    public function __construct(array $subNodes = [], array $attributes = []) {
+    public function __construct(array $subNodes = [], array $attributes = [])
+    {
         $this->attributes = $attributes;
-        $this->static = $subNodes['static'] ?? false;
-        $this->byRef = $subNodes['byRef'] ?? false;
-        $this->params = $subNodes['params'] ?? [];
-        $returnType = $subNodes['returnType'] ?? null;
+        $this->static     = $subNodes['static'] ?? false;
+        $this->byRef      = $subNodes['byRef'] ?? false;
+        $this->params     = $subNodes['params'] ?? [];
+        $returnType       = $subNodes['returnType'] ?? null;
         $this->returnType = \is_string($returnType) ? new Node\Identifier($returnType) : $returnType;
-        $this->expr = $subNodes['expr'];
-        $this->attrGroups = $subNodes['attrGroups'] ?? [];
+        $this->expr       = $subNodes['expr'];
     }
 
-    public function getSubNodeNames() : array {
-        return ['attrGroups', 'static', 'byRef', 'params', 'returnType', 'expr'];
+    public function getSubNodeNames(): array
+    {
+        return ['static', 'byRef', 'params', 'returnType', 'expr'];
     }
 
-    public function returnsByRef() : bool {
+    public function returnsByRef(): bool
+    {
         return $this->byRef;
     }
 
-    public function getParams() : array {
+    public function getParams(): array
+    {
         return $this->params;
     }
 
-    public function getReturnType() {
+    public function getReturnType()
+    {
         return $this->returnType;
-    }
-
-    public function getAttrGroups() : array {
-        return $this->attrGroups;
     }
 
     /**
      * @return Node\Stmt\Return_[]
      */
-    public function getStmts() : array {
+    public function getStmts(): array
+    {
         return [new Node\Stmt\Return_($this->expr)];
     }
 
-    public function getType() : string {
+    public function getType(): string
+    {
         return 'Expr_ArrowFunction';
     }
 }
