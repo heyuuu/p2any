@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace P2Any\PhpParser;
 
@@ -14,7 +16,8 @@ class Error extends \RuntimeException
      * @param array|int $attributes Attributes of node/token where error occurred
      *                              (or start line of error -- deprecated)
      */
-    public function __construct(string $message, $attributes = []) {
+    public function __construct(string $message, $attributes = [])
+    {
         $this->rawMessage = $message;
         if (is_array($attributes)) {
             $this->attributes = $attributes;
@@ -29,7 +32,8 @@ class Error extends \RuntimeException
      *
      * @return string Error message
      */
-    public function getRawMessage() : string {
+    public function getRawMessage(): string
+    {
         return $this->rawMessage;
     }
 
@@ -38,7 +42,8 @@ class Error extends \RuntimeException
      *
      * @return int Error start line
      */
-    public function getStartLine() : int {
+    public function getStartLine(): int
+    {
         return $this->attributes['startLine'] ?? -1;
     }
 
@@ -47,7 +52,8 @@ class Error extends \RuntimeException
      *
      * @return int Error end line
      */
-    public function getEndLine() : int {
+    public function getEndLine(): int
+    {
         return $this->attributes['endLine'] ?? -1;
     }
 
@@ -56,7 +62,8 @@ class Error extends \RuntimeException
      *
      * @return array
      */
-    public function getAttributes() : array {
+    public function getAttributes(): array
+    {
         return $this->attributes;
     }
 
@@ -65,7 +72,8 @@ class Error extends \RuntimeException
      *
      * @param array $attributes
      */
-    public function setAttributes(array $attributes) {
+    public function setAttributes(array $attributes)
+    {
         $this->attributes = $attributes;
         $this->updateMessage();
     }
@@ -75,7 +83,8 @@ class Error extends \RuntimeException
      *
      * @param string $message Error message
      */
-    public function setRawMessage(string $message) {
+    public function setRawMessage(string $message)
+    {
         $this->rawMessage = $message;
         $this->updateMessage();
     }
@@ -85,7 +94,8 @@ class Error extends \RuntimeException
      *
      * @param int $line Error start line
      */
-    public function setStartLine(int $line) {
+    public function setStartLine(int $line)
+    {
         $this->attributes['startLine'] = $line;
         $this->updateMessage();
     }
@@ -97,7 +107,8 @@ class Error extends \RuntimeException
      *
      * @return bool
      */
-    public function hasColumnInfo() : bool {
+    public function hasColumnInfo(): bool
+    {
         return isset($this->attributes['startFilePos'], $this->attributes['endFilePos']);
     }
 
@@ -105,9 +116,11 @@ class Error extends \RuntimeException
      * Gets the start column (1-based) into the line where the error started.
      *
      * @param string $code Source code of the file
+     *
      * @return int
      */
-    public function getStartColumn(string $code) : int {
+    public function getStartColumn(string $code): int
+    {
         if (!$this->hasColumnInfo()) {
             throw new \RuntimeException('Error does not have column information');
         }
@@ -119,9 +132,11 @@ class Error extends \RuntimeException
      * Gets the end column (1-based) into the line where the error ended.
      *
      * @param string $code Source code of the file
+     *
      * @return int
      */
-    public function getEndColumn(string $code) : int {
+    public function getEndColumn(string $code): int
+    {
         if (!$this->hasColumnInfo()) {
             throw new \RuntimeException('Error does not have column information');
         }
@@ -136,7 +151,8 @@ class Error extends \RuntimeException
      *
      * @return string Formatted message
      */
-    public function getMessageWithColumnInfo(string $code) : string {
+    public function getMessageWithColumnInfo(string $code): string
+    {
         return sprintf(
             '%s from %d:%d to %d:%d', $this->getRawMessage(),
             $this->getStartLine(), $this->getStartColumn($code),
@@ -152,7 +168,8 @@ class Error extends \RuntimeException
      *
      * @return int 1-based column (relative to start of line)
      */
-    private function toColumn(string $code, int $pos) : int {
+    private function toColumn(string $code, int $pos): int
+    {
         if ($pos > strlen($code)) {
             throw new \RuntimeException('Invalid position information');
         }
@@ -168,7 +185,8 @@ class Error extends \RuntimeException
     /**
      * Updates the exception message after a change to rawMessage or rawLine.
      */
-    protected function updateMessage() {
+    protected function updateMessage()
+    {
         $this->message = $this->rawMessage;
 
         if (-1 === $this->getStartLine()) {

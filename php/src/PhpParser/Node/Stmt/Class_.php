@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace P2Any\PhpParser\Node\Stmt;
 
@@ -18,7 +20,7 @@ class Class_ extends ClassLike
 
     /** @var int Type */
     public $flags;
-    /** @var null|Node\Name Name of extended class */
+    /** @var Node\Name|null Name of extended class */
     public $extends;
     /** @var Node\Name[] Names of implemented interfaces */
     public $implements;
@@ -39,9 +41,9 @@ class Class_ extends ClassLike
         $this->attributes = $attributes;
         $this->flags      = $subNodes['flags'] ?? $subNodes['type'] ?? 0;
         $this->name       = \is_string($name) ? new Node\Identifier($name) : $name;
-        $this->extends    = $subNodes['extends'] ?? null;
+        $this->extends    = $subNodes['extends']    ?? null;
         $this->implements = $subNodes['implements'] ?? [];
-        $this->stmts      = $subNodes['stmts'] ?? [];
+        $this->stmts      = $subNodes['stmts']      ?? [];
     }
 
     public function getSubNodeNames(): array

@@ -10,12 +10,13 @@ use Webmozart\Assert\Assert;
 
 abstract class NodeTransformerAbstract
 {
-    const NODE_NS = "P2Any\\PhpParser\\Node\\";
+    const NODE_NS = 'P2Any\\PhpParser\\Node\\';
 
     protected $visitMethods = [];
 
     /**
      * @param Node[] $nodes
+     *
      * @return Fragment[]
      */
     public function visitList(array $nodes): array
@@ -55,6 +56,6 @@ abstract class NodeTransformerAbstract
             }
         } while ($findClass = get_parent_class($findClass));
 
-        throw new TodoException("此 Node 类型未定义处理函数: " . $class);
+        throw new TodoException('此 Node 类型未定义处理函数: ' . $class);
     }
 }

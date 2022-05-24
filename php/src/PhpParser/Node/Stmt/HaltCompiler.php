@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace P2Any\PhpParser\Node\Stmt;
 
@@ -12,19 +14,22 @@ class HaltCompiler extends Stmt
     /**
      * Constructs a __halt_compiler node.
      *
-     * @param string $remaining  Remaining text after halt compiler statement.
+     * @param string $remaining  remaining text after halt compiler statement
      * @param array  $attributes Additional attributes
      */
-    public function __construct(string $remaining, array $attributes = []) {
+    public function __construct(string $remaining, array $attributes = [])
+    {
         $this->attributes = $attributes;
-        $this->remaining = $remaining;
+        $this->remaining  = $remaining;
     }
 
-    public function getSubNodeNames() : array {
+    public function getSubNodeNames(): array
+    {
         return ['remaining'];
     }
-    
-    public function getType() : string {
+
+    public function getType(): string
+    {
         return 'Stmt_HaltCompiler';
     }
 }

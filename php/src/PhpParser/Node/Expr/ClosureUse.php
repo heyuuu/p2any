@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace P2Any\PhpParser\Node\Expr;
 
@@ -18,17 +20,20 @@ class ClosureUse extends Expr
      * @param bool          $byRef      Whether to use by reference
      * @param array         $attributes Additional attributes
      */
-    public function __construct(Expr\Variable $var, bool $byRef = false, array $attributes = []) {
+    public function __construct(Expr\Variable $var, bool $byRef = false, array $attributes = [])
+    {
         $this->attributes = $attributes;
-        $this->var = $var;
-        $this->byRef = $byRef;
+        $this->var        = $var;
+        $this->byRef      = $byRef;
     }
 
-    public function getSubNodeNames() : array {
+    public function getSubNodeNames(): array
+    {
         return ['var', 'byRef'];
     }
-    
-    public function getType() : string {
+
+    public function getType(): string
+    {
         return 'Expr_ClosureUse';
     }
 }

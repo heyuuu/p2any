@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace P2Any\PhpParser;
 
@@ -139,11 +141,11 @@ abstract class ParserAbstract implements Parser
      * occurred and attempt to build a partial AST.
      *
      * @param string            $code         The source code to parse
-     * @param ErrorHandler|null $errorHandler Error handler to use for lexer/parser errors, defaults
-     *                                        to ErrorHandler\Throwing.
+     * @param ErrorHandler|null $errorHandler error handler to use for lexer/parser errors, defaults
+     *                                        to ErrorHandler\Throwing
      *
-     * @return Node\Stmt[]|null Array of statements (or null non-throwing error handler is used and
-     *                          the parser was unable to recover from an error).
+     * @return Node\Stmt[]|null array of statements (or null non-throwing error handler is used and
+     *                          the parser was unable to recover from an error)
      */
     public function parse(string $code, ErrorHandler $errorHandler = null)
     {
@@ -190,7 +192,7 @@ abstract class ParserAbstract implements Parser
 
         $this->errorState = 0;
 
-        for (; ;) {
+        for (;;) {
             //$this->traceNewState($state, $symbol);
 
             if ($this->actionBase[$state] === 0) {
@@ -209,10 +211,7 @@ abstract class ParserAbstract implements Parser
                         : $this->invalidSymbol;
 
                     if ($symbol === $this->invalidSymbol) {
-                        throw new \RangeException(sprintf(
-                            'The lexer returned an invalid token (id=%d, value=%s)',
-                            $tokenId, $tokenValue
-                        ));
+                        throw new \RangeException(sprintf('The lexer returned an invalid token (id=%d, value=%s)', $tokenId, $tokenValue));
                     }
 
                     // Allow productions to access the start attributes of the lookahead token.
@@ -263,7 +262,7 @@ abstract class ParserAbstract implements Parser
                 }
             }
 
-            for (; ;) {
+            for (;;) {
                 if ($rule === 0) {
                     /* accept */
                     //$this->traceAccept();
@@ -311,6 +310,7 @@ abstract class ParserAbstract implements Parser
                             $msg = $this->getErrorMessage($symbol, $state);
                             $this->emitError(new Error($msg, $startAttributes + $endAttributes));
                         // Break missing intentionally
+                        // no break
                         case 1:
                         case 2:
                             $this->errorState = 3;
@@ -373,7 +373,7 @@ abstract class ParserAbstract implements Parser
 
     protected function emitNotSupportedError(string $feature)
     {
-        throw new Error("This feature is not supported yet: " . $feature);
+        throw new Error('This feature is not supported yet: ' . $feature);
     }
 
     /**
@@ -473,6 +473,7 @@ abstract class ParserAbstract implements Parser
      * Moves statements of semicolon-style namespaces into $ns->stmts and checks various error conditions.
      *
      * @param Node\Stmt[] $stmts
+     *
      * @return Node\Stmt[]
      */
     protected function handleNamespaces(array $stmts): array
@@ -500,7 +501,7 @@ abstract class ParserAbstract implements Parser
         } else {
             // For semicolon namespaces we have to move the statements after a namespace declaration into ->stmts
             $resultStmts = [];
-            $targetStmts =& $resultStmts;
+            $targetStmts = &$resultStmts;
             $lastNs      = null;
             foreach ($stmts as $stmt) {
                 if ($stmt instanceof Node\Stmt\Namespace_) {
@@ -509,12 +510,12 @@ abstract class ParserAbstract implements Parser
                     }
                     if ($stmt->stmts === null) {
                         $stmt->stmts   = [];
-                        $targetStmts   =& $stmt->stmts;
+                        $targetStmts   = &$stmt->stmts;
                         $resultStmts[] = $stmt;
                     } else {
                         // This handles the invalid case of mixed style namespaces
                         $resultStmts[] = $stmt;
-                        $targetStmts   =& $resultStmts;
+                        $targetStmts   = &$resultStmts;
                     }
                     $lastNs = $stmt;
                 } elseif ($stmt instanceof Node\Stmt\HaltCompiler) {
@@ -553,9 +554,9 @@ abstract class ParserAbstract implements Parser
     /**
      * Determine namespacing style (semicolon or brace)
      *
-     * @param Node[] $stmts Top-level statements.
+     * @param Node[] $stmts top-level statements
      *
-     * @return null|string One of "semicolon", "brace" or null (no namespaces)
+     * @return string|null One of "semicolon", "brace" or null (no namespaces)
      */
     private function getNamespacingStyle(array $stmts)
     {
@@ -729,7 +730,7 @@ abstract class ParserAbstract implements Parser
      * @param string $str        Number string
      * @param array  $attributes Attributes
      *
-     * @return LNumber|String_ Integer or string node.
+     * @return LNumber|String_ integer or string node
      */
     protected function parseNumString(string $str, array $attributes)
     {
@@ -764,7 +765,7 @@ abstract class ParserAbstract implements Parser
             $regex,
             function ($matches) use ($indentLen, $indentChar, $attributes) {
                 $prefix = substr($matches[1], 0, $indentLen);
-                if (false !== strpos($prefix, $indentChar === " " ? "\t" : " ")) {
+                if (false !== strpos($prefix, $indentChar === ' ' ? "\t" : ' ')) {
                     $this->emitError(new Error(
                         'Invalid indentation - tabs and spaces cannot be mixed', $attributes
                     ));
@@ -805,7 +806,7 @@ abstract class ParserAbstract implements Parser
         $attributes['docLabel']       = $label;
         $attributes['docIndentation'] = $indentation;
 
-        $indentHasSpaces = false !== strpos($indentation, " ");
+        $indentHasSpaces = false !== strpos($indentation, ' ');
         $indentHasTabs   = false !== strpos($indentation, "\t");
         if ($indentHasSpaces && $indentHasTabs) {
             $this->emitError(new Error(
@@ -818,7 +819,7 @@ abstract class ParserAbstract implements Parser
         }
 
         $indentLen  = \strlen($indentation);
-        $indentChar = $indentHasSpaces ? " " : "\t";
+        $indentChar = $indentHasSpaces ? ' ' : "\t";
 
         if (\is_string($contents)) {
             if ($contents === '') {
@@ -870,6 +871,7 @@ abstract class ParserAbstract implements Parser
      * Create attributes for a zero-length common-capturing nop.
      *
      * @param Comment[] $comments
+     *
      * @return array
      */
     protected function createCommentNopAttributes(array $comments)

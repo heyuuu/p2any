@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace P2Any\PhpParser\Node\Expr;
 
@@ -15,12 +17,14 @@ abstract class Cast extends Expr
      * @param Expr  $expr       Expression
      * @param array $attributes Additional attributes
      */
-    public function __construct(Expr $expr, array $attributes = []) {
+    public function __construct(Expr $expr, array $attributes = [])
+    {
         $this->attributes = $attributes;
-        $this->expr = $expr;
+        $this->expr       = $expr;
     }
 
-    public function getSubNodeNames() : array {
+    public function getSubNodeNames(): array
+    {
         return ['expr'];
     }
 }

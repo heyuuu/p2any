@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace P2Any\PhpParser\Node\Expr;
 
@@ -6,7 +8,7 @@ use P2Any\PhpParser\Node\Expr;
 
 class ArrayItem extends Expr
 {
-    /** @var null|Expr Key */
+    /** @var Expr|null Key */
     public $key;
     /** @var Expr Value */
     public $value;
@@ -19,23 +21,26 @@ class ArrayItem extends Expr
      * Constructs an array item node.
      *
      * @param Expr      $value      Value
-     * @param null|Expr $key        Key
+     * @param Expr|null $key        Key
      * @param bool      $byRef      Whether to assign by reference
      * @param array     $attributes Additional attributes
      */
-    public function __construct(Expr $value, Expr $key = null, bool $byRef = false, array $attributes = [], bool $unpack = false) {
+    public function __construct(Expr $value, Expr $key = null, bool $byRef = false, array $attributes = [], bool $unpack = false)
+    {
         $this->attributes = $attributes;
-        $this->key = $key;
-        $this->value = $value;
-        $this->byRef = $byRef;
-        $this->unpack = $unpack;
+        $this->key        = $key;
+        $this->value      = $value;
+        $this->byRef      = $byRef;
+        $this->unpack     = $unpack;
     }
 
-    public function getSubNodeNames() : array {
+    public function getSubNodeNames(): array
+    {
         return ['key', 'value', 'byRef', 'unpack'];
     }
 
-    public function getType() : string {
+    public function getType(): string
+    {
         return 'Expr_ArrayItem';
     }
 }

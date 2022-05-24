@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace P2Any\PhpParser\Node\Expr;
 
@@ -15,16 +17,19 @@ class ShellExec extends Expr
      * @param array $parts      Encapsed string array
      * @param array $attributes Additional attributes
      */
-    public function __construct(array $parts, array $attributes = []) {
+    public function __construct(array $parts, array $attributes = [])
+    {
         $this->attributes = $attributes;
-        $this->parts = $parts;
+        $this->parts      = $parts;
     }
 
-    public function getSubNodeNames() : array {
+    public function getSubNodeNames(): array
+    {
         return ['parts'];
     }
-    
-    public function getType() : string {
+
+    public function getType(): string
+    {
         return 'Expr_ShellExec';
     }
 }

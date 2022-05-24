@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace P2Any\PhpParser\Node\Stmt;
 
@@ -31,17 +33,20 @@ class Use_ extends Stmt
      * @param int      $type       Type of alias
      * @param array    $attributes Additional attributes
      */
-    public function __construct(array $uses, int $type = self::TYPE_NORMAL, array $attributes = []) {
+    public function __construct(array $uses, int $type = self::TYPE_NORMAL, array $attributes = [])
+    {
         $this->attributes = $attributes;
-        $this->type = $type;
-        $this->uses = $uses;
+        $this->type       = $type;
+        $this->uses       = $uses;
     }
 
-    public function getSubNodeNames() : array {
+    public function getSubNodeNames(): array
+    {
         return ['type', 'uses'];
     }
-    
-    public function getType() : string {
+
+    public function getType(): string
+    {
         return 'Stmt_Use';
     }
 }

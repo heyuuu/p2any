@@ -10,5 +10,11 @@
     "illuminate/support": "^7.30",
     "symfony/finder": "^5.4",
     "webmozart/assert": "^1.10"
+  },
+  "require-dev": {
+    "friendsofphp/php-cs-fixer": "^2.16"
+  },
+  "scripts": {
+    "fix": "php-cs-fixer fix"
   }
 }

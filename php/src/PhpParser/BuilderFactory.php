@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace P2Any\PhpParser;
 
@@ -15,7 +17,7 @@ class BuilderFactory
     /**
      * Creates a namespace builder.
      *
-     * @param null|string|Node\Name $name Name of the namespace
+     * @param string|Node\Name|null $name Name of the namespace
      *
      * @return Builder\Namespace_ The created namespace builder
      */
@@ -133,7 +135,7 @@ class BuilderFactory
      *
      * @return Builder\Function_ The created function builder
      */
-    public function function (string $name): Builder\Function_
+    public function function(string $name): Builder\Function_
     {
         return new Builder\Function_($name);
     }
@@ -178,7 +180,7 @@ class BuilderFactory
      * Creates a class constant builder.
      *
      * @param string|Identifier                          $name  Name
-     * @param Node\Expr|bool|null|int|float|string|array $value Value
+     * @param Node\Expr|bool|int|float|string|array|null $value Value
      *
      * @return Builder\ClassConst The created use const builder
      */
@@ -190,7 +192,7 @@ class BuilderFactory
     /**
      * Creates node a for a literal value.
      *
-     * @param Expr|bool|null|int|float|string|array $value $value
+     * @param Expr|bool|int|float|string|array|null $value $value
      *
      * @return Expr
      */
@@ -360,7 +362,7 @@ class BuilderFactory
         }
 
         $lastConcat = $this->normalizeStringExpr($exprs[0]);
-        for ($i = 1; $i < $numExprs; $i++) {
+        for ($i = 1; $i < $numExprs; ++$i) {
             $lastConcat = new Concat($lastConcat, $this->normalizeStringExpr($exprs[$i]));
         }
         return $lastConcat;
@@ -368,6 +370,7 @@ class BuilderFactory
 
     /**
      * @param string|Expr $expr
+     *
      * @return Expr
      */
     private function normalizeStringExpr($expr): Expr

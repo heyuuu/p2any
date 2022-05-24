@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace P2Any\PhpParser\Node\Expr;
 
@@ -18,13 +20,15 @@ abstract class AssignOp extends Expr
      * @param Expr  $expr       Expression
      * @param array $attributes Additional attributes
      */
-    public function __construct(Expr $var, Expr $expr, array $attributes = []) {
+    public function __construct(Expr $var, Expr $expr, array $attributes = [])
+    {
         $this->attributes = $attributes;
-        $this->var = $var;
-        $this->expr = $expr;
+        $this->var        = $var;
+        $this->expr       = $expr;
     }
 
-    public function getSubNodeNames() : array {
+    public function getSubNodeNames(): array
+    {
         return ['var', 'expr'];
     }
 }

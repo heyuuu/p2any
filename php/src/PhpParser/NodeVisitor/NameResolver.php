@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace P2Any\PhpParser\NodeVisitor;
 
@@ -39,7 +41,7 @@ class NameResolver extends NodeVisitorAbstract
     {
         $this->nameContext           = new NameContext($errorHandler ?? new ErrorHandler\Throwing);
         $this->preserveOriginalNames = $options['preserveOriginalNames'] ?? false;
-        $this->replaceNodes          = $options['replaceNodes'] ?? true;
+        $this->replaceNodes          = $options['replaceNodes']          ?? true;
     }
 
     /**

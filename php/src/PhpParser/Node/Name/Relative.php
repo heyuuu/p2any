@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace P2Any\PhpParser\Node\Name;
 
@@ -11,7 +13,8 @@ class Relative extends Name
      *
      * @return bool Whether the name is unqualified
      */
-    public function isUnqualified() : bool {
+    public function isUnqualified(): bool
+    {
         return false;
     }
 
@@ -20,7 +23,8 @@ class Relative extends Name
      *
      * @return bool Whether the name is qualified
      */
-    public function isQualified() : bool {
+    public function isQualified(): bool
+    {
         return false;
     }
 
@@ -29,7 +33,8 @@ class Relative extends Name
      *
      * @return bool Whether the name is fully qualified
      */
-    public function isFullyQualified() : bool {
+    public function isFullyQualified(): bool
+    {
         return false;
     }
 
@@ -38,15 +43,18 @@ class Relative extends Name
      *
      * @return bool Whether the name is relative
      */
-    public function isRelative() : bool {
+    public function isRelative(): bool
+    {
         return true;
     }
 
-    public function toCodeString() : string {
+    public function toCodeString(): string
+    {
         return 'namespace\\' . $this->toString();
     }
-    
-    public function getType() : string {
+
+    public function getType(): string
+    {
         return 'Name_Relative';
     }
 }

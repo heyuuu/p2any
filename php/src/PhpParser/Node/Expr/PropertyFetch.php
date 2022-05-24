@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace P2Any\PhpParser\Node\Expr;
 
@@ -19,17 +21,20 @@ class PropertyFetch extends Expr
      * @param string|Identifier|Expr $name       Property name
      * @param array                  $attributes Additional attributes
      */
-    public function __construct(Expr $var, $name, array $attributes = []) {
+    public function __construct(Expr $var, $name, array $attributes = [])
+    {
         $this->attributes = $attributes;
-        $this->var = $var;
-        $this->name = \is_string($name) ? new Identifier($name) : $name;
+        $this->var        = $var;
+        $this->name       = \is_string($name) ? new Identifier($name) : $name;
     }
 
-    public function getSubNodeNames() : array {
+    public function getSubNodeNames(): array
+    {
         return ['var', 'name'];
     }
-    
-    public function getType() : string {
+
+    public function getType(): string
+    {
         return 'Expr_PropertyFetch';
     }
 }

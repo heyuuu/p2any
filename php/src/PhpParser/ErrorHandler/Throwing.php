@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace P2Any\PhpParser\ErrorHandler;
 
@@ -12,7 +14,8 @@ use P2Any\PhpParser\ErrorHandler;
  */
 class Throwing implements ErrorHandler
 {
-    public function handleError(Error $error) {
+    public function handleError(Error $error)
+    {
         throw $error;
     }
 }

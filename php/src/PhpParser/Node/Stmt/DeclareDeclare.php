@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace P2Any\PhpParser\Node\Stmt;
 
@@ -18,17 +20,20 @@ class DeclareDeclare extends Node\Stmt
      * @param Node\Expr              $value      Value
      * @param array                  $attributes Additional attributes
      */
-    public function __construct($key, Node\Expr $value, array $attributes = []) {
+    public function __construct($key, Node\Expr $value, array $attributes = [])
+    {
         $this->attributes = $attributes;
-        $this->key = \is_string($key) ? new Node\Identifier($key) : $key;
-        $this->value = $value;
+        $this->key        = \is_string($key) ? new Node\Identifier($key) : $key;
+        $this->value      = $value;
     }
 
-    public function getSubNodeNames() : array {
+    public function getSubNodeNames(): array
+    {
         return ['key', 'value'];
     }
-    
-    public function getType() : string {
+
+    public function getType(): string
+    {
         return 'Stmt_DeclareDeclare';
     }
 }

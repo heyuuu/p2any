@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace P2Any\PhpParser\Node\Stmt;
 
@@ -12,7 +14,7 @@ class If_ extends Node\Stmt
     public $stmts;
     /** @var ElseIf_[] Elseif clauses */
     public $elseifs;
-    /** @var null|Else_ Else clause */
+    /** @var Else_|null Else clause */
     public $else;
 
     /**
@@ -25,19 +27,22 @@ class If_ extends Node\Stmt
      *                              'else'    => null   : Else clause
      * @param array     $attributes Additional attributes
      */
-    public function __construct(Node\Expr $cond, array $subNodes = [], array $attributes = []) {
+    public function __construct(Node\Expr $cond, array $subNodes = [], array $attributes = [])
+    {
         $this->attributes = $attributes;
-        $this->cond = $cond;
-        $this->stmts = $subNodes['stmts'] ?? [];
-        $this->elseifs = $subNodes['elseifs'] ?? [];
-        $this->else = $subNodes['else'] ?? null;
+        $this->cond       = $cond;
+        $this->stmts      = $subNodes['stmts']   ?? [];
+        $this->elseifs    = $subNodes['elseifs'] ?? [];
+        $this->else       = $subNodes['else']    ?? null;
     }
 
-    public function getSubNodeNames() : array {
+    public function getSubNodeNames(): array
+    {
         return ['cond', 'stmts', 'elseifs', 'else'];
     }
-    
-    public function getType() : string {
+
+    public function getType(): string
+    {
         return 'Stmt_If';
     }
 }

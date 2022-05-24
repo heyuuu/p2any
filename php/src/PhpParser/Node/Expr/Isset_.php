@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace P2Any\PhpParser\Node\Expr;
 
@@ -15,16 +17,19 @@ class Isset_ extends Expr
      * @param Expr[] $vars       Variables
      * @param array  $attributes Additional attributes
      */
-    public function __construct(array $vars, array $attributes = []) {
+    public function __construct(array $vars, array $attributes = [])
+    {
         $this->attributes = $attributes;
-        $this->vars = $vars;
+        $this->vars       = $vars;
     }
 
-    public function getSubNodeNames() : array {
+    public function getSubNodeNames(): array
+    {
         return ['vars'];
     }
-    
-    public function getType() : string {
+
+    public function getType(): string
+    {
         return 'Expr_Isset';
     }
 }

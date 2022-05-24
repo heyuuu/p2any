@@ -8,7 +8,7 @@ use Symfony\Component\Finder\SplFileInfo;
 require_once __DIR__ . '/../vendor/autoload.php';
 
 $nodeRoot = __DIR__ . '/../src/PhpParser/Node/';
-$nsPrefix = "P2Any\\PhpParser\\Node\\";
+$nsPrefix = 'P2Any\\PhpParser\\Node\\';
 $tplFile  = __DIR__ . '/tpl/NodeTransformer.php';
 $dstFile  = __DIR__ . '/../src/Service/NodeTransformerGenerate.php';
 
@@ -39,7 +39,7 @@ $types = [];
 foreach ($classes as $class) {
     $methodName   = 'visit' . str_replace([$nsPrefix, '\\'], '', $class);
     $paramType    = str_replace($nsPrefix, 'Node\\', $class);
-    $fragmentType = "Fragment";
+    $fragmentType = 'Fragment';
     if (is_subclass_of($class, Node\Stmt::class)) {
         $fragmentType .= '\\Stmt';
     } elseif (is_subclass_of($class, Node\Expr::class)) {

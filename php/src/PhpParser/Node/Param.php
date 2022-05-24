@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace P2Any\PhpParser\Node;
 
@@ -6,7 +8,7 @@ use P2Any\PhpParser\NodeAbstract;
 
 class Param extends NodeAbstract
 {
-    /** @var null|Identifier|Name|ComplexType Type declaration */
+    /** @var Identifier|Name|ComplexType|null Type declaration */
     public $type;
     /** @var bool Whether parameter is passed by reference */
     public $byRef;
@@ -14,15 +16,15 @@ class Param extends NodeAbstract
     public $variadic;
     /** @var Expr\Variable|Expr\Error Parameter variable */
     public $var;
-    /** @var null|Expr Default value */
+    /** @var Expr|null Default value */
     public $default;
 
     /**
      * Constructs a parameter node.
      *
      * @param Expr\Variable|Expr\Error                $var        Parameter variable
-     * @param null|Expr                               $default    Default value
-     * @param null|string|Identifier|Name|ComplexType $type       Type declaration
+     * @param Expr|null                               $default    Default value
+     * @param string|Identifier|Name|ComplexType|null $type       Type declaration
      * @param bool                                    $byRef      Whether is passed by reference
      * @param bool                                    $variadic   Whether this is a variadic argument
      * @param array                                   $attributes Additional attributes

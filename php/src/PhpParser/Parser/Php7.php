@@ -32,56 +32,56 @@ class Php7 extends ParserAbstract
     protected $numNonLeafStates = 710;
 
     protected $symbolToName = [
-        "EOF",
-        "error",
-        "T_THROW",
-        "T_INCLUDE",
-        "T_INCLUDE_ONCE",
-        "T_EVAL",
-        "T_REQUIRE",
-        "T_REQUIRE_ONCE",
+        'EOF',
+        'error',
+        'T_THROW',
+        'T_INCLUDE',
+        'T_INCLUDE_ONCE',
+        'T_EVAL',
+        'T_REQUIRE',
+        'T_REQUIRE_ONCE',
         "','",
-        "T_LOGICAL_OR",
-        "T_LOGICAL_XOR",
-        "T_LOGICAL_AND",
-        "T_PRINT",
-        "T_YIELD",
-        "T_DOUBLE_ARROW",
-        "T_YIELD_FROM",
+        'T_LOGICAL_OR',
+        'T_LOGICAL_XOR',
+        'T_LOGICAL_AND',
+        'T_PRINT',
+        'T_YIELD',
+        'T_DOUBLE_ARROW',
+        'T_YIELD_FROM',
         "'='",
-        "T_PLUS_EQUAL",
-        "T_MINUS_EQUAL",
-        "T_MUL_EQUAL",
-        "T_DIV_EQUAL",
-        "T_CONCAT_EQUAL",
-        "T_MOD_EQUAL",
-        "T_AND_EQUAL",
-        "T_OR_EQUAL",
-        "T_XOR_EQUAL",
-        "T_SL_EQUAL",
-        "T_SR_EQUAL",
-        "T_POW_EQUAL",
-        "T_COALESCE_EQUAL",
+        'T_PLUS_EQUAL',
+        'T_MINUS_EQUAL',
+        'T_MUL_EQUAL',
+        'T_DIV_EQUAL',
+        'T_CONCAT_EQUAL',
+        'T_MOD_EQUAL',
+        'T_AND_EQUAL',
+        'T_OR_EQUAL',
+        'T_XOR_EQUAL',
+        'T_SL_EQUAL',
+        'T_SR_EQUAL',
+        'T_POW_EQUAL',
+        'T_COALESCE_EQUAL',
         "'?'",
         "':'",
-        "T_COALESCE",
-        "T_BOOLEAN_OR",
-        "T_BOOLEAN_AND",
+        'T_COALESCE',
+        'T_BOOLEAN_OR',
+        'T_BOOLEAN_AND',
         "'|'",
         "'^'",
-        "T_AMPERSAND_NOT_FOLLOWED_BY_VAR_OR_VARARG",
-        "T_AMPERSAND_FOLLOWED_BY_VAR_OR_VARARG",
-        "T_IS_EQUAL",
-        "T_IS_NOT_EQUAL",
-        "T_IS_IDENTICAL",
-        "T_IS_NOT_IDENTICAL",
-        "T_SPACESHIP",
+        'T_AMPERSAND_NOT_FOLLOWED_BY_VAR_OR_VARARG',
+        'T_AMPERSAND_FOLLOWED_BY_VAR_OR_VARARG',
+        'T_IS_EQUAL',
+        'T_IS_NOT_EQUAL',
+        'T_IS_IDENTICAL',
+        'T_IS_NOT_IDENTICAL',
+        'T_SPACESHIP',
         "'<'",
-        "T_IS_SMALLER_OR_EQUAL",
+        'T_IS_SMALLER_OR_EQUAL',
         "'>'",
-        "T_IS_GREATER_OR_EQUAL",
-        "T_SL",
-        "T_SR",
+        'T_IS_GREATER_OR_EQUAL',
+        'T_SL',
+        'T_SR',
         "'+'",
         "'-'",
         "'.'",
@@ -89,108 +89,108 @@ class Php7 extends ParserAbstract
         "'/'",
         "'%'",
         "'!'",
-        "T_INSTANCEOF",
+        'T_INSTANCEOF',
         "'~'",
-        "T_INC",
-        "T_DEC",
-        "T_INT_CAST",
-        "T_DOUBLE_CAST",
-        "T_STRING_CAST",
-        "T_ARRAY_CAST",
-        "T_OBJECT_CAST",
-        "T_BOOL_CAST",
-        "T_UNSET_CAST",
+        'T_INC',
+        'T_DEC',
+        'T_INT_CAST',
+        'T_DOUBLE_CAST',
+        'T_STRING_CAST',
+        'T_ARRAY_CAST',
+        'T_OBJECT_CAST',
+        'T_BOOL_CAST',
+        'T_UNSET_CAST',
         "'@'",
-        "T_POW",
+        'T_POW',
         "'['",
-        "T_NEW",
-        "T_CLONE",
-        "T_EXIT",
-        "T_IF",
-        "T_ELSEIF",
-        "T_ELSE",
-        "T_ENDIF",
-        "T_LNUMBER",
-        "T_DNUMBER",
-        "T_STRING",
-        "T_STRING_VARNAME",
-        "T_VARIABLE",
-        "T_NUM_STRING",
-        "T_INLINE_HTML",
-        "T_ENCAPSED_AND_WHITESPACE",
-        "T_CONSTANT_ENCAPSED_STRING",
-        "T_ECHO",
-        "T_DO",
-        "T_WHILE",
-        "T_ENDWHILE",
-        "T_FOR",
-        "T_ENDFOR",
-        "T_FOREACH",
-        "T_ENDFOREACH",
-        "T_DECLARE",
-        "T_ENDDECLARE",
-        "T_AS",
-        "T_SWITCH",
-        "T_MATCH",
-        "T_ENDSWITCH",
-        "T_CASE",
-        "T_DEFAULT",
-        "T_BREAK",
-        "T_CONTINUE",
-        "T_GOTO",
-        "T_FUNCTION",
-        "T_FN",
-        "T_CONST",
-        "T_RETURN",
-        "T_TRY",
-        "T_CATCH",
-        "T_FINALLY",
-        "T_USE",
-        "T_INSTEADOF",
-        "T_GLOBAL",
-        "T_STATIC",
-        "T_ABSTRACT",
-        "T_FINAL",
-        "T_PRIVATE",
-        "T_PROTECTED",
-        "T_PUBLIC",
-        "T_READONLY",
-        "T_VAR",
-        "T_UNSET",
-        "T_ISSET",
-        "T_EMPTY",
-        "T_HALT_COMPILER",
-        "T_CLASS",
-        "T_TRAIT",
-        "T_INTERFACE",
-        "T_ENUM",
-        "T_EXTENDS",
-        "T_IMPLEMENTS",
-        "T_OBJECT_OPERATOR",
-        "T_NULLSAFE_OBJECT_OPERATOR",
-        "T_LIST",
-        "T_ARRAY",
-        "T_CALLABLE",
-        "T_CLASS_C",
-        "T_TRAIT_C",
-        "T_METHOD_C",
-        "T_FUNC_C",
-        "T_LINE",
-        "T_FILE",
-        "T_START_HEREDOC",
-        "T_END_HEREDOC",
-        "T_DOLLAR_OPEN_CURLY_BRACES",
-        "T_CURLY_OPEN",
-        "T_PAAMAYIM_NEKUDOTAYIM",
-        "T_NAMESPACE",
-        "T_NS_C",
-        "T_DIR",
-        "T_NS_SEPARATOR",
-        "T_ELLIPSIS",
-        "T_NAME_FULLY_QUALIFIED",
-        "T_NAME_QUALIFIED",
-        "T_NAME_RELATIVE",
-        "T_ATTRIBUTE",
+        'T_NEW',
+        'T_CLONE',
+        'T_EXIT',
+        'T_IF',
+        'T_ELSEIF',
+        'T_ELSE',
+        'T_ENDIF',
+        'T_LNUMBER',
+        'T_DNUMBER',
+        'T_STRING',
+        'T_STRING_VARNAME',
+        'T_VARIABLE',
+        'T_NUM_STRING',
+        'T_INLINE_HTML',
+        'T_ENCAPSED_AND_WHITESPACE',
+        'T_CONSTANT_ENCAPSED_STRING',
+        'T_ECHO',
+        'T_DO',
+        'T_WHILE',
+        'T_ENDWHILE',
+        'T_FOR',
+        'T_ENDFOR',
+        'T_FOREACH',
+        'T_ENDFOREACH',
+        'T_DECLARE',
+        'T_ENDDECLARE',
+        'T_AS',
+        'T_SWITCH',
+        'T_MATCH',
+        'T_ENDSWITCH',
+        'T_CASE',
+        'T_DEFAULT',
+        'T_BREAK',
+        'T_CONTINUE',
+        'T_GOTO',
+        'T_FUNCTION',
+        'T_FN',
+        'T_CONST',
+        'T_RETURN',
+        'T_TRY',
+        'T_CATCH',
+        'T_FINALLY',
+        'T_USE',
+        'T_INSTEADOF',
+        'T_GLOBAL',
+        'T_STATIC',
+        'T_ABSTRACT',
+        'T_FINAL',
+        'T_PRIVATE',
+        'T_PROTECTED',
+        'T_PUBLIC',
+        'T_READONLY',
+        'T_VAR',
+        'T_UNSET',
+        'T_ISSET',
+        'T_EMPTY',
+        'T_HALT_COMPILER',
+        'T_CLASS',
+        'T_TRAIT',
+        'T_INTERFACE',
+        'T_ENUM',
+        'T_EXTENDS',
+        'T_IMPLEMENTS',
+        'T_OBJECT_OPERATOR',
+        'T_NULLSAFE_OBJECT_OPERATOR',
+        'T_LIST',
+        'T_ARRAY',
+        'T_CALLABLE',
+        'T_CLASS_C',
+        'T_TRAIT_C',
+        'T_METHOD_C',
+        'T_FUNC_C',
+        'T_LINE',
+        'T_FILE',
+        'T_START_HEREDOC',
+        'T_END_HEREDOC',
+        'T_DOLLAR_OPEN_CURLY_BRACES',
+        'T_CURLY_OPEN',
+        'T_PAAMAYIM_NEKUDOTAYIM',
+        'T_NAMESPACE',
+        'T_NS_C',
+        'T_DIR',
+        'T_NS_SEPARATOR',
+        'T_ELLIPSIS',
+        'T_NAME_FULLY_QUALIFIED',
+        'T_NAME_QUALIFIED',
+        'T_NAME_RELATIVE',
+        'T_ATTRIBUTE',
         "';'",
         "']'",
         "'{'",
@@ -7514,7 +7514,7 @@ class Php7 extends ParserAbstract
                 } else {
                     $this->semStack[$stackPos - (2 - 1)][] = $this->semStack[$stackPos - (2 - 2)];
                     $this->semValue                        = $this->semStack[$stackPos - (2 - 1)];
-                };
+                }
             },
             3   => function ($stackPos) {
                 $this->semValue = [];
@@ -7525,7 +7525,7 @@ class Php7 extends ParserAbstract
                     $nop = new Stmt\Nop($this->createCommentNopAttributes($startAttributes['comments']));
                 } else {
                     $nop = null;
-                };
+                }
                 if ($nop !== null) {
                     $this->semStack[$stackPos - (1 - 1)][] = $nop;
                 }
@@ -7999,7 +7999,7 @@ class Php7 extends ParserAbstract
                 } else {
                     $this->semStack[$stackPos - (2 - 1)][] = $this->semStack[$stackPos - (2 - 2)];
                     $this->semValue                        = $this->semStack[$stackPos - (2 - 1)];
-                };
+                }
             },
             152 => function ($stackPos) {
                 $this->semValue = [];
@@ -8010,7 +8010,7 @@ class Php7 extends ParserAbstract
                     $nop = new Stmt\Nop($this->createCommentNopAttributes($startAttributes['comments']));
                 } else {
                     $nop = null;
-                };
+                }
                 if ($nop !== null) {
                     $this->semStack[$stackPos - (1 - 1)][] = $nop;
                 }
@@ -8035,14 +8035,14 @@ class Php7 extends ParserAbstract
                     $stmts          = $this->semValue;
                     if (!empty($attrs['comments'])) {
                         $stmts[0]->setAttribute('comments', array_merge($attrs['comments'], $stmts[0]->getAttribute('comments', [])));
-                    };
+                    }
                 } else {
                     $startAttributes = $this->startAttributeStack[$stackPos - (3 - 1)];
                     if (isset($startAttributes['comments'])) {
                         $this->semValue = new Stmt\Nop($startAttributes + $this->endAttributes);
                     } else {
                         $this->semValue = null;
-                    };
+                    }
                     if (null === $this->semValue) {
                         $this->semValue = [];
                     }
@@ -8154,7 +8154,7 @@ class Php7 extends ParserAbstract
                     $this->semValue = new Stmt\Nop($startAttributes + $this->endAttributes);
                 } else {
                     $this->semValue = null;
-                };
+                }
                 if ($this->semValue === null) {
                     $this->semValue = [];
                 } /* means: no statement */
@@ -8260,7 +8260,7 @@ class Php7 extends ParserAbstract
                 );
             },
             207 => function ($stackPos) {
-                $this->emitNotSupportedError("Enum (8.1)");
+                $this->emitNotSupportedError('Enum (8.1)');
             },
             208 => function ($stackPos) {
                 $this->semValue = null;
@@ -8482,7 +8482,7 @@ class Php7 extends ParserAbstract
                 $this->semValue = Stmt\Class_::MODIFIER_PRIVATE;
             },
             277 => function ($stackPos) {
-                $this->emitNotSupportedError("Readonly Property (8.1)");
+                $this->emitNotSupportedError('Readonly Property (8.1)');
             },
             278 => function ($stackPos) {
                 $this->semValue = new Node\Param(
@@ -8673,7 +8673,7 @@ class Php7 extends ParserAbstract
                     $nop = new Stmt\Nop($this->createCommentNopAttributes($startAttributes['comments']));
                 } else {
                     $nop = null;
-                };
+                }
                 if ($nop !== null) {
                     $this->semStack[$stackPos - (1 - 1)][] = $nop;
                 }
@@ -8709,7 +8709,7 @@ class Php7 extends ParserAbstract
                 $this->semValue = new Stmt\TraitUse($this->semStack[$stackPos - (3 - 2)], $this->semStack[$stackPos - (3 - 3)], $this->startAttributeStack[$stackPos - (3 - 1)] + $this->endAttributes);
             },
             333 => function ($stackPos) {
-                $this->emitNotSupportedError("Enum (8.1)");
+                $this->emitNotSupportedError('Enum (8.1)');
             },
             334 => function ($stackPos) {
                 $this->semValue = null; /* will be skipped */
@@ -8800,7 +8800,7 @@ class Php7 extends ParserAbstract
                 $this->semValue = Stmt\Class_::MODIFIER_FINAL;
             },
             361 => function ($stackPos) {
-                $this->emitNotSupportedError("Readonly Property (8.1)");
+                $this->emitNotSupportedError('Readonly Property (8.1)');
             },
             362 => function ($stackPos) {
                 $this->semValue = $this->semStack[$stackPos - (2 - 1)];
@@ -8915,7 +8915,7 @@ class Php7 extends ParserAbstract
                     $this->startAttributeStack[$stackPos - (3 - 1)] + $this->endAttributes);
             },
             394 => function ($stackPos) {
-                $this->emitNotSupportedError("??= (7.4)");
+                $this->emitNotSupportedError('??= (7.4)');
             },
             395 => function ($stackPos) {
                 $this->semValue = new Expr\PostInc($this->semStack[$stackPos - (2 - 1)], $this->startAttributeStack[$stackPos - (2 - 1)] + $this->endAttributes);
@@ -9302,7 +9302,7 @@ class Php7 extends ParserAbstract
                     if ($s instanceof Node\Scalar\EncapsedStringPart) {
                         $s->value = Node\Scalar\String_::parseEscapeSequences($s->value, '`', true);
                     }
-                };
+                }
                 $this->semValue = $this->semStack[$stackPos - (1 - 1)];
             },
             496 => function ($stackPos) {
@@ -9373,7 +9373,7 @@ class Php7 extends ParserAbstract
                     if ($s instanceof Node\Scalar\EncapsedStringPart) {
                         $s->value = Node\Scalar\String_::parseEscapeSequences($s->value, '"', true);
                     }
-                };
+                }
                 $this->semValue = new Scalar\Encapsed($this->semStack[$stackPos - (3 - 2)], $attrs);
             },
             514 => function ($stackPos) {

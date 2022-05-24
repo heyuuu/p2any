@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace P2Any\PhpParser\PrettyPrinter;
 
@@ -128,6 +130,7 @@ class Standard extends PrettyPrinterAbstract
                         . $this->docStringEndToken;
                 }
             /* break missing intentionally */
+            // no break
             case Scalar\String_::KIND_SINGLE_QUOTED:
                 return $this->pSingleQuotedString($node->value);
             case Scalar\String_::KIND_HEREDOC:
@@ -142,6 +145,7 @@ class Standard extends PrettyPrinterAbstract
                         . $this->docStringEndToken;
                 }
             /* break missing intentionally */
+            // no break
             case Scalar\String_::KIND_DOUBLE_QUOTED:
                 return '"' . $this->escapeString($node->value, '"') . '"';
         }
@@ -212,7 +216,7 @@ class Standard extends PrettyPrinterAbstract
 
         // Try to find a short full-precision representation
         $stringValue = sprintf('%.16G', $node->value);
-        if ($node->value !== (double)$stringValue) {
+        if ($node->value !== (float)$stringValue) {
             $stringValue = sprintf('%.17G', $node->value);
         }
 
@@ -1080,7 +1084,7 @@ class Standard extends PrettyPrinterAbstract
             // For doc strings, don't escape newlines
             $escaped = addcslashes($string, "\t\f\v$\\");
         } else {
-            $escaped = addcslashes($string, "\n\r\t\f\v$" . $quote . "\\");
+            $escaped = addcslashes($string, "\n\r\t\f\v$" . $quote . '\\');
         }
 
         // Escape control characters and non-UTF-8 characters.
@@ -1102,7 +1106,7 @@ class Standard extends PrettyPrinterAbstract
         )/x';
         return preg_replace_callback($regex, function ($matches) {
             assert(strlen($matches[0]) === 1);
-            $hex = dechex(ord($matches[0]));;
+            $hex = dechex(ord($matches[0]));
             return '\\x' . str_pad($hex, 2, '0', \STR_PAD_LEFT);
         }, $escaped);
     }
@@ -1155,6 +1159,7 @@ class Standard extends PrettyPrinterAbstract
 
     /**
      * @param Node[] $nodes
+     *
      * @return bool
      */
     protected function hasNodeWithComments(array $nodes)

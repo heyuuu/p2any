@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace P2Any\PhpParser;
 
@@ -113,9 +115,9 @@ abstract class PrettyPrinterAbstract
      */
     protected $fixupMap;
     /**
-     * @var int[][] Map from "{$node->getType()}->{$subNode}" to ['left' => $l, 'right' => $r],
+     * @var int[][] map from "{$node->getType()}->{$subNode}" to ['left' => $l, 'right' => $r],
      *              where $l and $r specify the token type that needs to be stripped when removing
-     *              this node.
+     *              this node
      */
     protected $removalMap;
     /**
@@ -125,8 +127,8 @@ abstract class PrettyPrinterAbstract
      */
     protected $insertionMap;
     /**
-     * @var string[] Map From "{$node->getType()}->{$subNode}" to string that should be inserted
-     *               between elements of this list subnode.
+     * @var string[] map From "{$node->getType()}->{$subNode}" to string that should be inserted
+     *               between elements of this list subnode
      */
     protected $listInsertionMap;
     protected $emptyListInsertionMap;
@@ -265,6 +267,7 @@ abstract class PrettyPrinterAbstract
      * Handles (and removes) no-indent and doc-string-end tokens.
      *
      * @param string $str
+     *
      * @return string
      */
     protected function handleMagicTokens(string $str): string
@@ -711,11 +714,11 @@ abstract class PrettyPrinterAbstract
      * @param array    $origNodes        Original nodes
      * @param int      $pos              Current token position (updated by reference)
      * @param int      $indentAdjustment Adjustment for indentation
-     * @param string   $parentNodeType   Type of the containing node.
-     * @param string   $subNodeName      Name of array subnode.
-     * @param null|int $fixup            Fixup information for array item nodes
+     * @param string   $parentNodeType   type of the containing node
+     * @param string   $subNodeName      name of array subnode
+     * @param int|null $fixup            Fixup information for array item nodes
      *
-     * @return null|string Result of pretty print or null if cannot preserve formatting
+     * @return string|null Result of pretty print or null if cannot preserve formatting
      */
     protected function pArray(
         array $nodes,
@@ -1034,12 +1037,12 @@ abstract class PrettyPrinterAbstract
      */
     protected function safeAppend(string &$str, string $append)
     {
-        if ($str === "") {
+        if ($str === '') {
             $str = $append;
             return;
         }
 
-        if ($append === "") {
+        if ($append === '') {
             return;
         }
 
@@ -1047,7 +1050,7 @@ abstract class PrettyPrinterAbstract
             || !$this->labelCharMap[$str[\strlen($str) - 1]]) {
             $str .= $append;
         } else {
-            $str .= " " . $append;
+            $str .= ' ' . $append;
         }
     }
 
@@ -1156,7 +1159,7 @@ abstract class PrettyPrinterAbstract
         }
 
         $this->labelCharMap = [];
-        for ($i = 0; $i < 256; $i++) {
+        for ($i = 0; $i < 256; ++$i) {
             // Since PHP 7.1 The lower range is 0x80. However, we also want to support code for
             // older versions.
             $chr                      = chr($i);

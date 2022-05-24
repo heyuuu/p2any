@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace P2Any\PhpParser\Internal;
 
@@ -19,7 +21,7 @@ class PrintableNewAnonClassNode extends Expr
 {
     /** @var Node\Arg[] Arguments */
     public $args;
-    /** @var null|Node\Name Name of extended class */
+    /** @var Node\Name|null Name of extended class */
     public $extends;
     /** @var Node\Name[] Names of implemented interfaces */
     public $implements;

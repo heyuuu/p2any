@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace P2Any\PhpParser\Node\Expr;
 
@@ -16,7 +18,7 @@ class Closure extends Expr implements FunctionLike
     public $params;
     /** @var ClosureUse[] use()s */
     public $uses;
-    /** @var null|Node\Identifier|Node\Name|Node\ComplexType Return type */
+    /** @var Node\Identifier|Node\Name|Node\ComplexType|null Return type */
     public $returnType;
     /** @var Node\Stmt[] Statements */
     public $stmts;
@@ -36,10 +38,10 @@ class Closure extends Expr implements FunctionLike
     public function __construct(array $subNodes = [], array $attributes = [])
     {
         $this->attributes = $attributes;
-        $this->static     = $subNodes['static'] ?? false;
-        $this->byRef      = $subNodes['byRef'] ?? false;
-        $this->params     = $subNodes['params'] ?? [];
-        $this->uses       = $subNodes['uses'] ?? [];
+        $this->static     = $subNodes['static']     ?? false;
+        $this->byRef      = $subNodes['byRef']      ?? false;
+        $this->params     = $subNodes['params']     ?? [];
+        $this->uses       = $subNodes['uses']       ?? [];
         $returnType       = $subNodes['returnType'] ?? null;
         $this->returnType = \is_string($returnType) ? new Node\Identifier($returnType) : $returnType;
         $this->stmts      = $subNodes['stmts'] ?? [];

@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace P2Any\PhpParser;
 
@@ -24,8 +26,9 @@ class NodeDumper
      *
      * @param array $options Options (see description)
      */
-    public function __construct(array $options = []) {
-        $this->dumpComments = !empty($options['dumpComments']);
+    public function __construct(array $options = [])
+    {
+        $this->dumpComments  = !empty($options['dumpComments']);
         $this->dumpPositions = !empty($options['dumpPositions']);
     }
 
@@ -39,12 +42,14 @@ class NodeDumper
      *
      * @return string Dumped value
      */
-    public function dump($node, string $code = null) : string {
+    public function dump($node, string $code = null): string
+    {
         $this->code = $code;
         return $this->dumpRecursive($node);
     }
 
-    protected function dumpRecursive($node) {
+    protected function dumpRecursive($node)
+    {
         if ($node instanceof Node) {
             $r = $node->getType();
             if ($this->dumpPositions && null !== $p = $this->dumpPosition($node)) {
@@ -108,7 +113,8 @@ class NodeDumper
         return $r . "\n)";
     }
 
-    protected function dumpFlags($flags) {
+    protected function dumpFlags($flags)
+    {
         $strs = [];
         if ($flags & Class_::MODIFIER_PUBLIC) {
             $strs[] = 'MODIFIER_PUBLIC';
@@ -136,7 +142,8 @@ class NodeDumper
         }
     }
 
-    protected function dumpIncludeType($type) {
+    protected function dumpIncludeType($type)
+    {
         $map = [
             Include_::TYPE_INCLUDE      => 'TYPE_INCLUDE',
             Include_::TYPE_INCLUDE_ONCE => 'TYPE_INCLUDE_ONCE',
@@ -150,7 +157,8 @@ class NodeDumper
         return $map[$type] . ' (' . $type . ')';
     }
 
-    protected function dumpUseType($type) {
+    protected function dumpUseType($type)
+    {
         $map = [
             Use_::TYPE_UNKNOWN  => 'TYPE_UNKNOWN',
             Use_::TYPE_NORMAL   => 'TYPE_NORMAL',
@@ -171,24 +179,26 @@ class NodeDumper
      *
      * @return string|null Dump of position, or null if position information not available
      */
-    protected function dumpPosition(Node $node) {
+    protected function dumpPosition(Node $node)
+    {
         if (!$node->hasAttribute('startLine') || !$node->hasAttribute('endLine')) {
             return null;
         }
 
         $start = $node->getStartLine();
-        $end = $node->getEndLine();
+        $end   = $node->getEndLine();
         if ($node->hasAttribute('startFilePos') && $node->hasAttribute('endFilePos')
             && null !== $this->code
         ) {
             $start .= ':' . $this->toColumn($this->code, $node->getStartFilePos());
-            $end .= ':' . $this->toColumn($this->code, $node->getEndFilePos());
+            $end   .= ':' . $this->toColumn($this->code, $node->getEndFilePos());
         }
         return "[$start - $end]";
     }
 
     // Copied from Error class
-    private function toColumn($code, $pos) {
+    private function toColumn($code, $pos)
+    {
         if ($pos > strlen($code)) {
             throw new \RuntimeException('Invalid position information');
         }

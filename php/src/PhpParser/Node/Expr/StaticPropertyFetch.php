@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace P2Any\PhpParser\Node\Expr;
 
@@ -20,17 +22,20 @@ class StaticPropertyFetch extends Expr
      * @param string|VarLikeIdentifier|Expr $name       Property name
      * @param array                         $attributes Additional attributes
      */
-    public function __construct($class, $name, array $attributes = []) {
+    public function __construct($class, $name, array $attributes = [])
+    {
         $this->attributes = $attributes;
-        $this->class = $class;
-        $this->name = \is_string($name) ? new VarLikeIdentifier($name) : $name;
+        $this->class      = $class;
+        $this->name       = \is_string($name) ? new VarLikeIdentifier($name) : $name;
     }
 
-    public function getSubNodeNames() : array {
+    public function getSubNodeNames(): array
+    {
         return ['class', 'name'];
     }
-    
-    public function getType() : string {
+
+    public function getType(): string
+    {
         return 'Expr_StaticPropertyFetch';
     }
 }

@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace P2Any\PhpParser\Node\Expr;
 
@@ -18,13 +20,15 @@ abstract class BinaryOp extends Expr
      * @param Expr  $right      The right hand side expression
      * @param array $attributes Additional attributes
      */
-    public function __construct(Expr $left, Expr $right, array $attributes = []) {
+    public function __construct(Expr $left, Expr $right, array $attributes = [])
+    {
         $this->attributes = $attributes;
-        $this->left = $left;
-        $this->right = $right;
+        $this->left       = $left;
+        $this->right      = $right;
     }
 
-    public function getSubNodeNames() : array {
+    public function getSubNodeNames(): array
+    {
         return ['left', 'right'];
     }
 
@@ -36,5 +40,5 @@ abstract class BinaryOp extends Expr
      *
      * @return string
      */
-    abstract public function getOperatorSigil() : string;
+    abstract public function getOperatorSigil(): string;
 }

@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace P2Any\PhpParser\Node\Scalar;
 
@@ -11,11 +13,13 @@ abstract class MagicConst extends Scalar
      *
      * @param array $attributes Additional attributes
      */
-    public function __construct(array $attributes = []) {
+    public function __construct(array $attributes = [])
+    {
         $this->attributes = $attributes;
     }
 
-    public function getSubNodeNames() : array {
+    public function getSubNodeNames(): array
+    {
         return [];
     }
 
@@ -24,5 +28,5 @@ abstract class MagicConst extends Scalar
      *
      * @return string Name of magic constant
      */
-    abstract public function getName() : string;
+    abstract public function getName(): string;
 }

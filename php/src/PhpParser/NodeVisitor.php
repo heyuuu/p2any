@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace P2Any\PhpParser;
 
@@ -13,7 +15,7 @@ interface NodeVisitor
      *
      * @param Node[] $nodes Array of nodes
      *
-     * @return null|Node[] Array of nodes
+     * @return Node[]|null Array of nodes
      */
     public function beforeTraverse(array $nodes);
 
@@ -32,7 +34,7 @@ interface NodeVisitor
      *
      * @param Node $node Node
      *
-     * @return null|int|Node Replacement node (or special return value)
+     * @return int|Node|null Replacement node (or special return value)
      */
     public function enterNode(Node $node);
 
@@ -53,7 +55,7 @@ interface NodeVisitor
      *
      * @param Node $node Node
      *
-     * @return null|int|Node|Node[] Replacement node (or special return value)
+     * @return int|Node|Node[]|null Replacement node (or special return value)
      */
     public function leaveNode(Node $node);
 
@@ -66,7 +68,7 @@ interface NodeVisitor
      *
      * @param Node[] $nodes Array of nodes
      *
-     * @return null|Node[] Array of nodes
+     * @return Node[]|null Array of nodes
      */
     public function afterTraverse(array $nodes);
 }

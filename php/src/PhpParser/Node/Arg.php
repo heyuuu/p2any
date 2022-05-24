@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace P2Any\PhpParser\Node;
 
@@ -16,10 +18,10 @@ class Arg extends NodeAbstract
     /**
      * Constructs a function call argument node.
      *
-     * @param Expr            $value      Value to pass
-     * @param bool            $byRef      Whether to pass by ref
-     * @param bool            $unpack     Whether to unpack the argument
-     * @param array           $attributes Additional attributes
+     * @param Expr  $value      Value to pass
+     * @param bool  $byRef      Whether to pass by ref
+     * @param bool  $unpack     Whether to unpack the argument
+     * @param array $attributes Additional attributes
      */
     public function __construct(Expr $value, bool $byRef = false, bool $unpack = false, array $attributes = [])
     {

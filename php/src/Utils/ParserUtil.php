@@ -2,7 +2,6 @@
 
 namespace P2Any\Utils;
 
-use P2Any\PhpParser\Lexer;
 use P2Any\PhpParser\NodeTraverser;
 use P2Any\PhpParser\NodeVisitor;
 use P2Any\PhpParser\NodeVisitor\NameResolver;

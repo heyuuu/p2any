@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace P2Any\PhpParser\Node\Stmt;
 
@@ -18,18 +20,20 @@ class UseUse extends Node\Stmt
      * Constructs an alias (use) node.
      *
      * @param Node\Name              $name       Namespace/Class to alias
-     * @param null|string|Identifier $alias      Alias
+     * @param string|Identifier|null $alias      Alias
      * @param int                    $type       Type of the use element (for mixed group use only)
      * @param array                  $attributes Additional attributes
      */
-    public function __construct(Node\Name $name, $alias = null, int $type = Use_::TYPE_UNKNOWN, array $attributes = []) {
+    public function __construct(Node\Name $name, $alias = null, int $type = Use_::TYPE_UNKNOWN, array $attributes = [])
+    {
         $this->attributes = $attributes;
-        $this->type = $type;
-        $this->name = $name;
-        $this->alias = \is_string($alias) ? new Identifier($alias) : $alias;
+        $this->type       = $type;
+        $this->name       = $name;
+        $this->alias      = \is_string($alias) ? new Identifier($alias) : $alias;
     }
 
-    public function getSubNodeNames() : array {
+    public function getSubNodeNames(): array
+    {
         return ['type', 'name', 'alias'];
     }
 
@@ -38,15 +42,17 @@ class UseUse extends Node\Stmt
      *
      * @return Identifier
      */
-    public function getAlias() : Identifier {
+    public function getAlias(): Identifier
+    {
         if (null !== $this->alias) {
             return $this->alias;
         }
 
         return new Identifier($this->name->getLast());
     }
-    
-    public function getType() : string {
+
+    public function getType(): string
+    {
         return 'Stmt_UseUse';
     }
 }
