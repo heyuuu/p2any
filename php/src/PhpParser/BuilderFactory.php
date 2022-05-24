@@ -225,12 +225,9 @@ class BuilderFactory
      */
     public function args(array $args) : array {
         $normalizedArgs = [];
-        foreach ($args as $key => $arg) {
+        foreach ($args as $arg) {
             if (!($arg instanceof Arg)) {
                 $arg = new Arg(BuilderHelpers::normalizeValue($arg));
-            }
-            if (\is_string($key)) {
-                $arg->name = BuilderHelpers::normalizeIdentifier($key);
             }
             $normalizedArgs[] = $arg;
         }

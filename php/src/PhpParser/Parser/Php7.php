@@ -8609,8 +8609,7 @@ class Php7 extends ParserAbstract
                 $this->semValue = new Node\Arg($this->semStack[$stackPos - (2 - 2)], false, true, $this->startAttributeStack[$stackPos - (2 - 1)] + $this->endAttributes);
             },
             316 => function ($stackPos) {
-                $this->semValue = new Node\Arg($this->semStack[$stackPos - (3 - 3)], false, false, $this->startAttributeStack[$stackPos - (3 - 1)] + $this->endAttributes,
-                    $this->semStack[$stackPos - (3 - 1)]);
+                $this->emitNotSupportedError('Named Argument (8.0)');
             },
             317 => function ($stackPos) {
                 $this->semValue = $this->semStack[$stackPos - (2 - 1)];
