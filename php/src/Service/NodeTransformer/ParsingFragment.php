@@ -2,6 +2,8 @@
 
 namespace P2Any\Service\NodeTransformer;
 
-interface ParsingFragment
+use P2Any\Fragment;
+
+interface ParsingFragment extends Fragment
 {
 }

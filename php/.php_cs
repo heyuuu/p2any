@@ -1,7 +1,12 @@
 <?php
 
 $finder = \PhpCsFixer\Finder::create()
-    ->in(__DIR__ . '/src');
+    ->in(__DIR__ . '/src')
+    ->append([
+        __DIR__ . '/bin/gen.php',
+        __DIR__ . '/bin/gen_node_transformer.php',
+        __DIR__ . '/bin/test_fragment.php',
+    ]);
 
 return \PhpCsFixer\Config::create()
     ->setFinder($finder)

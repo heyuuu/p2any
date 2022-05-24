@@ -12,7 +12,9 @@ abstract class NodeTransformerAbstract
 {
     const NODE_NS = 'P2Any\\PhpParser\\Node\\';
 
-    protected $visitMethods = [];
+    protected static $visitMethods     = [];
+    protected static $skipTypes        = [];
+    protected static $unsupportedTypes = [];
 
     /**
      * @param Node[] $nodes
@@ -37,25 +39,57 @@ abstract class NodeTransformerAbstract
 
     public function visit(Node $node): ?Fragment
     {
-        $method = $this->findVisitMethod($node);
+        $nodeClass = get_class($node);
+        if (self::isSkipType($nodeClass)) {
+            return null;
+        } elseif (self::isUnsupportedType($nodeClass)) {
+            throw new TodoException('暂不支持的 Node 节点: ' . $nodeClass);
+        }
+
+        $method = static::findVisitMethod($nodeClass);
+        if ($method === null) {
+            throw new TodoException('此 Node 类型未定义处理函数: ' . $nodeClass);
+        }
         return $this->{$method}($node);
     }
 
-    private function findVisitMethod(Node $node): string
+    public static function calcVisitMethod(string $class): string
     {
-        $class = get_class($node);
-        if (isset($this->visitMethods[$class])) {
-            return $this->visitMethods[$class];
+        return 'visit' . str_replace([self::NODE_NS, '\\', '_'], '', $class);
+    }
+
+    public static function findVisitMethod(string $nodeClass): ?string
+    {
+        if (!isset(static::$visitMethods[static::class][$nodeClass])) {
+            static::$visitMethods[static::class][$nodeClass] = static::findVisitMethodInternal($nodeClass);
         }
+        return static::$visitMethods[static::class][$nodeClass];
+    }
 
-        $findClass = $class;
+    protected static function findVisitMethodInternal(string $nodeClass): ?string
+    {
         do {
-            $methodName = 'visit' . str_replace([self::NODE_NS, '\\'], '', $findClass);
-            if (method_exists($this, $methodName)) {
-                return $this->visitMethods[$class] = $methodName;
+            $method = self::calcVisitMethod($nodeClass);
+            if (method_exists(static::class, $method)) {
+                return $method;
             }
-        } while ($findClass = get_parent_class($findClass));
+        } while ($nodeClass = get_parent_class($nodeClass));
 
-        throw new TodoException('此 Node 类型未定义处理函数: ' . $class);
+        return null;
+    }
+
+    public static function isSkipType(string $nodeClass): bool
+    {
+        return isset(static::$skipTypes[$nodeClass]);
+    }
+
+    public static function isUnsupportedType(string $nodeClass): bool
+    {
+        return isset(static::$unsupportedTypes[$nodeClass]);
+    }
+
+    public static function hasHandleType(string $nodeClass): bool
+    {
+        return static::isSkipType($nodeClass) || static::isUnsupportedType($nodeClass) || self::findVisitMethod($nodeClass) !== null;
     }
 }

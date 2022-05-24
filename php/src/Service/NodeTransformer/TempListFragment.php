@@ -12,6 +12,15 @@ class TempListFragment implements ParsingFragment
      */
     protected $fragments;
 
+    public function __construct(array $fragments = [])
+    {
+        Assert::isList($fragments);
+        Assert::allIsInstanceOf($fragments, Fragment::class);
+        Assert::allNotInstanceOf($fragments, TempListFragment::class);
+
+        $this->fragments = $fragments;
+    }
+
     public function add(Fragment $fragment)
     {
         Assert::notInstanceOf($fragment, TempListFragment::class);

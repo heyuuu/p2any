@@ -1,6 +1,7 @@
 <?php
 
 use P2Any\PhpParser\Node;
+use P2Any\Service\NodeTransformer;
 use P2Any\Utils\FileUtil;
 use P2Any\Utils\PhpFileFinder;
 use Symfony\Component\Finder\SplFileInfo;
@@ -37,13 +38,18 @@ $classes = collect($finder)
 // 生成代码
 $types = [];
 foreach ($classes as $class) {
-    $methodName   = 'visit' . str_replace([$nsPrefix, '\\'], '', $class);
+    $methodName   = 'visit' . str_replace([$nsPrefix, '\\', '_'], '', $class);
     $paramType    = str_replace($nsPrefix, 'Node\\', $class);
-    $fragmentType = 'Fragment';
+    $fragmentType = '?Fragment';
     if (is_subclass_of($class, Node\Stmt::class)) {
         $fragmentType .= '\\Stmt';
     } elseif (is_subclass_of($class, Node\Expr::class)) {
         $fragmentType .= '\\Expr';
+    }
+
+    // 略过已处理的类型或方法
+    if (NodeTransformer::hasHandleType($class)) {
+        continue;
     }
 
     $types[] = [$methodName, $paramType, $fragmentType];
