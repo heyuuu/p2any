@@ -577,12 +577,6 @@ class Standard extends PrettyPrinterAbstract
             . '(' . $this->pMaybeMultiline($node->args) . ')';
     }
 
-    protected function pExpr_NullsafeMethodCall(Expr\NullsafeMethodCall $node)
-    {
-        return $this->pDereferenceLhs($node->var) . '?->' . $this->pObjectProperty($node->name)
-            . '(' . $this->pMaybeMultiline($node->args) . ')';
-    }
-
     protected function pExpr_StaticCall(Expr\StaticCall $node)
     {
         return $this->pDereferenceLhs($node->class) . '::'
@@ -680,11 +674,6 @@ class Standard extends PrettyPrinterAbstract
     protected function pExpr_PropertyFetch(Expr\PropertyFetch $node)
     {
         return $this->pDereferenceLhs($node->var) . '->' . $this->pObjectProperty($node->name);
-    }
-
-    protected function pExpr_NullsafePropertyFetch(Expr\NullsafePropertyFetch $node)
-    {
-        return $this->pDereferenceLhs($node->var) . '?->' . $this->pObjectProperty($node->name);
     }
 
     protected function pExpr_StaticPropertyFetch(Expr\StaticPropertyFetch $node)

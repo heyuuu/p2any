@@ -9478,8 +9478,7 @@ class Php7 extends ParserAbstract
                     $this->startAttributeStack[$stackPos - (4 - 1)] + $this->endAttributes);
             },
             538 => function ($stackPos) {
-                $this->semValue = new Expr\NullsafeMethodCall($this->semStack[$stackPos - (4 - 1)], $this->semStack[$stackPos - (4 - 3)], $this->semStack[$stackPos - (4 - 4)],
-                    $this->startAttributeStack[$stackPos - (4 - 1)] + $this->endAttributes);
+                $this->emitNotSupportedError('NullsafeMethodCall (8.0)');
             },
             539 => function ($stackPos) {
                 $this->semValue = null;
@@ -9498,8 +9497,7 @@ class Php7 extends ParserAbstract
                     $this->startAttributeStack[$stackPos - (3 - 1)] + $this->endAttributes);
             },
             544 => function ($stackPos) {
-                $this->semValue = new Expr\NullsafePropertyFetch($this->semStack[$stackPos - (3 - 1)], $this->semStack[$stackPos - (3 - 3)],
-                    $this->startAttributeStack[$stackPos - (3 - 1)] + $this->endAttributes);
+                $this->emitNotSupportedError('NullsafePropertyFetch (8.0)');
             },
             545 => function ($stackPos) {
                 $this->semValue = $this->semStack[$stackPos - (1 - 1)];
@@ -9539,8 +9537,7 @@ class Php7 extends ParserAbstract
                     $this->startAttributeStack[$stackPos - (3 - 1)] + $this->endAttributes);
             },
             555 => function ($stackPos) {
-                $this->semValue = new Expr\NullsafePropertyFetch($this->semStack[$stackPos - (3 - 1)], $this->semStack[$stackPos - (3 - 3)],
-                    $this->startAttributeStack[$stackPos - (3 - 1)] + $this->endAttributes);
+                $this->emitNotSupportedError('NullsafePropertyFetch (8.0)');
             },
             556 => function ($stackPos) {
                 $this->semValue = new Expr\StaticPropertyFetch($this->semStack[$stackPos - (3 - 1)], $this->semStack[$stackPos - (3 - 3)],
@@ -9655,8 +9652,7 @@ class Php7 extends ParserAbstract
                     $this->startAttributeStack[$stackPos - (3 - 1)] + $this->endAttributes);
             },
             588 => function ($stackPos) {
-                $this->semValue = new Expr\NullsafePropertyFetch($this->semStack[$stackPos - (3 - 1)], $this->semStack[$stackPos - (3 - 3)],
-                    $this->startAttributeStack[$stackPos - (3 - 1)] + $this->endAttributes);
+                $this->emitNotSupportedError('NullsafePropertyFetch (8.0)');
             },
             589 => function ($stackPos) {
                 $this->semValue = new Expr\Variable($this->semStack[$stackPos - (3 - 2)], $this->startAttributeStack[$stackPos - (3 - 1)] + $this->endAttributes);
