@@ -1,0 +1,13 @@
+{
+  "autoload": {
+    "psr-4": {
+      "P2Any\\": "src"
+    }
+  },
+  "require": {
+    "php": ">=7.0",
+    "ext-tokenizer": "*",
+    "illuminate/support": "^7.30",
+    "symfony/finder": "^5.4"
+  }
+}
