@@ -9,27 +9,30 @@ class Instanceof_ extends Expr
 {
     /** @var Expr Expression */
     public $expr;
-    /** @var Name|Expr Class name */
+    /** @var Name Class name */
     public $class;
 
     /**
      * Constructs an instanceof check node.
      *
-     * @param Expr      $expr       Expression
-     * @param Name|Expr $class      Class name
-     * @param array     $attributes Additional attributes
+     * @param Expr  $expr       Expression
+     * @param Name  $class      Class name
+     * @param array $attributes Additional attributes
      */
-    public function __construct(Expr $expr, $class, array $attributes = []) {
+    public function __construct(Expr $expr, Name $class, array $attributes = [])
+    {
         $this->attributes = $attributes;
-        $this->expr = $expr;
-        $this->class = $class;
+        $this->expr       = $expr;
+        $this->class      = $class;
     }
 
-    public function getSubNodeNames() : array {
+    public function getSubNodeNames(): array
+    {
         return ['expr', 'class'];
     }
-    
-    public function getType() : string {
+
+    public function getType(): string
+    {
         return 'Expr_Instanceof';
     }
 }
