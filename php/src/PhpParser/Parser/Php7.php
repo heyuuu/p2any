@@ -8491,8 +8491,7 @@ class Php7 extends ParserAbstract
                     $this->semStack[$stackPos - (6 - 3)],
                     $this->semStack[$stackPos - (6 - 4)],
                     $this->semStack[$stackPos - (6 - 5)],
-                    $this->startAttributeStack[$stackPos - (6 - 1)] + $this->endAttributes, $this->semStack[$stackPos - (6 - 2)],
-                    $this->semStack[$stackPos - (6 - 1)]
+                    $this->startAttributeStack[$stackPos - (6 - 1)] + $this->endAttributes
                 );
                 $this->checkParam($this->semValue);
             },
@@ -8503,8 +8502,8 @@ class Php7 extends ParserAbstract
                     $this->semStack[$stackPos - (8 - 3)],
                     $this->semStack[$stackPos - (8 - 4)],
                     $this->semStack[$stackPos - (8 - 5)],
-                    $this->startAttributeStack[$stackPos - (8 - 1)] + $this->endAttributes,
-                    $this->semStack[$stackPos - (8 - 2)]);
+                    $this->startAttributeStack[$stackPos - (8 - 1)] + $this->endAttributes
+                );
                 $this->checkParam($this->semValue);
             },
             280 => function ($stackPos) {
@@ -8513,8 +8512,7 @@ class Php7 extends ParserAbstract
                     null, $this->semStack[$stackPos - (6 - 3)],
                     $this->semStack[$stackPos - (6 - 4)],
                     $this->semStack[$stackPos - (6 - 5)],
-                    $this->startAttributeStack[$stackPos - (6 - 1)] + $this->endAttributes,
-                    $this->semStack[$stackPos - (6 - 2)]
+                    $this->startAttributeStack[$stackPos - (6 - 1)] + $this->endAttributes
                 );
             },
             281 => function ($stackPos) {
