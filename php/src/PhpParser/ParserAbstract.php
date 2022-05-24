@@ -17,7 +17,6 @@ use P2Any\PhpParser\Node\Scalar\String_;
 use P2Any\PhpParser\Node\Stmt\Class_;
 use P2Any\PhpParser\Node\Stmt\ClassConst;
 use P2Any\PhpParser\Node\Stmt\ClassMethod;
-use P2Any\PhpParser\Node\Stmt\Enum_;
 use P2Any\PhpParser\Node\Stmt\Interface_;
 use P2Any\PhpParser\Node\Stmt\Namespace_;
 use P2Any\PhpParser\Node\Stmt\Property;
@@ -369,7 +368,12 @@ abstract class ParserAbstract implements Parser
 
     protected function emitError(Error $error)
     {
-        $this->errorHandler->handleError($error);
+        throw $error;
+    }
+
+    protected function emitNotSupportedError(string $feature)
+    {
+        throw new Error("This feature is not supported yet: " . $feature);
     }
 
     /**
@@ -976,12 +980,6 @@ abstract class ParserAbstract implements Parser
         $this->checkImplementedInterfaces($node->extends);
     }
 
-    protected function checkEnum(Enum_ $node, $namePos)
-    {
-        $this->checkClassName($node->name, $namePos);
-        $this->checkImplementedInterfaces($node->implements);
-    }
-
     protected function checkClassMethod(ClassMethod $node, $modifierPos)
     {
         if ($node->flags & Class_::MODIFIER_STATIC) {
@@ -1003,12 +1001,6 @@ abstract class ParserAbstract implements Parser
                     break;
             }
         }
-
-        if ($node->flags & Class_::MODIFIER_READONLY) {
-            $this->emitError(new Error(
-                sprintf('Method %s() cannot be readonly', $node->name),
-                $this->getAttributesAt($modifierPos)));
-        }
     }
 
     protected function checkClassConst(ClassConst $node, $modifierPos)
@@ -1021,11 +1013,6 @@ abstract class ParserAbstract implements Parser
         if ($node->flags & Class_::MODIFIER_ABSTRACT) {
             $this->emitError(new Error(
                 "Cannot use 'abstract' as constant modifier",
-                $this->getAttributesAt($modifierPos)));
-        }
-        if ($node->flags & Class_::MODIFIER_READONLY) {
-            $this->emitError(new Error(
-                "Cannot use 'readonly' as constant modifier",
                 $this->getAttributesAt($modifierPos)));
         }
     }

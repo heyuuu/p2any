@@ -5,7 +5,6 @@ namespace P2Any\PhpParser\Node\Expr;
 use P2Any\PhpParser\Node\Arg;
 use P2Any\PhpParser\Node\Expr;
 use P2Any\PhpParser\Node\Identifier;
-use P2Any\PhpParser\Node\VariadicPlaceholder;
 
 class MethodCall extends CallLike
 {
@@ -13,33 +12,37 @@ class MethodCall extends CallLike
     public $var;
     /** @var Identifier|Expr Method name */
     public $name;
-    /** @var array<Arg|VariadicPlaceholder> Arguments */
+    /** @var array<Arg> Arguments */
     public $args;
 
     /**
      * Constructs a function call node.
      *
-     * @param Expr                           $var        Variable holding object
-     * @param string|Identifier|Expr         $name       Method name
-     * @param array<Arg|VariadicPlaceholder> $args       Arguments
-     * @param array                          $attributes Additional attributes
+     * @param Expr                   $var        Variable holding object
+     * @param string|Identifier|Expr $name       Method name
+     * @param array<Arg>             $args       Arguments
+     * @param array                  $attributes Additional attributes
      */
-    public function __construct(Expr $var, $name, array $args = [], array $attributes = []) {
-        $this->attributes = $attributes;
-        $this->var = $var;
+    public function __construct(Expr $var, $name, array $args = [], array $attributes = [])
+    {
+        parent::__construct($attributes);
+        $this->var  = $var;
         $this->name = \is_string($name) ? new Identifier($name) : $name;
         $this->args = $args;
     }
 
-    public function getSubNodeNames() : array {
+    public function getSubNodeNames(): array
+    {
         return ['var', 'name', 'args'];
     }
-    
-    public function getType() : string {
+
+    public function getType(): string
+    {
         return 'Expr_MethodCall';
     }
 
-    public function getRawArgs(): array {
+    public function getArgs(): array
+    {
         return $this->args;
     }
 }

@@ -33,10 +33,6 @@ class Standard extends PrettyPrinterAbstract
              . $this->p($node->value);
     }
 
-    protected function pVariadicPlaceholder(Node\VariadicPlaceholder $node) {
-        return '...';
-    }
-
     protected function pConst(Node\Const_ $node) {
         return $node->name . ' = ' . $this->p($node->value);
     }
@@ -47,10 +43,6 @@ class Standard extends PrettyPrinterAbstract
 
     protected function pUnionType(Node\UnionType $node) {
         return $this->pImplode($node->types, '|');
-    }
-
-    protected function pIntersectionType(Node\IntersectionType $node) {
-        return $this->pImplode($node->types, '&');
     }
 
     protected function pIdentifier(Node\Identifier $node) {
@@ -735,14 +727,6 @@ class Standard extends PrettyPrinterAbstract
              . $this->nl . '{' . $this->pStmts($node->stmts) . $this->nl . '}';
     }
 
-    protected function pStmt_Enum(Stmt\Enum_ $node) {
-        return $this->pAttrGroups($node->attrGroups)
-             . 'enum ' . $node->name
-             . ($node->scalarType ? " : $node->scalarType" : '')
-             . (!empty($node->implements) ? ' implements ' . $this->pCommaSeparated($node->implements) : '')
-             . $this->nl . '{' . $this->pStmts($node->stmts) . $this->nl . '}';
-    }
-
     protected function pStmt_Class(Stmt\Class_ $node) {
         return $this->pClassCommon($node, ' ' . $node->name);
     }
@@ -751,13 +735,6 @@ class Standard extends PrettyPrinterAbstract
         return $this->pAttrGroups($node->attrGroups)
              . 'trait ' . $node->name
              . $this->nl . '{' . $this->pStmts($node->stmts) . $this->nl . '}';
-    }
-
-    protected function pStmt_EnumCase(Stmt\EnumCase $node) {
-        return $this->pAttrGroups($node->attrGroups)
-             . 'case ' . $node->name
-             . ($node->expr ? ' = ' . $this->p($node->expr) : '')
-             . ';';
     }
 
     protected function pStmt_TraitUse(Stmt\TraitUse $node) {
