@@ -1,6 +1,5 @@
 <?php
 
-use P2Any\PhpParser\ParserFactory;
 use P2Any\Utils\FileUtil;
 use P2Any\Utils\ParserUtil;
 use P2Any\Utils\PhpFileFinder;
@@ -10,7 +9,6 @@ require_once __DIR__ . '/../vendor/autoload.php';
 $srcRoot = __DIR__ . '/../src/PhpParser/';
 $dstRoot = __DIR__ . '/../../runtime/php/';
 
-$parser = (new ParserFactory())->create(ParserFactory::ONLY_PHP7);
 $finder = new PhpFileFinder($srcRoot);
 /** @var \Symfony\Component\Finder\SplFileInfo $file */
 foreach ($finder as $file) {
