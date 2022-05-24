@@ -8915,8 +8915,7 @@ class Php7 extends ParserAbstract
                     $this->startAttributeStack[$stackPos - (3 - 1)] + $this->endAttributes);
             },
             394 => function ($stackPos) {
-                $this->semValue = new Expr\AssignOp\Coalesce($this->semStack[$stackPos - (3 - 1)], $this->semStack[$stackPos - (3 - 3)],
-                    $this->startAttributeStack[$stackPos - (3 - 1)] + $this->endAttributes);
+                $this->emitNotSupportedError("??= (7.4)");
             },
             395 => function ($stackPos) {
                 $this->semValue = new Expr\PostInc($this->semStack[$stackPos - (2 - 1)], $this->startAttributeStack[$stackPos - (2 - 1)] + $this->endAttributes);
@@ -9146,22 +9145,10 @@ class Php7 extends ParserAbstract
                 $this->semValue = new Expr\Throw_($this->semStack[$stackPos - (2 - 2)], $this->startAttributeStack[$stackPos - (2 - 1)] + $this->endAttributes);
             },
             459 => function ($stackPos) {
-                $this->semValue = new Expr\ArrowFunction([
-                    'static'     => false,
-                    'byRef'      => $this->semStack[$stackPos - (8 - 2)],
-                    'params'     => $this->semStack[$stackPos - (8 - 4)],
-                    'returnType' => $this->semStack[$stackPos - (8 - 6)],
-                    'expr'       => $this->semStack[$stackPos - (8 - 8)],
-                ], $this->startAttributeStack[$stackPos - (8 - 1)] + $this->endAttributes);
+                $this->emitNotSupportedError('ArrowFunction (7.4)');
             },
             460 => function ($stackPos) {
-                $this->semValue = new Expr\ArrowFunction([
-                    'static'     => true,
-                    'byRef'      => $this->semStack[$stackPos - (9 - 3)],
-                    'params'     => $this->semStack[$stackPos - (9 - 5)],
-                    'returnType' => $this->semStack[$stackPos - (9 - 7)],
-                    'expr'       => $this->semStack[$stackPos - (9 - 9)],
-                ], $this->startAttributeStack[$stackPos - (9 - 1)] + $this->endAttributes);
+                $this->emitNotSupportedError('ArrowFunction (7.4)');
             },
             461 => function ($stackPos) {
                 $this->semValue = new Expr\Closure([
@@ -9184,22 +9171,10 @@ class Php7 extends ParserAbstract
                 ], $this->startAttributeStack[$stackPos - (9 - 1)] + $this->endAttributes);
             },
             463 => function ($stackPos) {
-                $this->semValue = new Expr\ArrowFunction([
-                    'static'     => false,
-                    'byRef'      => $this->semStack[$stackPos - (9 - 3)],
-                    'params'     => $this->semStack[$stackPos - (9 - 5)],
-                    'returnType' => $this->semStack[$stackPos - (9 - 7)],
-                    'expr'       => $this->semStack[$stackPos - (9 - 9)],
-                ], $this->startAttributeStack[$stackPos - (9 - 1)] + $this->endAttributes);
+                $this->emitNotSupportedError('ArrowFunction (7.4)');
             },
             464 => function ($stackPos) {
-                $this->semValue = new Expr\ArrowFunction([
-                    'static'     => true,
-                    'byRef'      => $this->semStack[$stackPos - (10 - 4)],
-                    'params'     => $this->semStack[$stackPos - (10 - 6)],
-                    'returnType' => $this->semStack[$stackPos - (10 - 8)],
-                    'expr'       => $this->semStack[$stackPos - (10 - 10)],
-                ], $this->startAttributeStack[$stackPos - (10 - 1)] + $this->endAttributes);
+                $this->emitNotSupportedError('ArrowFunction (7.4)');
             },
             465 => function ($stackPos) {
                 $this->semValue = new Expr\Closure([

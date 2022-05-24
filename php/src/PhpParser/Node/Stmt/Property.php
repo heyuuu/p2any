@@ -3,9 +3,6 @@
 namespace P2Any\PhpParser\Node\Stmt;
 
 use P2Any\PhpParser\Node;
-use P2Any\PhpParser\Node\ComplexType;
-use P2Any\PhpParser\Node\Identifier;
-use P2Any\PhpParser\Node\Name;
 
 class Property extends Node\Stmt
 {
@@ -13,28 +10,24 @@ class Property extends Node\Stmt
     public $flags;
     /** @var PropertyProperty[] Properties */
     public $props;
-    /** @var null|Identifier|Name|ComplexType Type declaration */
-    public $type;
 
     /**
      * Constructs a class property list node.
      *
-     * @param int                                     $flags      Modifiers
-     * @param PropertyProperty[]                      $props      Properties
-     * @param array                                   $attributes Additional attributes
-     * @param null|string|Identifier|Name|ComplexType $type       Type declaration
+     * @param int                $flags      Modifiers
+     * @param PropertyProperty[] $props      Properties
+     * @param array              $attributes Additional attributes
      */
-    public function __construct(int $flags, array $props, array $attributes = [], $type = null)
+    public function __construct(int $flags, array $props, array $attributes = [])
     {
         $this->attributes = $attributes;
         $this->flags      = $flags;
         $this->props      = $props;
-        $this->type       = \is_string($type) ? new Identifier($type) : $type;
     }
 
     public function getSubNodeNames(): array
     {
-        return ['flags', 'type', 'props'];
+        return ['flags', 'props'];
     }
 
     /**

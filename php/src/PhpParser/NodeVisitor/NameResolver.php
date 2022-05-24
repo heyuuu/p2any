@@ -95,7 +95,6 @@ class NameResolver extends NodeVisitorAbstract
             $this->addNamespacedName($node);
         } elseif ($node instanceof Stmt\ClassMethod
             || $node instanceof Expr\Closure
-            || $node instanceof Expr\ArrowFunction
         ) {
             $this->resolveSignature($node);
         } elseif ($node instanceof Stmt\Property) {
