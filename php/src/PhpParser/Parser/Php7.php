@@ -8378,7 +8378,7 @@ class Php7 extends ParserAbstract
                 $this->semValue = $this->semStack[$stackPos];
             },
             245 => function ($stackPos) {
-                $this->semValue = new Expr\Match_($this->semStack[$stackPos - (7 - 3)], $this->semStack[$stackPos - (7 - 6)], $this->startAttributeStack[$stackPos - (7 - 1)] + $this->endAttributes);
+                $this->emitNotSupportedError('Match (8.0)');
             },
             246 => function ($stackPos) {
                 $this->semValue = [];
@@ -8394,10 +8394,10 @@ class Php7 extends ParserAbstract
                 $this->semValue                        = $this->semStack[$stackPos - (3 - 1)];
             },
             250 => function ($stackPos) {
-                $this->semValue = new Node\MatchArm($this->semStack[$stackPos - (3 - 1)], $this->semStack[$stackPos - (3 - 3)], $this->startAttributeStack[$stackPos - (3 - 1)] + $this->endAttributes);
+                $this->emitNotSupportedError('Match (8.0)');
             },
             251 => function ($stackPos) {
-                $this->semValue = new Node\MatchArm(null, $this->semStack[$stackPos - (4 - 4)], $this->startAttributeStack[$stackPos - (4 - 1)] + $this->endAttributes);
+                $this->emitNotSupportedError('Match (8.0)');
             },
             252 => function ($stackPos) {
                 $this->semValue = is_array($this->semStack[$stackPos - (1 - 1)]) ? $this->semStack[$stackPos - (1 - 1)] : [$this->semStack[$stackPos - (1 - 1)]];
