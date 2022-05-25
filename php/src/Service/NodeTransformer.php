@@ -108,7 +108,7 @@ class NodeTransformer extends NodeTransformerAbstract
         $traitUses      = $node->getTraitUses();
         $classConstants = $this->pClassConstants($node->getConstants());
         $properties     = $node->getProperties();
-        $methods        = $node->getMethods();
+        $methods        = $this->pMethods($node->getMethods());
 
         // todo 类定义
         return new Fragment\Decl\ClassDecl($flags, $name);
@@ -124,7 +124,7 @@ class NodeTransformer extends NodeTransformerAbstract
 
         // stmts
         $classConstants = $this->pClassConstants($node->getConstants());
-        $methods        = $node->getMethods();
+        $methods        = $this->pMethods($node->getMethods());
 
         // todo interface 定义
         return new Fragment\Decl\InterfaceDecl($name);
@@ -152,6 +152,28 @@ class NodeTransformer extends NodeTransformerAbstract
         return $result;
     }
 
+    protected function pMethods(array $methods): array
+    {
+        Assert::allIsInstanceOf($methods, Node\Stmt\ClassMethod::class);
+
+        return collect($methods)->map(function (Node\Stmt\ClassMethod $method) {
+            $flags = $method->flags;
+            $byRef = $method->byRef;
+            $name  = $method->name->name;
+            // $params = $method->params
+
+            $stmts = $method->stmts !== null ? $this->pStmtList($method->stmts) : null;
+
+            return new Fragment\Decl\Part\Method();
+        })->all();
+    }
+
+    protected function pType(Node\Expr $type)
+    {
+    }
+
+
+
     ##############################
     # Stmt
     ##############################
@@ -159,6 +181,11 @@ class NodeTransformer extends NodeTransformerAbstract
     ##############################
     # Expr
     ##############################
+
+    protected function visitStmtExpression(Node\Stmt\Expression $node): ?Fragment\Stmt
+    {
+        throw new TodoException('TODO NodeTransformer::visitStmtExpression', $node);
+    }
 
     protected function visitScalar(Node\Scalar $node): Fragment\Expr
     {
