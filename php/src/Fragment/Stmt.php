@@ -2,6 +2,8 @@
 
 namespace P2Any\Fragment;
 
-interface Stmt
+use P2Any\Fragment;
+
+interface Stmt extends Fragment
 {
 }

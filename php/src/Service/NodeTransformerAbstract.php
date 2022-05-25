@@ -15,17 +15,32 @@ abstract class NodeTransformerAbstract
     protected static $visitMethods     = [];
     protected static $skipTypes        = [];
     protected static $unsupportedTypes = [];
+    
+    /**
+     * @var NodeTransformerContext
+     */
+    protected $context;
+
+    /**
+     * @param string $file
+     * @param array  $nodes
+     * @return array
+     */
+    public function visitAst(string $file, array $nodes): array
+    {
+        $this->context = new NodeTransformerContext($file);
+    }
 
     /**
      * @param Node[] $nodes
      *
      * @return Fragment[]
      */
-    public function visitList(array $nodes): array
+    public function visitList(array $nodes, string $class = Fragment::class): array
     {
         Assert::isList($nodes);
         Assert::allIsInstanceOf($nodes, Node::class);
-        return collect($nodes)->flatMap(function (Node $node) {
+        $result = collect($nodes)->flatMap(function (Node $node) {
             $fragment = $this->visit($node);
             if ($fragment === null) {
                 return [];
@@ -35,9 +50,13 @@ abstract class NodeTransformerAbstract
                 return $fragment;
             }
         })->all();
+
+        Assert::allIsInstanceOf($result, $class, sprintf("visitList 结果类型不匹配，预期类型为 %s[]", $class));
+
+        return $result;
     }
 
-    public function visit(Node $node): ?Fragment
+    public function visit(Node $node, string $class = Fragment::class): ?Fragment
     {
         $nodeClass = get_class($node);
         if (self::isSkipType($nodeClass)) {
@@ -50,7 +69,12 @@ abstract class NodeTransformerAbstract
         if ($method === null) {
             throw new TodoException('此 Node 类型未定义处理函数: ' . $nodeClass);
         }
-        return $this->{$method}($node);
+
+        $result = $this->{$method}($node);
+
+        Assert::nullOrIsInstanceOf($result, $class, sprintf("visit 结果预期类型为 %s, 实际为 %s", $class, get_class($result)));
+
+        return $result;
     }
 
     public static function calcVisitMethod(string $class): string

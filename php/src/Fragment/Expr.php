@@ -2,6 +2,8 @@
 
 namespace P2Any\Fragment;
 
-interface Expr
+use P2Any\Fragment;
+
+interface Expr extends Fragment
 {
 }

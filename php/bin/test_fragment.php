@@ -18,7 +18,7 @@ $transformer = new NodeTransformerGenerate();
 foreach ($finder as $file) {
     printf("Handle file: %s\n", $file->getRelativePathname());
     $dstFile   = $dstRoot . $file->getRelativePathname();
-    $ast       = ParserUtil::parse($file->getContents());
+    $ast       = ParserUtil::parse($file->getContents(), true);
     $fragments = $transformer->visitList($ast);
 
     FileUtil::saveJsonFile($dstFile, $fragments);

@@ -13,7 +13,7 @@ class NodeTransformerGenerate extends NodeTransformer
     protected function <?= $methodName ?>(<?=$nodeType?> $node): <?=$fragmentType?>
 
     {
-        throw new TodoException("TODO NodeTransformer::<?= $methodName ?>");
+        throw new TodoException('TODO NodeTransformer::<?= $methodName ?>');
     }
 
 <?php endforeach; ?>
