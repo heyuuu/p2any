@@ -3,6 +3,7 @@
 namespace P2Any\Service;
 
 use P2Any\Exception\LogicException;
+use P2Any\Exception\TodoException;
 use P2Any\Fragment;
 use P2Any\PhpParser\Node;
 use P2Any\Service\NodeTransformer\ParsingExpr;
@@ -208,5 +209,15 @@ class NodeTransformer extends NodeTransformerAbstract
         } else {
             throw new LogicException("预期外的 MagicConst 类: " . get_class($node));
         }
+    }
+
+    protected function visitExprUnaryPlus(Node\Expr\UnaryPlus $node): ?Fragment\Expr
+    {
+        return Fragment\Expr\Unary::plus($this->pExpr($node->expr));
+    }
+
+    protected function visitExprUnaryMinus(Node\Expr\UnaryMinus $node): ?Fragment\Expr
+    {
+        return Fragment\Expr\Unary::minus($this->pExpr($node->expr));
     }
 }
