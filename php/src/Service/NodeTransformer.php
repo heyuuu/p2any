@@ -3,10 +3,10 @@
 namespace P2Any\Service;
 
 use P2Any\Exception\LogicException;
+use P2Any\Exception\FeatureNotSupportException;
 use P2Any\Exception\TodoException;
 use P2Any\Fragment;
 use P2Any\PhpParser\Node;
-use P2Any\Service\NodeTransformer\ParsingExpr;
 use P2Any\Service\NodeTransformer\TempListFragment;
 use Webmozart\Assert\Assert;
 
@@ -17,7 +17,12 @@ class NodeTransformer extends NodeTransformerAbstract
         Node\Stmt\Use_::class       => true,
         Node\Stmt\ClassConst::class => true,
     ];
-    protected static $unsupportedTypes = [];
+    protected static $unsupportedTypes = [
+        Node\Expr\ShellExec::class => true,
+        Node\Expr\Throw_::class    => true,
+        Node\Expr\Error::class     => true,
+        Node\Expr\Eval_::class     => true,
+    ];
 
     /**
      * @param Node\Expr $node
@@ -25,8 +30,16 @@ class NodeTransformer extends NodeTransformerAbstract
      */
     private function pExpr(Node\Expr $node): Fragment\Expr
     {
-        // return new ParsingExpr($node);
         return $this->visit($node, Fragment\Expr::class);
+    }
+
+    /**
+     * @param Node\Expr|null $node
+     * @return Fragment\Expr|null
+     */
+    private function pExprOrNull(?Node\Expr $node): ?Fragment\Expr
+    {
+        return $node !== null ? $this->pExpr($node) : null;
     }
 
     /**
@@ -45,7 +58,6 @@ class NodeTransformer extends NodeTransformerAbstract
      */
     private function pStmt(Node\Expr $node): Fragment\Stmt
     {
-        // return new ParsingStmt($node);
         return $this->visit($node, Fragment\Expr::class);
     }
 
@@ -60,20 +72,81 @@ class NodeTransformer extends NodeTransformerAbstract
     }
 
     // special node
-    private function pName(Node\Name $node): string
+    private function pName(Node\Name $node): Fragment\Name
     {
-        return $node->toCodeString();
+        // todo
+        var_dump("Name 类型: " . get_class($node));
+
+        return new Fragment\Name($node->toCodeString());
     }
 
-    private function pNameOrNull(?Node\Name $node): ?string
+    private function pNameOrNull(?Node\Name $node): ?Fragment\Name
     {
-        return $node ? $node->toCodeString() : null;
+        return $node ? $this->pName($node) : null;
     }
 
+    /**
+     * @param Node\Name[] $nodes
+     * @return Fragment\Name[]
+     */
     private function pNameList(array $nodes): array
     {
         Assert::allIsInstanceOf($nodes, Node\Name::class);
         return array_map([$this, 'pName'], $nodes);
+    }
+
+    private function pIdentifier(Node\Identifier $node): Fragment\Identifier
+    {
+        return new Fragment\Identifier($node->name);
+    }
+
+    private function pArg(Node\Arg $node): Fragment\Arg
+    {
+        return new Fragment\Arg(
+            $this->pExpr($node->value),
+            $node->byRef,
+            $node->unpack
+        );
+    }
+
+    /**
+     * @param Node\Arg[] $nodes
+     * @return Fragment\Arg[]
+     */
+    private function pArgList(array $nodes): array
+    {
+        return array_map([$this, 'pArg'], $nodes);
+    }
+
+    private function pParam(Node\Param $node): Fragment\Param
+    {
+        Assert::string($node->var->name, "Param->var->name 类型不能是 Expr");
+
+        return new Fragment\Param(
+            new Fragment\Identifier($node->var->name),
+            $this->pTypeOrNull($node->type),
+            $this->pExpr($node->default),
+            $node->byRef,
+            $node->variadic
+        );
+    }
+
+    private function pType(Node $node): Fragment\TypeHint
+    {
+        if ($node instanceof Node\NullableType) {
+            return $this->pType($node->type)->withNullable(true);
+        } elseif ($node instanceof Node\Identifier) {
+            return new Fragment\TypeHint($node->name);
+        } elseif ($node instanceof Node\Name) {
+            return new Fragment\TypeHint($node->toCodeString());
+        } else {
+            throw new LogicException("预期外的 TypeHint 类: " . get_class($node));
+        }
+    }
+
+    private function pTypeOrNull(?Node $node): ?Fragment\TypeHint
+    {
+        return $node !== null ? $this->pType($node) : null;
     }
 
     //
@@ -168,24 +241,18 @@ class NodeTransformer extends NodeTransformerAbstract
         })->all();
     }
 
-    protected function pType(Node\Expr $type)
-    {
-    }
-
-
-
     ##############################
     # Stmt
     ##############################
 
+    protected function visitStmtExpression(Node\Stmt\Expression $node): ?Fragment\Stmt
+    {
+        return new Fragment\Stmt\ExprStmt($this->pExpr($node->expr));
+    }
+
     ##############################
     # Expr
     ##############################
-
-    protected function visitStmtExpression(Node\Stmt\Expression $node): ?Fragment\Stmt
-    {
-        throw new TodoException('TODO NodeTransformer::visitStmtExpression', $node);
-    }
 
     protected function visitScalar(Node\Scalar $node): Fragment\Expr
     {
@@ -238,6 +305,119 @@ class NodeTransformer extends NodeTransformerAbstract
         }
     }
 
+    protected function visitExprAssignOp(Node\Expr\AssignOp $node): Fragment\Expr\AssignOp
+    {
+        if ($node instanceof Node\Expr\AssignOp\BitwiseAnd) {
+            return Fragment\Expr\AssignOp::BitwiseAnd($this->pExpr($node->var), $this->pExpr($node->expr));
+        } elseif ($node instanceof Node\Expr\AssignOp\BitwiseOr) {
+            return Fragment\Expr\AssignOp::BitwiseOr($this->pExpr($node->var), $this->pExpr($node->expr));
+        } elseif ($node instanceof Node\Expr\AssignOp\BitwiseXor) {
+            return Fragment\Expr\AssignOp::BitwiseXor($this->pExpr($node->var), $this->pExpr($node->expr));
+        } elseif ($node instanceof Node\Expr\AssignOp\Concat) {
+            return Fragment\Expr\AssignOp::Concat($this->pExpr($node->var), $this->pExpr($node->expr));
+        } elseif ($node instanceof Node\Expr\AssignOp\Div) {
+            return Fragment\Expr\AssignOp::Div($this->pExpr($node->var), $this->pExpr($node->expr));
+        } elseif ($node instanceof Node\Expr\AssignOp\Minus) {
+            return Fragment\Expr\AssignOp::Minus($this->pExpr($node->var), $this->pExpr($node->expr));
+        } elseif ($node instanceof Node\Expr\AssignOp\Mod) {
+            return Fragment\Expr\AssignOp::Mod($this->pExpr($node->var), $this->pExpr($node->expr));
+        } elseif ($node instanceof Node\Expr\AssignOp\Mul) {
+            return Fragment\Expr\AssignOp::Mul($this->pExpr($node->var), $this->pExpr($node->expr));
+        } elseif ($node instanceof Node\Expr\AssignOp\Plus) {
+            return Fragment\Expr\AssignOp::Plus($this->pExpr($node->var), $this->pExpr($node->expr));
+        } elseif ($node instanceof Node\Expr\AssignOp\Pow) {
+            return Fragment\Expr\AssignOp::Pow($this->pExpr($node->var), $this->pExpr($node->expr));
+        } elseif ($node instanceof Node\Expr\AssignOp\ShiftLeft) {
+            return Fragment\Expr\AssignOp::ShiftLeft($this->pExpr($node->var), $this->pExpr($node->expr));
+        } elseif ($node instanceof Node\Expr\AssignOp\ShiftRight) {
+            return Fragment\Expr\AssignOp::ShiftRight($this->pExpr($node->var), $this->pExpr($node->expr));
+        } else {
+            throw new LogicException("预期外的 AssignOp 类: " . get_class($node));
+        }
+    }
+
+    protected function visitExprBinaryOp(Node\Expr\BinaryOp $node): Fragment\Expr\BinaryOp
+    {
+        if ($node instanceof Node\Expr\BinaryOp\BitwiseAnd) {
+            return Fragment\Expr\BinaryOp::BitwiseAnd($this->pExpr($node->left), $this->pExpr($node->right));
+        } elseif ($node instanceof Node\Expr\BinaryOp\BitwiseOr) {
+            return Fragment\Expr\BinaryOp::BitwiseOr($this->pExpr($node->left), $this->pExpr($node->right));
+        } elseif ($node instanceof Node\Expr\BinaryOp\BitwiseXor) {
+            return Fragment\Expr\BinaryOp::BitwiseXor($this->pExpr($node->left), $this->pExpr($node->right));
+        } elseif ($node instanceof Node\Expr\BinaryOp\BooleanAnd) {
+            return Fragment\Expr\BinaryOp::BooleanAnd($this->pExpr($node->left), $this->pExpr($node->right));
+        } elseif ($node instanceof Node\Expr\BinaryOp\BooleanOr) {
+            return Fragment\Expr\BinaryOp::BooleanOr($this->pExpr($node->left), $this->pExpr($node->right));
+        } elseif ($node instanceof Node\Expr\BinaryOp\Coalesce) {
+            return Fragment\Expr\BinaryOp::Coalesce($this->pExpr($node->left), $this->pExpr($node->right));
+        } elseif ($node instanceof Node\Expr\BinaryOp\Concat) {
+            return Fragment\Expr\BinaryOp::Concat($this->pExpr($node->left), $this->pExpr($node->right));
+        } elseif ($node instanceof Node\Expr\BinaryOp\Div) {
+            return Fragment\Expr\BinaryOp::Div($this->pExpr($node->left), $this->pExpr($node->right));
+        } elseif ($node instanceof Node\Expr\BinaryOp\Equal) {
+            return Fragment\Expr\BinaryOp::Equal($this->pExpr($node->left), $this->pExpr($node->right));
+        } elseif ($node instanceof Node\Expr\BinaryOp\Greater) {
+            return Fragment\Expr\BinaryOp::Greater($this->pExpr($node->left), $this->pExpr($node->right));
+        } elseif ($node instanceof Node\Expr\BinaryOp\GreaterOrEqual) {
+            return Fragment\Expr\BinaryOp::GreaterOrEqual($this->pExpr($node->left), $this->pExpr($node->right));
+        } elseif ($node instanceof Node\Expr\BinaryOp\Identical) {
+            return Fragment\Expr\BinaryOp::Identical($this->pExpr($node->left), $this->pExpr($node->right));
+        } elseif ($node instanceof Node\Expr\BinaryOp\LogicalAnd) {
+            return Fragment\Expr\BinaryOp::LogicalAnd($this->pExpr($node->left), $this->pExpr($node->right));
+        } elseif ($node instanceof Node\Expr\BinaryOp\LogicalOr) {
+            return Fragment\Expr\BinaryOp::LogicalOr($this->pExpr($node->left), $this->pExpr($node->right));
+        } elseif ($node instanceof Node\Expr\BinaryOp\LogicalXor) {
+            return Fragment\Expr\BinaryOp::LogicalXor($this->pExpr($node->left), $this->pExpr($node->right));
+        } elseif ($node instanceof Node\Expr\BinaryOp\Minus) {
+            return Fragment\Expr\BinaryOp::Minus($this->pExpr($node->left), $this->pExpr($node->right));
+        } elseif ($node instanceof Node\Expr\BinaryOp\Mod) {
+            return Fragment\Expr\BinaryOp::Mod($this->pExpr($node->left), $this->pExpr($node->right));
+        } elseif ($node instanceof Node\Expr\BinaryOp\Mul) {
+            return Fragment\Expr\BinaryOp::Mul($this->pExpr($node->left), $this->pExpr($node->right));
+        } elseif ($node instanceof Node\Expr\BinaryOp\NotEqual) {
+            return Fragment\Expr\BinaryOp::NotEqual($this->pExpr($node->left), $this->pExpr($node->right));
+        } elseif ($node instanceof Node\Expr\BinaryOp\NotIdentical) {
+            return Fragment\Expr\BinaryOp::NotIdentical($this->pExpr($node->left), $this->pExpr($node->right));
+        } elseif ($node instanceof Node\Expr\BinaryOp\Plus) {
+            return Fragment\Expr\BinaryOp::Plus($this->pExpr($node->left), $this->pExpr($node->right));
+        } elseif ($node instanceof Node\Expr\BinaryOp\Pow) {
+            return Fragment\Expr\BinaryOp::Pow($this->pExpr($node->left), $this->pExpr($node->right));
+        } elseif ($node instanceof Node\Expr\BinaryOp\ShiftLeft) {
+            return Fragment\Expr\BinaryOp::ShiftLeft($this->pExpr($node->left), $this->pExpr($node->right));
+        } elseif ($node instanceof Node\Expr\BinaryOp\ShiftRight) {
+            return Fragment\Expr\BinaryOp::ShiftRight($this->pExpr($node->left), $this->pExpr($node->right));
+        } elseif ($node instanceof Node\Expr\BinaryOp\Smaller) {
+            return Fragment\Expr\BinaryOp::Smaller($this->pExpr($node->left), $this->pExpr($node->right));
+        } elseif ($node instanceof Node\Expr\BinaryOp\SmallerOrEqual) {
+            return Fragment\Expr\BinaryOp::SmallerOrEqual($this->pExpr($node->left), $this->pExpr($node->right));
+        } elseif ($node instanceof Node\Expr\BinaryOp\Spaceship) {
+            return Fragment\Expr\BinaryOp::Spaceship($this->pExpr($node->left), $this->pExpr($node->right));
+        } else {
+            throw new LogicException("预期外的 BinaryOp 类: " . get_class($node));
+        }
+    }
+
+    protected function visitExprCast(Node\Expr\Cast $node): ?Fragment\Expr
+    {
+        if ($node instanceof Node\Expr\Cast\Array_) {
+            return Fragment\Expr\Cast::array($this->pExpr($node->expr));
+        } elseif ($node instanceof Node\Expr\Cast\Bool_) {
+            return Fragment\Expr\Cast::bool($this->pExpr($node->expr));
+        } elseif ($node instanceof Node\Expr\Cast\Double) {
+            return Fragment\Expr\Cast::double($this->pExpr($node->expr));
+        } elseif ($node instanceof Node\Expr\Cast\Int_) {
+            return Fragment\Expr\Cast::int($this->pExpr($node->expr));
+        } elseif ($node instanceof Node\Expr\Cast\Object_) {
+            return Fragment\Expr\Cast::object($this->pExpr($node->expr));
+        } elseif ($node instanceof Node\Expr\Cast\String_) {
+            return Fragment\Expr\Cast::string($this->pExpr($node->expr));
+        } elseif ($node instanceof Node\Expr\Cast\Unset_) {
+            throw FeatureNotSupportException::deprecated("(unset) cast");
+        } else {
+            throw new LogicException("预期外的 Cast 类: " . get_class($node));
+        }
+    }
+
     protected function visitExprUnaryPlus(Node\Expr\UnaryPlus $node): ?Fragment\Expr
     {
         return Fragment\Expr\Unary::plus($this->pExpr($node->expr));
@@ -246,5 +426,254 @@ class NodeTransformer extends NodeTransformerAbstract
     protected function visitExprUnaryMinus(Node\Expr\UnaryMinus $node): ?Fragment\Expr
     {
         return Fragment\Expr\Unary::minus($this->pExpr($node->expr));
+    }
+
+    protected function visitExprAssign(Node\Expr\Assign $node): ?Fragment\Expr
+    {
+        return new Fragment\Expr\Assign($this->pExpr($node->var), $this->pExpr($node->expr));
+    }
+
+    protected function visitExprArrayDimFetch(Node\Expr\ArrayDimFetch $node): ?Fragment\Expr
+    {
+        return new Fragment\Expr\ArrayDimFetch(
+            $this->pExpr($node->var),
+            $node->dim !== null ? $this->pExpr($node->dim) : null
+        );
+    }
+
+    protected function visitExprPropertyFetch(Node\Expr\PropertyFetch $node): ?Fragment\Expr
+    {
+        if (!($node->name instanceof Node\Identifier)) {
+            var_dump($node);
+            throw new TodoException("PropertyFetch 的 name 非 Identifier 对象");
+        }
+        return new Fragment\Expr\PropertyFetch(
+            $this->pExpr($node->var),
+            $this->pIdentifier($node->name)
+        );
+    }
+
+    protected function visitExprStaticCall(Node\Expr\StaticCall $node): ?Fragment\Expr
+    {
+        if (!($node->class instanceof Node\Name)) {
+            var_dump($node);
+            throw new TodoException("StaticCall 的 name 非 Name 对象");
+        }
+        if (!($node->name instanceof Node\Identifier)) {
+            var_dump($node);
+            throw new TodoException("StaticCall 的 name 非 Identifier 对象");
+        }
+
+        return new Fragment\Expr\StaticCall(
+            $this->pName($node->class),
+            $this->pIdentifier($node->name)
+        );
+    }
+
+    protected function visitExprAssignRef(Node\Expr\AssignRef $node): ?Fragment\Expr
+    {
+        return new Fragment\Expr\AssignRef(
+            $this->pExpr($node->var),
+            $this->pExpr($node->expr)
+        );
+    }
+
+    protected function visitExprBitwiseNot(Node\Expr\BitwiseNot $node): ?Fragment\Expr
+    {
+        return new Fragment\Expr\BitwiseNot(
+            $this->pExpr($node->expr)
+        );
+    }
+
+    protected function visitExprBooleanNot(Node\Expr\BooleanNot $node): ?Fragment\Expr
+    {
+        return new Fragment\Expr\BooleanNot(
+            $this->pExpr($node->expr)
+        );
+    }
+
+    protected function visitExprClassConstFetch(Node\Expr\ClassConstFetch $node): ?Fragment\Expr
+    {
+        if (!($node->class instanceof Node\Name)) {
+            throw new TodoException("暂未支持 ClassConstFetch->class 不为 Name 的情况");
+        }
+        if (!($node->name instanceof Node\Identifier)) {
+            throw new TodoException("暂未支持 ClassConstFetch->class 不为 Name 的情况");
+        }
+
+        return new Fragment\Expr\ClassConstFetch(
+            $this->pName($node->class),
+            $this->pIdentifier($node->name)
+        );
+    }
+
+    protected function visitExprClone(Node\Expr\Clone_ $node): ?Fragment\Expr
+    {
+        return new Fragment\Expr\Clone_($this->pExpr($node->expr));
+    }
+
+    protected function visitExprConstFetch(Node\Expr\ConstFetch $node): ?Fragment\Expr
+    {
+        return new Fragment\Expr\ConstFetch($this->pName($node->name));
+    }
+
+    protected function visitExprEmpty(Node\Expr\Empty_ $node): ?Fragment\Expr
+    {
+        return new Fragment\Expr\Empty_($this->pExpr($node->expr));
+    }
+
+    protected function visitExprExit(Node\Expr\Exit_ $node): ?Fragment\Expr
+    {
+        return new Fragment\Expr\Exit_($this->pExprOrNull($node->expr));
+    }
+
+    protected function visitExprFuncCall(Node\Expr\FuncCall $node): ?Fragment\Expr
+    {
+        if (!($node->name instanceof Node\Name)) {
+            throw new TodoException("暂未支持 FuncCall->name 不为 Name 的情况");
+        }
+
+        return new Fragment\Expr\FuncCall(
+            $this->pName($node->name),
+            $this->pArgList($node->args)
+        );
+    }
+
+    protected function visitExprInclude(Node\Expr\Include_ $node): ?Fragment\Expr
+    {
+        throw new TodoException('暂不支持 include/require 相关功能', $node);
+
+        return new Fragment\Expr\Include_(
+            $this->pExpr($node->expr),
+            $node->type
+        );
+    }
+
+    protected function visitExprInstanceof(Node\Expr\Instanceof_ $node): ?Fragment\Expr
+    {
+        if (!($node->class instanceof Node\Name)) {
+            throw new TodoException("暂未支持 Instanceof->class 不为 Name 的情况");
+        }
+
+        return new Fragment\Expr\Instanceof_($this->pExpr($node->expr), $this->pName($node->class));
+    }
+
+    protected function visitExprIsset(Node\Expr\Isset_ $node): ?Fragment\Expr
+    {
+        return new Fragment\Expr\Isset_(
+            $this->pExprList($node->vars)
+        );
+    }
+
+    protected function visitExprList(Node\Expr\List_ $node): ?Fragment\Expr
+    {
+        $items = array_map(function (?Node\Expr\ArrayItem $arrayItem) {
+            return $arrayItem ? $this->pArrayItem($arrayItem) : null;
+        }, $node->items);
+
+        return new Fragment\Expr\List_($items);
+    }
+
+    protected function visitExprMethodCall(Node\Expr\MethodCall $node): ?Fragment\Expr
+    {
+        if (!($node->name instanceof Node\Identifier)) {
+            throw new TodoException("暂未支持 MethodCall->name 不为 Identifier 的情况");
+        }
+
+        return new Fragment\Expr\MethodCall(
+            $this->pExpr($node->var),
+            $this->pIdentifier($node->name),
+            $this->pArgList($node->args)
+        );
+    }
+
+    protected function visitExprPostDec(Node\Expr\PostDec $node): ?Fragment\Expr
+    {
+        return new Fragment\Expr\PostDec($this->pExpr($node->var));
+    }
+
+    protected function visitExprPostInc(Node\Expr\PostInc $node): ?Fragment\Expr
+    {
+        return new Fragment\Expr\PostInc($this->pExpr($node->var));
+    }
+
+    protected function visitExprPreDec(Node\Expr\PreDec $node): ?Fragment\Expr
+    {
+        return new Fragment\Expr\PreDec($this->pExpr($node->var));
+    }
+
+    protected function visitExprPreInc(Node\Expr\PreInc $node): ?Fragment\Expr
+    {
+        return new Fragment\Expr\PreInc($this->pExpr($node->var));
+    }
+
+    protected function visitExprPrint(Node\Expr\Print_ $node): ?Fragment\Expr
+    {
+        return new Fragment\Expr\Print_($this->pExpr($node->expr));
+    }
+
+    protected function visitExprStaticPropertyFetch(Node\Expr\StaticPropertyFetch $node): ?Fragment\Expr
+    {
+        if (!($node->class instanceof Node\Name)) {
+            throw new TodoException("暂未支持 StaticPropertyFetch->class 不为 Name 的情况");
+        }
+        if (!($node->name instanceof Node\VarLikeIdentifier)) {
+            throw new TodoException("暂未支持 StaticPropertyFetch->name 不为 VarLikeIdentifier 的情况");
+        }
+
+        return new Fragment\Expr\StaticPropertyFetch(
+            $this->pName($node->class),
+            $this->pIdentifier($node->name)
+        );
+    }
+
+    protected function visitExprTernary(Node\Expr\Ternary $node): ?Fragment\Expr
+    {
+        return new Fragment\Expr\Ternary(
+            $this->pExpr($node->cond),
+            $this->pExprOrNull($node->if),
+            $this->pExpr($node->else)
+        );
+    }
+
+    protected function visitExprVariable(Node\Expr\Variable $node): ?Fragment\Expr
+    {
+        if (!is_string($node->name)) {
+            throw new TodoException("暂不支持动态变量 (Variable 名为 Expr)");
+        }
+
+        return new Fragment\Expr\Variable(new Fragment\Identifier($node->name));
+    }
+
+    protected function visitExprYieldFrom(Node\Expr\YieldFrom $node): ?Fragment\Expr
+    {
+        return new Fragment\Expr\YieldFrom($this->pExpr($node->expr));
+    }
+
+    protected function visitExprYield(Node\Expr\Yield_ $node): ?Fragment\Expr
+    {
+        return new Fragment\Expr\Yield_($this->pExprOrNull($node->key), $this->pExprOrNull($node->value));
+    }
+
+    protected function visitExprArray(Node\Expr\Array_ $node): ?Fragment\Expr
+    {
+        Assert::allNotNull($node->items, "暂不支持 Array_ 的 item 表达式为 null");
+
+        $items = array_map([$this, 'pArrayItem'], $node->items);
+
+        return new Fragment\Expr\Array_($items);
+    }
+
+    private function pArrayItem(Node\Expr\ArrayItem $arrayItem): Fragment\Expr\Part\ArrayItem
+    {
+        if ($arrayItem->unpack === true) {
+            throw FeatureNotSupportException::highLevelFeature("Spread operators in arrays are only allowed since PHP 7.4");
+        }
+
+        return new Fragment\Expr\Part\ArrayItem(
+            $this->pExprOrNull($arrayItem->key),
+            $this->pExpr($arrayItem->value),
+            $arrayItem->byRef
+        );
     }
 }

@@ -9,6 +9,7 @@ namespace P2Any\PhpParser;
  * turn is based on work by Masato Bito.
  */
 
+use P2Any\Exception\FeatureNotSupportException;
 use P2Any\PhpParser\Node\Expr;
 use P2Any\PhpParser\Node\Expr\Cast\Double;
 use P2Any\PhpParser\Node\Name;
@@ -192,7 +193,7 @@ abstract class ParserAbstract implements Parser
 
         $this->errorState = 0;
 
-        for (;;) {
+        for (; ;) {
             //$this->traceNewState($state, $symbol);
 
             if ($this->actionBase[$state] === 0) {
@@ -262,7 +263,7 @@ abstract class ParserAbstract implements Parser
                 }
             }
 
-            for (;;) {
+            for (; ;) {
                 if ($rule === 0) {
                     /* accept */
                     //$this->traceAccept();
@@ -373,7 +374,7 @@ abstract class ParserAbstract implements Parser
 
     protected function emitNotSupportedError(string $feature)
     {
-        throw new Error('This feature is not supported yet: ' . $feature);
+        throw FeatureNotSupportException::highLevelFeature($feature);
     }
 
     /**
