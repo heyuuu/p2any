@@ -17,7 +17,9 @@ class IfStmt implements Stmt
     {
         Assert::allIsInstanceOf($branches, CondBranch::class);
         Assert::notEmpty($branches);
-        Assert::allIsInstanceOf($defaultBranch, Stmt::class);
+        if ($defaultBranch !== null) {
+            Assert::allIsInstanceOf($defaultBranch, Stmt::class);
+        }
         $this->branches      = $branches;
         $this->defaultBranch = $defaultBranch;
     }

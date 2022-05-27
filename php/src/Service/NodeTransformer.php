@@ -2,6 +2,7 @@
 
 namespace P2Any\Service;
 
+use JetBrains\PhpStorm\Internal\TentativeType;
 use P2Any\Exception\LogicException;
 use P2Any\Exception\FeatureNotSupportException;
 use P2Any\Exception\TodoException;
@@ -32,6 +33,11 @@ class NodeTransformer extends NodeTransformerAbstract
         Node\Name\FullyQualified::class => true,
         Node\NullableType::class        => true,
         Node\Expr\ArrayItem::class      => true,
+        Node\Stmt\Case_::class          => true,
+        Node\Stmt\Catch_::class         => true,
+        Node\Stmt\Finally_::class       => true,
+        Node\Stmt\ElseIf_::class        => true,
+        Node\Stmt\Else_::class          => true,
     ];
 
     /**
@@ -181,19 +187,17 @@ class NodeTransformer extends NodeTransformerAbstract
         Assert::nullOrIsInstanceOf($node->extends, Node\Name::class);
         Assert::allIsInstanceOf($node->implements, Node\Name::class);
 
-        $flags      = $node->flags;
-        $name       = $node->namespacedName->toCodeString();
-        $extends    = $this->pNameOrNull($node->extends);
-        $implements = $this->pNameList($node->implements);
-
-        // stmts
-        $traitUses      = $node->getTraitUses();
-        $classConstants = $this->pClassConstants($node->getConstants());
-        $properties     = $node->getProperties();
-        $methods        = $this->pMethods($node->getMethods());
-
         // todo 类定义
-        return new Fragment\Decl\ClassDecl($flags, $name);
+        return new Fragment\Decl\ClassDecl(
+            $this->pName($node->namespacedName),
+            $node->flags,
+            $this->pNameOrNull($node->extends),
+            $this->pNameList($node->implements),
+            $this->pClassConstants($node->getConstants()),
+            [],
+            $this->pMethods($node->getMethods()),
+            []
+        );
     }
 
     protected function visitStmtInterface(Node\Stmt\Interface_ $node): Fragment\Decl\InterfaceDecl
@@ -299,6 +303,22 @@ class NodeTransformer extends NodeTransformerAbstract
         );
     }
 
+    protected function visitStmtWhile(Node\Stmt\While_ $node): ?Fragment\Stmt
+    {
+        return Fragment\Stmt\WhileStmt::while(
+            $this->pExpr($node->cond),
+            $this->pStmtList($node->stmts)
+        );
+    }
+
+    protected function visitStmtDo(Node\Stmt\Do_ $node): ?Fragment\Stmt
+    {
+        return Fragment\Stmt\WhileStmt::doWhile(
+            $this->pExpr($node->cond),
+            $this->pStmtList($node->stmts)
+        );
+    }
+
     protected function visitStmtBreak(Node\Stmt\Break_ $node): ?Fragment\Stmt
     {
         return new Fragment\Stmt\Break_($this->pExprOrNull($node->num));
@@ -307,6 +327,60 @@ class NodeTransformer extends NodeTransformerAbstract
     protected function visitStmtContinue(Node\Stmt\Continue_ $node): ?Fragment\Stmt
     {
         return new Fragment\Stmt\Continue_($this->pExprOrNull($node->num));
+    }
+
+    protected function visitStmtSwitch(Node\Stmt\Switch_ $node): ?Fragment\Stmt
+    {
+        return new Fragment\Stmt\SwitchStmt(
+            $this->pExpr($node->cond),
+            array_map(
+                function (Node\Stmt\Case_ $case) {
+                    return new Fragment\Stmt\Part\SwitchCaseBranch(
+                        $this->pExprOrNull($case->cond),
+                        $this->pStmtList($case->stmts)
+                    );
+                },
+                $node->cases
+            )
+        );
+    }
+
+    protected function visitStmtTryCatch(Node\Stmt\TryCatch $node): ?Fragment\Stmt
+    {
+        return new Fragment\Stmt\TryCatchStmt(
+            $this->pStmtList($node->stmts),
+            array_map(
+                function (Node\Stmt\Catch_ $catch) {
+                    return new Fragment\Stmt\CatchBranch(
+                        $this->pNameList($catch->types),
+                        $this->visitExprVariable($catch->var),
+                        $this->pStmtList($catch->stmts)
+                    );
+                },
+                $node->catches
+            ),
+            $node->finally ? $this->pStmtList($node->finally->stmts) : null
+        );
+    }
+
+    protected function visitStmtLabel(Node\Stmt\Label $node): ?Fragment\Stmt
+    {
+        return new Fragment\Stmt\Label($this->pIdentifier($node->name));
+    }
+
+    protected function visitStmtGoto(Node\Stmt\Goto_ $node): ?Fragment\Stmt
+    {
+        return new Fragment\Stmt\Goto_($this->pIdentifier($node->name));
+    }
+
+    protected function visitStmtNop(Node\Stmt\Nop $node)
+    {
+        return null;
+    }
+
+    protected function visitStmtReturn(Node\Stmt\Return_ $node): ?Fragment\Stmt
+    {
+        return new Fragment\Stmt\Return_($this->pExprOrNull($node->expr));
     }
 
 
@@ -696,7 +770,7 @@ class NodeTransformer extends NodeTransformerAbstract
         );
     }
 
-    protected function visitExprVariable(Node\Expr\Variable $node): ?Fragment\Expr
+    protected function visitExprVariable(Node\Expr\Variable $node): Fragment\Expr\Variable
     {
         if (!is_string($node->name)) {
             throw new TodoException("暂不支持动态变量 (Variable 名为 Expr)");
@@ -734,6 +808,18 @@ class NodeTransformer extends NodeTransformerAbstract
             $this->pExprOrNull($arrayItem->key),
             $this->pExpr($arrayItem->value),
             $arrayItem->byRef
+        );
+    }
+
+    protected function visitExprNew(Node\Expr\New_ $node): ?Fragment\Expr
+    {
+        if (!($node->class instanceof Node\Name)) {
+            throw new TodoException("暂未支持 ExprNew->class 不为 Name 的情况");
+        }
+
+        return new Fragment\Expr\New_(
+            $this->pName($node->class),
+            $this->pArgList($node->args)
         );
     }
 }

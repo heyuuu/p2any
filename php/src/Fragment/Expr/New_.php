@@ -5,23 +5,19 @@ declare(strict_types=1);
 namespace P2Any\Fragment\Expr;
 
 use P2Any\Fragment\Arg;
-use P2Any\Fragment\Expr;
+use P2Any\Fragment\Name;
+use Webmozart\Assert\Assert;
 
 class New_ extends CallLike
 {
-    /** @var Node\Name|Expr|Node\Stmt\Class_ Class name */
+    /** @var Name Class name */
     public $class;
-    /** @var array<Arg> Arguments */
+    /** @var Arg[] Arguments */
     public $args;
 
-    /**
-     * Constructs a function call node.
-     *
-     * @param Node\Name|Expr|Node\Stmt\Class_ $class Class name (or class node for anonymous classes)
-     * @param array<Arg>                      $args  Arguments
-     */
-    public function __construct($class, array $args = [])
+    public function __construct(Name $class, array $args = [])
     {
+        Assert::allIsInstanceOf($args, Arg::class);
         $this->class = $class;
         $this->args  = $args;
     }
