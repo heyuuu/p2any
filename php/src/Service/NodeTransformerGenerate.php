@@ -8,54 +8,29 @@ use P2Any\PhpParser\Node;
 
 class NodeTransformerGenerate extends NodeTransformer
 {
-    protected function visitArg(Node\Arg $node): ?Fragment
-    {
-        throw new TodoException('TODO NodeTransformer::visitArg', $node);
-    }
-
     protected function visitConst(Node\Const_ $node): ?Fragment
     {
         throw new TodoException('TODO NodeTransformer::visitConst', $node);
     }
 
-    protected function visitExprArrayItem(Node\Expr\ArrayItem $node): ?Fragment\Expr
+    protected function visitExprClosure(Node\Expr\Closure $node): ?Fragment\Expr
     {
-        throw new TodoException('TODO NodeTransformer::visitExprArrayItem', $node);
+        throw new TodoException('TODO NodeTransformer::visitExprClosure', $node);
     }
 
-    protected function visitIdentifier(Node\Identifier $node): ?Fragment
+    protected function visitExprClosureUse(Node\Expr\ClosureUse $node): ?Fragment\Expr
     {
-        throw new TodoException('TODO NodeTransformer::visitIdentifier', $node);
+        throw new TodoException('TODO NodeTransformer::visitExprClosureUse', $node);
     }
 
-    protected function visitName(Node\Name $node): ?Fragment
+    protected function visitExprErrorSuppress(Node\Expr\ErrorSuppress $node): ?Fragment\Expr
     {
-        throw new TodoException('TODO NodeTransformer::visitName', $node);
+        throw new TodoException('TODO NodeTransformer::visitExprErrorSuppress', $node);
     }
 
-    protected function visitNameFullyQualified(Node\Name\FullyQualified $node): ?Fragment
+    protected function visitExprNew(Node\Expr\New_ $node): ?Fragment\Expr
     {
-        throw new TodoException('TODO NodeTransformer::visitNameFullyQualified', $node);
-    }
-
-    protected function visitNameRelative(Node\Name\Relative $node): ?Fragment
-    {
-        throw new TodoException('TODO NodeTransformer::visitNameRelative', $node);
-    }
-
-    protected function visitNullableType(Node\NullableType $node): ?Fragment
-    {
-        throw new TodoException('TODO NodeTransformer::visitNullableType', $node);
-    }
-
-    protected function visitParam(Node\Param $node): ?Fragment
-    {
-        throw new TodoException('TODO NodeTransformer::visitParam', $node);
-    }
-
-    protected function visitStmtBreak(Node\Stmt\Break_ $node): ?Fragment\Stmt
-    {
-        throw new TodoException('TODO NodeTransformer::visitStmtBreak', $node);
+        throw new TodoException('TODO NodeTransformer::visitExprNew', $node);
     }
 
     protected function visitStmtCase(Node\Stmt\Case_ $node): ?Fragment\Stmt
@@ -76,11 +51,6 @@ class NodeTransformerGenerate extends NodeTransformer
     protected function visitStmtConst(Node\Stmt\Const_ $node): ?Fragment\Stmt
     {
         throw new TodoException('TODO NodeTransformer::visitStmtConst', $node);
-    }
-
-    protected function visitStmtContinue(Node\Stmt\Continue_ $node): ?Fragment\Stmt
-    {
-        throw new TodoException('TODO NodeTransformer::visitStmtContinue', $node);
     }
 
     protected function visitStmtDeclareDeclare(Node\Stmt\DeclareDeclare $node): ?Fragment\Stmt
@@ -113,16 +83,6 @@ class NodeTransformerGenerate extends NodeTransformer
         throw new TodoException('TODO NodeTransformer::visitStmtFinally', $node);
     }
 
-    protected function visitStmtFor(Node\Stmt\For_ $node): ?Fragment\Stmt
-    {
-        throw new TodoException('TODO NodeTransformer::visitStmtFor', $node);
-    }
-
-    protected function visitStmtForeach(Node\Stmt\Foreach_ $node): ?Fragment\Stmt
-    {
-        throw new TodoException('TODO NodeTransformer::visitStmtForeach', $node);
-    }
-
     protected function visitStmtFunction(Node\Stmt\Function_ $node): ?Fragment\Stmt
     {
         throw new TodoException('TODO NodeTransformer::visitStmtFunction', $node);
@@ -146,11 +106,6 @@ class NodeTransformerGenerate extends NodeTransformer
     protected function visitStmtHaltCompiler(Node\Stmt\HaltCompiler $node): ?Fragment\Stmt
     {
         throw new TodoException('TODO NodeTransformer::visitStmtHaltCompiler', $node);
-    }
-
-    protected function visitStmtIf(Node\Stmt\If_ $node): ?Fragment\Stmt
-    {
-        throw new TodoException('TODO NodeTransformer::visitStmtIf', $node);
     }
 
     protected function visitStmtInlineHTML(Node\Stmt\InlineHTML $node): ?Fragment\Stmt
@@ -241,11 +196,6 @@ class NodeTransformerGenerate extends NodeTransformer
     protected function visitStmtWhile(Node\Stmt\While_ $node): ?Fragment\Stmt
     {
         throw new TodoException('TODO NodeTransformer::visitStmtWhile', $node);
-    }
-
-    protected function visitVarLikeIdentifier(Node\VarLikeIdentifier $node): ?Fragment
-    {
-        throw new TodoException('TODO NodeTransformer::visitVarLikeIdentifier', $node);
     }
 
 }

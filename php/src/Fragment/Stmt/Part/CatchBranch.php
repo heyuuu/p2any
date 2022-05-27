@@ -7,7 +7,6 @@ namespace P2Any\Fragment\Stmt;
 use P2Any\Fragment\Expr;
 use P2Any\Fragment\Name;
 use P2Any\Fragment\Stmt;
-use P2Any\Fragment\StmtList;
 use Webmozart\Assert\Assert;
 
 class CatchBranch
@@ -16,15 +15,16 @@ class CatchBranch
     public $types;
     /** @var Expr\Variable Variable for exception */
     public $var;
-    /** @var StmtList Statements */
+    /** @var Stmt[] Statements */
     public $stmts;
 
     public function __construct(
         array $types,
         Expr\Variable $var,
-        StmtList $stmts
+        array $stmts
     ) {
         Assert::allIsInstanceOf($types, Name::class);
+        Assert::allIsInstanceOf($stmts, Stmt::class);
 
         $this->types = $types;
         $this->var   = $var;

@@ -10,18 +10,18 @@ use P2Any\Fragment\Name;
 
 class ClassConstFetch implements Expr
 {
-    /** @var Name|Expr Class name */
+    /** @var Name Class name */
     public $class;
-    /** @var string Constant name */
+    /** @var Identifier Constant name */
     public $name;
 
     /**
      * Constructs a class const fetch node.
      *
-     * @param Name|Expr         $class Class name
-     * @param string|Identifier $name  Constant name
+     * @param Name       $class Class name
+     * @param Identifier $name  Constant name
      */
-    public function __construct($class, string $name)
+    public function __construct(Name $class, Identifier $name)
     {
         $this->class = $class;
         $this->name  = $name;

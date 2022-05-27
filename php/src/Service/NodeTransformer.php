@@ -18,10 +18,20 @@ class NodeTransformer extends NodeTransformerAbstract
         Node\Stmt\ClassConst::class => true,
     ];
     protected static $unsupportedTypes = [
-        Node\Expr\ShellExec::class => true,
-        Node\Expr\Throw_::class    => true,
-        Node\Expr\Error::class     => true,
-        Node\Expr\Eval_::class     => true,
+        Node\Expr\ShellExec::class      => true,
+        Node\Expr\Throw_::class         => true,
+        Node\Expr\Error::class          => true,
+        Node\Expr\Eval_::class          => true,
+        // 不应直接出现的Node
+        Node\Arg::class                 => true,
+        Node\Param::class               => true,
+        Node\Identifier::class          => true,
+        Node\VarLikeIdentifier::class   => true,
+        Node\Name::class                => true,
+        Node\Name\Relative::class       => true,
+        Node\Name\FullyQualified::class => true,
+        Node\NullableType::class        => true,
+        Node\Expr\ArrayItem::class      => true,
     ];
 
     /**
@@ -75,8 +85,7 @@ class NodeTransformer extends NodeTransformerAbstract
     private function pName(Node\Name $node): Fragment\Name
     {
         // todo
-        var_dump("Name 类型: " . get_class($node));
-
+        // var_dump(sprintf("Name 类型: %s, value: %s", get_class($node), $node->toCodeString()));
         return new Fragment\Name($node->toCodeString());
     }
 
@@ -249,6 +258,57 @@ class NodeTransformer extends NodeTransformerAbstract
     {
         return new Fragment\Stmt\ExprStmt($this->pExpr($node->expr));
     }
+
+    protected function visitStmtIf(Node\Stmt\If_ $node): ?Fragment\Stmt
+    {
+        $branches = [
+            new Fragment\Stmt\Part\CondBranch(
+                $this->pExpr($node->cond),
+                $this->pStmtList($node->stmts)
+            ),
+        ];
+        foreach ($node->elseifs as $elseif) {
+            $branches[] = new Fragment\Stmt\Part\CondBranch(
+                $this->pExpr($elseif->cond),
+                $this->pStmtList($elseif->stmts)
+            );
+        }
+        $defaultBranch = $node->else ? $this->pStmtList($node->else->stmts) : null;
+
+        return new Fragment\Stmt\IfStmt($branches, $defaultBranch);
+    }
+
+    protected function visitStmtFor(Node\Stmt\For_ $node): ?Fragment\Stmt
+    {
+        return new Fragment\Stmt\ForStmt(
+            $this->pExprList($node->init),
+            $this->pExprList($node->cond),
+            $this->pExprList($node->loop),
+            $this->pStmtList($node->stmts)
+        );
+    }
+
+    protected function visitStmtForeach(Node\Stmt\Foreach_ $node): ?Fragment\Stmt
+    {
+        return new Fragment\Stmt\ForeachStmt(
+            $this->pExpr($node->expr),
+            $this->pExprOrNull($node->keyVar),
+            $node->byRef,
+            $this->pExpr($node->valueVar),
+            $this->pStmtList($node->stmts)
+        );
+    }
+
+    protected function visitStmtBreak(Node\Stmt\Break_ $node): ?Fragment\Stmt
+    {
+        return new Fragment\Stmt\Break_($this->pExprOrNull($node->num));
+    }
+
+    protected function visitStmtContinue(Node\Stmt\Continue_ $node): ?Fragment\Stmt
+    {
+        return new Fragment\Stmt\Continue_($this->pExprOrNull($node->num));
+    }
+
 
     ##############################
     # Expr

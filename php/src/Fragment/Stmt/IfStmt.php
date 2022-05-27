@@ -2,21 +2,22 @@
 
 namespace P2Any\Fragment\Stmt;
 
+use P2Any\Fragment\Stmt;
 use P2Any\Fragment\Stmt\Part\CondBranch;
-use P2Any\Fragment\StmtList;
 use Webmozart\Assert\Assert;
 
-class IfStmt
+class IfStmt implements Stmt
 {
     /** @var CondBranch[] */
     public $branches;
-    /** @var StmtList|null */
+    /** @var Stmt[]|null */
     public $defaultBranch;
 
-    public function __construct(array $branches, ?StmtList $defaultBranch = null)
+    public function __construct(array $branches, ?array $defaultBranch = null)
     {
         Assert::allIsInstanceOf($branches, CondBranch::class);
         Assert::notEmpty($branches);
+        Assert::allIsInstanceOf($defaultBranch, Stmt::class);
         $this->branches      = $branches;
         $this->defaultBranch = $defaultBranch;
     }
