@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace P2Any\Fragment\Stmt;
+namespace P2Any\Fragment\Decl;
 
 use P2Any\Fragment\Decl;
 use P2Any\Fragment\Name;
@@ -20,7 +20,7 @@ class InterfaceDecl implements Decl
     public $methods;
 
     public function __construct(
-        array $name,
+        Name $name,
         array $extends = [],
         array $constants = [],
         array $methods = []

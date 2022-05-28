@@ -11,6 +11,8 @@ class TodoException extends \RuntimeException
     {
         parent::__construct($message);
 
-        echo ParserUtil::prettyPrint([$node]);
+        if ($node) {
+            echo ParserUtil::prettyPrint([$node]);
+        }
     }
 }

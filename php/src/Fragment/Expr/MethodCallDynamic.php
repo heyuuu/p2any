@@ -6,18 +6,17 @@ namespace P2Any\Fragment\Expr;
 
 use P2Any\Fragment\Arg;
 use P2Any\Fragment\Expr;
-use P2Any\Fragment\Identifier;
 
-class MethodCall extends CallLike
+class MethodCallDynamic extends CallLike
 {
     /** @var Expr Variable holding object */
     public $var;
-    /** @var Identifier Method name */
+    /** @var Expr Method name */
     public $name;
     /** @var Arg[] Arguments */
     public $args;
 
-    public function __construct(Expr $var, Identifier $name, array $args = [])
+    public function __construct(Expr $var, Expr $name, array $args = [])
     {
         $this->var  = $var;
         $this->name = $name;

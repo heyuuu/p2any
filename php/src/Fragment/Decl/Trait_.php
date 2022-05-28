@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace P2Any\Fragment\Stmt;
+namespace P2Any\Fragment\Decl;
 
 class Trait_ extends ClassLike
 {

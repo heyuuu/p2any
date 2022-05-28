@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace P2Any\Fragment\Stmt;
 
 use P2Any\Fragment\Stmt;
+use P2Any\Fragment\Stmt\Part\CatchBranch;
 use Webmozart\Assert\Assert;
 
 class TryCatchStmt implements Stmt

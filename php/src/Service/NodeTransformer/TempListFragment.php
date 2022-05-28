@@ -5,7 +5,7 @@ namespace P2Any\Service\NodeTransformer;
 use P2Any\Fragment;
 use Webmozart\Assert\Assert;
 
-class TempListFragment implements ParsingFragment
+class TempListFragment implements ParsingFragment, Fragment\Stmt
 {
     /**
      * @var Fragment[]

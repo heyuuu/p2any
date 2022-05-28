@@ -2,42 +2,63 @@
 
 namespace P2Any\Service;
 
-use JetBrains\PhpStorm\Internal\TentativeType;
 use P2Any\Exception\LogicException;
 use P2Any\Exception\FeatureNotSupportException;
 use P2Any\Exception\TodoException;
 use P2Any\Fragment;
 use P2Any\PhpParser\Node;
 use P2Any\Service\NodeTransformer\TempListFragment;
+use P2Any\Utils\ParserUtil;
 use Webmozart\Assert\Assert;
 
 class NodeTransformer extends NodeTransformerAbstract
 {
     protected static $skipTypes        = [
-        Node\Stmt\Declare_::class   => true,
-        Node\Stmt\Use_::class       => true,
-        Node\Stmt\ClassConst::class => true,
+        Node\Stmt\Declare_::class     => true,
+        Node\Stmt\Use_::class         => true,
+        Node\Stmt\ClassConst::class   => true,
+        Node\Stmt\HaltCompiler::class => true,
     ];
     protected static $unsupportedTypes = [
-        Node\Expr\ShellExec::class      => true,
-        Node\Expr\Throw_::class         => true,
-        Node\Expr\Error::class          => true,
-        Node\Expr\Eval_::class          => true,
+        Node\Expr\ShellExec::class                     => true,
+        Node\Expr\Throw_::class                        => true,
+        Node\Expr\Error::class                         => true,
+        Node\Expr\Eval_::class                         => true,
+        Node\Stmt\InlineHTML::class                    => true,
+        Node\Stmt\Const_::class                        => true,
+        Node\Stmt\Echo_::class                         => true,
+        Node\Stmt\Function_::class                     => true,
+        Node\Stmt\Global_::class                       => true,
+        Node\Stmt\Trait_::class                        => true,
+
         // 不应直接出现的Node
-        Node\Arg::class                 => true,
-        Node\Param::class               => true,
-        Node\Identifier::class          => true,
-        Node\VarLikeIdentifier::class   => true,
-        Node\Name::class                => true,
-        Node\Name\Relative::class       => true,
-        Node\Name\FullyQualified::class => true,
-        Node\NullableType::class        => true,
-        Node\Expr\ArrayItem::class      => true,
-        Node\Stmt\Case_::class          => true,
-        Node\Stmt\Catch_::class         => true,
-        Node\Stmt\Finally_::class       => true,
-        Node\Stmt\ElseIf_::class        => true,
-        Node\Stmt\Else_::class          => true,
+        Node\Const_::class                             => true,
+        Node\Arg::class                                => true,
+        Node\Param::class                              => true,
+        Node\Identifier::class                         => true,
+        Node\VarLikeIdentifier::class                  => true,
+        Node\Name::class                               => true,
+        Node\Name\Relative::class                      => true,
+        Node\Name\FullyQualified::class                => true,
+        Node\NullableType::class                       => true,
+        Node\Expr\ArrayItem::class                     => true,
+        Node\Expr\ClosureUse::class                    => true,
+        Node\Stmt\Case_::class                         => true,
+        Node\Stmt\Catch_::class                        => true,
+        Node\Stmt\Finally_::class                      => true,
+        Node\Stmt\ElseIf_::class                       => true,
+        Node\Stmt\Else_::class                         => true,
+        Node\Stmt\DeclareDeclare::class                => true,
+        Node\Stmt\TraitUse::class                      => true,
+        Node\Stmt\TraitUseAdaptation\Alias::class      => true,
+        Node\Stmt\TraitUseAdaptation\Precedence::class => true,
+        Node\Stmt\ClassConst::class                    => true,
+        Node\Stmt\Property::class                      => true,
+        Node\Stmt\PropertyProperty::class              => true,
+        Node\Stmt\ClassMethod::class                   => true,
+        Node\Stmt\UseUse::class                        => true,
+        Node\Stmt\GroupUse::class                      => true,
+        Node\Stmt\StaticVar::class                     => true,
     ];
 
     /**
@@ -140,10 +161,20 @@ class NodeTransformer extends NodeTransformerAbstract
         return new Fragment\Param(
             new Fragment\Identifier($node->var->name),
             $this->pTypeOrNull($node->type),
-            $this->pExpr($node->default),
+            $this->pExprOrNull($node->default),
             $node->byRef,
             $node->variadic
         );
+    }
+
+    /**
+     * @param Node\Param[] $nodes
+     * @return Fragment\Param[]
+     */
+    private function pParamList(array $nodes): array
+    {
+        Assert::allIsInstanceOf($nodes, Node\Param::class);
+        return array_map([$this, 'pParam'], $nodes);
     }
 
     private function pType(Node $node): Fragment\TypeHint
@@ -205,15 +236,12 @@ class NodeTransformer extends NodeTransformerAbstract
         Assert::isInstanceOf($node->namespacedName, Node\Name::class);
         Assert::allIsInstanceOf($node->extends, Node\Name::class);
 
-        $name    = $node->namespacedName->toCodeString();
-        $extends = $this->pNameList($node->extends);
-
-        // stmts
-        $classConstants = $this->pClassConstants($node->getConstants());
-        $methods        = $this->pMethods($node->getMethods());
-
-        // todo interface 定义
-        return new Fragment\Decl\InterfaceDecl($name);
+        return new Fragment\Decl\InterfaceDecl(
+            $this->pName($node->namespacedName),
+            $this->pNameList($node->extends),
+            $this->pClassConstants($node->getConstants()),
+            $this->pMethods($node->getMethods())
+        );
     }
 
     /**
@@ -253,6 +281,7 @@ class NodeTransformer extends NodeTransformerAbstract
             return new Fragment\Decl\Part\Method();
         })->all();
     }
+
 
     ##############################
     # Stmt
@@ -351,7 +380,7 @@ class NodeTransformer extends NodeTransformerAbstract
             $this->pStmtList($node->stmts),
             array_map(
                 function (Node\Stmt\Catch_ $catch) {
-                    return new Fragment\Stmt\CatchBranch(
+                    return new Fragment\Stmt\Part\CatchBranch(
                         $this->pNameList($catch->types),
                         $this->visitExprVariable($catch->var),
                         $this->pStmtList($catch->stmts)
@@ -383,6 +412,10 @@ class NodeTransformer extends NodeTransformerAbstract
         return new Fragment\Stmt\Return_($this->pExprOrNull($node->expr));
     }
 
+    protected function visitStmtThrow(Node\Stmt\Throw_ $node): ?Fragment\Stmt
+    {
+        return new Fragment\Stmt\Throw_($this->pExpr($node->expr));
+    }
 
     ##############################
     # Expr
@@ -577,14 +610,19 @@ class NodeTransformer extends NodeTransformerAbstract
 
     protected function visitExprPropertyFetch(Node\Expr\PropertyFetch $node): ?Fragment\Expr
     {
-        if (!($node->name instanceof Node\Identifier)) {
-            var_dump($node);
-            throw new TodoException("PropertyFetch 的 name 非 Identifier 对象");
+        if ($node->name instanceof Node\Identifier) {
+            return new Fragment\Expr\PropertyFetch(
+                $this->pExpr($node->var),
+                $this->pIdentifier($node->name)
+            );
+        } elseif ($node->name instanceof Node\Expr) {
+            return new Fragment\Expr\PropertyFetch(
+                $this->pExpr($node->var),
+                $this->pExpr($node->name)
+            );
+        } else {
+            throw new LogicException('PropertyFetch->name 必须为 Identifier 或 Expr');
         }
-        return new Fragment\Expr\PropertyFetch(
-            $this->pExpr($node->var),
-            $this->pIdentifier($node->name)
-        );
     }
 
     protected function visitExprStaticCall(Node\Expr\StaticCall $node): ?Fragment\Expr
@@ -663,33 +701,24 @@ class NodeTransformer extends NodeTransformerAbstract
 
     protected function visitExprFuncCall(Node\Expr\FuncCall $node): ?Fragment\Expr
     {
-        if (!($node->name instanceof Node\Name)) {
-            throw new TodoException("暂未支持 FuncCall->name 不为 Name 的情况");
+        if ($node->name instanceof Node\Name) {
+            return new Fragment\Expr\FuncCall($this->pName($node->name), $this->pArgList($node->args));
+        } elseif ($node->name instanceof Node\Expr) {
+            return new Fragment\Expr\CallableCall($this->pExpr($node->name), $this->pArgList($node->args));
+        } else {
+            throw new LogicException("FuncCall->name 应为 Name 或 Expr");
         }
-
-        return new Fragment\Expr\FuncCall(
-            $this->pName($node->name),
-            $this->pArgList($node->args)
-        );
-    }
-
-    protected function visitExprInclude(Node\Expr\Include_ $node): ?Fragment\Expr
-    {
-        throw new TodoException('暂不支持 include/require 相关功能', $node);
-
-        return new Fragment\Expr\Include_(
-            $this->pExpr($node->expr),
-            $node->type
-        );
     }
 
     protected function visitExprInstanceof(Node\Expr\Instanceof_ $node): ?Fragment\Expr
     {
-        if (!($node->class instanceof Node\Name)) {
-            throw new TodoException("暂未支持 Instanceof->class 不为 Name 的情况");
+        if ($node->class instanceof Node\Name) {
+            return new Fragment\Expr\Instanceof_($this->pExpr($node->expr), $this->pName($node->class));
+        } elseif ($node->class instanceof Node\Expr\Variable) {
+            return new Fragment\Expr\InstanceofDynamic($this->pExpr($node->expr), $this->visitExprVariable($node->class));
+        } else {
+            throw new LogicException("Instanceof->name 应为 Name 或 Variable");
         }
-
-        return new Fragment\Expr\Instanceof_($this->pExpr($node->expr), $this->pName($node->class));
     }
 
     protected function visitExprIsset(Node\Expr\Isset_ $node): ?Fragment\Expr
@@ -710,15 +739,21 @@ class NodeTransformer extends NodeTransformerAbstract
 
     protected function visitExprMethodCall(Node\Expr\MethodCall $node): ?Fragment\Expr
     {
-        if (!($node->name instanceof Node\Identifier)) {
-            throw new TodoException("暂未支持 MethodCall->name 不为 Identifier 的情况");
+        if (($node->name instanceof Node\Identifier)) {
+            return new Fragment\Expr\MethodCall(
+                $this->pExpr($node->var),
+                $this->pIdentifier($node->name),
+                $this->pArgList($node->args)
+            );
+        } elseif ($node->name instanceof Node\Expr) {
+            return new Fragment\Expr\MethodCallDynamic(
+                $this->pExpr($node->var),
+                $this->pExpr($node->name),
+                $this->pArgList($node->args)
+            );
+        } else {
+            throw new LogicException("MethodCall->name 应为 Identifier 或 Expr");
         }
-
-        return new Fragment\Expr\MethodCall(
-            $this->pExpr($node->var),
-            $this->pIdentifier($node->name),
-            $this->pArgList($node->args)
-        );
     }
 
     protected function visitExprPostDec(Node\Expr\PostDec $node): ?Fragment\Expr
@@ -811,15 +846,90 @@ class NodeTransformer extends NodeTransformerAbstract
         );
     }
 
-    protected function visitExprNew(Node\Expr\New_ $node): ?Fragment\Expr
+    protected function visitExprNew(Node\Expr\New_ $node): Fragment\Expr\CallLike
     {
-        if (!($node->class instanceof Node\Name)) {
-            throw new TodoException("暂未支持 ExprNew->class 不为 Name 的情况");
+        if ($node->class instanceof Node\Name) {
+            return new Fragment\Expr\New_(
+                $this->pName($node->class),
+                $this->pArgList($node->args)
+            );
+        } elseif ($node->class instanceof Node\Expr) {
+            return new Fragment\Expr\NewDynamic(
+                $this->pExpr($node->class),
+                $this->pArgList($node->args)
+            );
+        } elseif ($node->class instanceof Node\Stmt\Class_) {
+            return new Fragment\Expr\NewAnonymous(
+                $this->visitStmtClass($node->class),
+                $this->pArgList($node->args)
+            );
+        } else {
+            throw new LogicException("ExprNew->class 必须为 Name、Expr 获取 Stmt\Class_");
         }
+    }
 
-        return new Fragment\Expr\New_(
-            $this->pName($node->class),
-            $this->pArgList($node->args)
+    ################
+    # 暂未支持
+    ################
+
+    protected function visitExprInclude(Node\Expr\Include_ $node): ?Fragment\Expr
+    {
+        // throw new TodoException('暂不支持 include/require 相关功能', $node);
+
+        return new Fragment\Expr\Include_(
+            $this->pExpr($node->expr),
+            $node->type
         );
+    }
+
+    protected function visitStmtStatic(Node\Stmt\Static_ $node): Fragment\Stmt
+    {
+        $stmts = array_map(
+            function (Node\Stmt\StaticVar $staticVar) {
+                Assert::string($staticVar->var->name, "StaticVar 的变量名只能是静态变量名");
+
+                return new Fragment\Stmt\StaticVar(
+                    new Fragment\Identifier($staticVar->var->name),
+                    $this->pExprOrNull($staticVar->default)
+                );
+            },
+            $node->vars
+        );
+
+        return new TempListFragment($stmts);
+    }
+
+    protected function visitExprClosure(Node\Expr\Closure $node): ?Fragment\Expr
+    {
+        $closureUses = array_map(
+            function (Node\Expr\ClosureUse $use) {
+                Assert::string($use->var->name, "ClosureUse 的变量名只能是静态变量名");
+
+                return new Fragment\Expr\Part\ClosureUse(
+                    new Fragment\Identifier($use->var->name),
+                    $use->byRef
+                );
+            },
+            $node->uses
+        );
+
+        return new Fragment\Expr\Closure(
+            $node->static,
+            $node->byRef,
+            $this->pParamList($node->params),
+            $closureUses,
+            $this->pTypeOrNull($node->returnType),
+            $this->pStmtList($node->stmts)
+        );
+    }
+
+    protected function visitExprErrorSuppress(Node\Expr\ErrorSuppress $node): ?Fragment\Expr
+    {
+        return new Fragment\Expr\ErrorSuppress($this->pExpr($node->expr));
+    }
+
+    protected function visitStmtUnset(Node\Stmt\Unset_ $node): ?Fragment\Stmt
+    {
+        return new Fragment\Stmt\Unset_($this->pExprList($node->vars));
     }
 }

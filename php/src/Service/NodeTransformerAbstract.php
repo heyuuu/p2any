@@ -15,7 +15,7 @@ abstract class NodeTransformerAbstract
     protected static $visitMethods     = [];
     protected static $skipTypes        = [];
     protected static $unsupportedTypes = [];
-    
+
     /**
      * @var NodeTransformerContext
      */
@@ -47,7 +47,7 @@ abstract class NodeTransformerAbstract
             } elseif ($fragment instanceof TempListFragment) {
                 return $fragment->getFragments();
             } else {
-                return $fragment;
+                return [$fragment];
             }
         })->all();
 
@@ -72,7 +72,7 @@ abstract class NodeTransformerAbstract
 
         $result = $this->{$method}($node);
 
-        Assert::nullOrIsInstanceOf($result, $class, sprintf("visit 结果预期类型为 %s, 实际为 %s", $class, get_class($result)));
+        Assert::nullOrIsInstanceOf($result, $class, sprintf("visit 结果预期类型为 %s, 实际为 %s", $class, $result !== null ? get_class($result) : '<null>'));
 
         return $result;
     }

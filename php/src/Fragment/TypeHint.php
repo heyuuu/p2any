@@ -16,7 +16,7 @@ class TypeHint implements Fragment
 
     public function __construct(string $typeName, bool $nullable = false)
     {
-        Assert::true(preg_match(self::TYPE_PATTERN, $typeName));
+        Assert::true((bool)preg_match(self::TYPE_PATTERN, $typeName));
 
         $this->typeName = $typeName;
         $this->nullable = $nullable;

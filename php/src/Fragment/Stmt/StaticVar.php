@@ -5,23 +5,19 @@ declare(strict_types=1);
 namespace P2Any\Fragment\Stmt;
 
 use P2Any\Fragment\Expr;
+use P2Any\Fragment\Identifier;
+use P2Any\Fragment\Stmt;
 
 class StaticVar implements Stmt
 {
-    /** @var Expr\Variable Variable */
+    /** @var Identifier Variable */
     public $var;
-    /** @var Node\Expr|null Default value */
+    /** @var Expr|null Default value */
     public $default;
 
-    /**
-     * Constructs a static variable node.
-     *
-     * @param Expr\Variable  $var     Name
-     * @param Node\Expr|null $default Default value
-     */
     public function __construct(
-        Expr\Variable $var,
-        Node\Expr $default = null
+        Identifier $var,
+        ?Expr $default = null
     ) {
         $this->var     = $var;
         $this->default = $default;
