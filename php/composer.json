@@ -9,10 +9,12 @@
     "ext-tokenizer": "*",
     "illuminate/support": "^7.30",
     "symfony/finder": "^5.4",
-    "webmozart/assert": "^1.10"
+    "webmozart/assert": "^1.10",
+    "psr/log": "^1.1"
   },
   "require-dev": {
-    "friendsofphp/php-cs-fixer": "^2.16"
+    "friendsofphp/php-cs-fixer": "^2.16",
+    "monolog/monolog": "^2.6"
   },
   "scripts": {
     "fix": "php-cs-fixer fix"
