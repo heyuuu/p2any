@@ -5,6 +5,7 @@ namespace P2Any\Service;
 use P2Any\Exception\TodoException;
 use P2Any\Fragment;
 use P2Any\PhpParser\Node;
+use P2Any\Service\NodeTransformer\Context;
 use P2Any\Service\NodeTransformer\TempListFragment;
 use Webmozart\Assert\Assert;
 
@@ -17,7 +18,7 @@ abstract class NodeTransformerAbstract
     protected static $unsupportedTypes = [];
 
     /**
-     * @var NodeTransformerContext
+     * @var Context
      */
     protected $context;
 
@@ -28,7 +29,7 @@ abstract class NodeTransformerAbstract
      */
     public function visitAst(string $file, array $nodes): array
     {
-        $this->context = new NodeTransformerContext($file);
+        $this->context = new Context($file);
     }
 
     /**

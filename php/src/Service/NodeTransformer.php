@@ -8,7 +8,6 @@ use P2Any\Exception\TodoException;
 use P2Any\Fragment;
 use P2Any\PhpParser\Node;
 use P2Any\Service\NodeTransformer\TempListFragment;
-use P2Any\Utils\ParserUtil;
 use Webmozart\Assert\Assert;
 
 class NodeTransformer extends NodeTransformerAbstract

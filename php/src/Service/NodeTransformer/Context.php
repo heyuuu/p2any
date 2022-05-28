@@ -1,10 +1,10 @@
 <?php
 
-namespace P2Any\Service;
+namespace P2Any\Service\NodeTransformer;
 
 use Webmozart\Assert\Assert;
 
-class NodeTransformerContext
+class Context
 {
     /**
      * @var string
