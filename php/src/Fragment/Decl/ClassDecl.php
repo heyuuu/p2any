@@ -5,11 +5,11 @@ declare(strict_types=1);
 namespace P2Any\Fragment\Decl;
 
 use P2Any\Fragment\Decl;
+use P2Any\Fragment\Decl\Part\ClassConst;
+use P2Any\Fragment\Decl\Part\Method;
+use P2Any\Fragment\Decl\Part\Property;
 use P2Any\Fragment\Name;
-use P2Any\Fragment\Stmt\ClassConst;
-use P2Any\Fragment\Stmt\ClassMethod;
-use P2Any\Fragment\Stmt\Property;
-use P2Any\Fragment\Stmt\TraitUse;
+use Webmozart\Assert\Assert;
 
 class ClassDecl implements Decl
 {
@@ -25,10 +25,8 @@ class ClassDecl implements Decl
     public $constants;
     /** @var Property[] */
     public $properties;
-    /** @var ClassMethod[] */
+    /** @var Method[] */
     public $methods;
-    /** @var TraitUse[] */
-    public $traitUses;
 
     public function __construct(
         ?Name $name,
@@ -37,9 +35,11 @@ class ClassDecl implements Decl
         array $implements,
         array $constants,
         array $properties,
-        array $methods,
-        array $traitUses = []
+        array $methods
     ) {
+        Assert::allIsInstanceOf($implements, Name::class);
+        Assert::allIsInstanceOf($implements, Name::class);
+
         $this->name       = $name;
         $this->flags      = $flags;
         $this->extends    = $extends;
@@ -47,7 +47,6 @@ class ClassDecl implements Decl
         $this->constants  = $constants;
         $this->properties = $properties;
         $this->methods    = $methods;
-        $this->traitUses  = $traitUses;
     }
 
     /**
