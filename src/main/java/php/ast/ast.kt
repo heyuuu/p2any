@@ -1,4 +1,4 @@
 package php.ast
 
-interface Node
+interface AstNode
 
