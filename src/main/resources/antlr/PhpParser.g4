@@ -394,7 +394,7 @@ traitMethodReference
     ;
 
 baseCtorCall
-    : ':' identifier arguments?
+    : ':' typeHint arguments?
     ;
 
 methodBody
