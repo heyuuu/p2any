@@ -4,8 +4,10 @@ import org.antlr.v4.runtime.ParserRuleContext
 import org.antlr.v4.runtime.tree.TerminalNode
 import php.ast.AstNode
 import php.parser.antlr.PhpParser
+import php.parser.parsingnode.ParsingListNode
 import php.parser.parsingnode.ParsingTerminalNode
 import php.parser.parsingnode.TodoNode
+import php.parser.parsingnode.unwrapNode
 
 class PhpAstVisitor : PhpAstBaseVisitor() {
     private fun todo(ctx: ParserRuleContext): AstNode {
@@ -16,7 +18,7 @@ class PhpAstVisitor : PhpAstBaseVisitor() {
                     is TerminalNode -> ParsingTerminalNode(it.text)
                     else -> visit(it)
                 }
-            }
+            }?.let { unwrapNode(it) }
         )
     }
 

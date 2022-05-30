@@ -5,7 +5,7 @@ import org.antlr.v4.runtime.CommonTokenStream
 import php.ast.AstNode
 import php.parser.antlr.PhpLexer
 import php.parser.antlr.PhpParser
-import php.parser.parsingnode.ParsingListNode
+import php.parser.parsingnode.unwrapNode
 
 class PhpAstParser {
     fun parse(code: String): List<AstNode> {
@@ -14,6 +14,6 @@ class PhpAstParser {
         val visitor = PhpAstVisitor()
         val node = visitor.visit(parser.htmlDocument())
 
-        return ParsingListNode.unwrapNode(node)
+        return unwrapNode(node)
     }
 }
