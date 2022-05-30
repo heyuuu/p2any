@@ -6,7 +6,7 @@ import php.parser.antlr.PhpParserVisitor
 import java.io.File
 
 class GenerateParserTest {
-    private val targetFile = System.getProperty("user.dir")!! + "/src/main/java/php/parser/PhpAstParser.kt"
+    private val targetFile = System.getProperty("user.dir")!! + "/src/main/java/php/parser/PhpAstVisitor.kt"
 
     private val methodList = listOf(
         "visitHtmlDocument",
@@ -182,9 +182,9 @@ import org.antlr.v4.runtime.tree.RuleNode
 import org.antlr.v4.runtime.tree.TerminalNode
 import php.ast.AstNode
 import php.parser.antlr.PhpParser
-import php.parser.antlr.PhpParserVisitor
+import php.parser.antlr.PhpBaseParserVisitor
 
-class PhpAstParser: PhpParserVisitor<AstNode> {
+class PhpAstVisitor: PhpBaseParserVisitor<AstNode>() {
     override fun visit(tree: ParseTree?): AstNode {
         TODO("Not yet implemented")
     }
