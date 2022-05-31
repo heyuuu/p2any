@@ -16,7 +16,7 @@ data class Name(val parts: List<String>): AstNode
 data class Identifier(val name: String) : AstNode
 
 data class Param(
-    val name: Identifier,
+    val `var`: Identifier,
     val type: TypeHint?,
     val byRef: Boolean,
     val variadic: Boolean,

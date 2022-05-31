@@ -6,11 +6,12 @@ import com.google.gson.JsonElement
 import com.google.gson.JsonNull
 import com.google.gson.JsonObject
 import com.google.gson.JsonPrimitive
-import com.google.gson.internal.LazilyParsedNumber
 import php.ast.*
 import java.io.File
 import kotlin.reflect.KClass
 import kotlin.reflect.KType
+import kotlin.reflect.full.declaredFunctions
+import kotlin.reflect.full.functions
 import kotlin.reflect.full.primaryConstructor
 
 class PhpIrDecoder {
@@ -204,7 +205,31 @@ class PhpIrDecoder {
         }
     }
 
-    private fun buildNode(nodeType: KClass<out AstNode>, properties: Map<String, Any?>): Any {
+    private fun JsonObject.getAsString(memberName: String): String? {
+        val member = this[memberName]
+        if (member != null && member is JsonPrimitive) {
+            return member.asString
+        }
+        return null
+    }
+
+    private fun JsonObject.getAsObject(memberName: String): JsonObject? {
+        val member = this[memberName]
+        if (member != null && member is JsonObject) {
+            return member
+        }
+        return null
+    }
+
+    private fun buildNode(nodeType: KClass<out AstNode>, properties: Map<String, Any?>): AstNode {
+        // 自定义构造方式
+        this::class.declaredFunctions
+            .firstOrNull { it.name == "build${nodeType.simpleName}" }
+            ?.let {
+                return it.call(this, properties) as AstNode
+            }
+
+        // 通用构造方式
         val primaryConstructor = nodeType.primaryConstructor
         if (primaryConstructor === null) {
             throw RuntimeException("Node 类不应没有主构造函数, class: ${nodeType.qualifiedName}")
@@ -216,6 +241,7 @@ class PhpIrDecoder {
             mapOf(
                 "type" to nodeType,
                 "args" to args.mapKeys { it.key.name },
+                "properties" to properties,
             )
         )
 
@@ -240,19 +266,13 @@ class PhpIrDecoder {
         return result
     }
 
-    private fun JsonObject.getAsString(memberName: String): String? {
-        val member = this[memberName]
-        if (member != null && member is JsonPrimitive) {
-            return member.asString
+    fun buildExprVariable(properties: Map<String, Any?>): ExprVariable {
+        val name = properties["name"]!!
+        return when (name) {
+            is String -> ExprVariable.Static(name)
+            is Expr -> ExprVariable.Dynamic(name)
+            else -> throw RuntimeException("ExprVariable->name 只能是 String 或 Expr")
         }
-        return null
     }
 
-    private fun JsonObject.getAsObject(memberName: String): JsonObject? {
-        val member = this[memberName]
-        if (member != null && member is JsonObject) {
-            return member
-        }
-        return null
-    }
 }
