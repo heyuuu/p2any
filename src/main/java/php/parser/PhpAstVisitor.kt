@@ -38,15 +38,7 @@ class PhpAstVisitor : PhpAstBaseVisitor() {
         if (ctx.Shebang() != null) {
             unsupported("Shebang")
         }
-        return childrenAsList(ctx)
-    }
-
-    override fun visitPhpBlock(ctx: PhpParser.PhpBlockContext): AstNode {
-        return childrenAsList(ctx)
-    }
-
-    override fun visitTopStatement(ctx: PhpParser.TopStatementContext): AstNode {
-        return anyChild(ctx)
+        return visitChildren(ctx)
     }
 
     override fun visitUseDeclaration(ctx: PhpParser.UseDeclarationContext): AstNode {
@@ -81,7 +73,6 @@ class PhpAstVisitor : PhpAstBaseVisitor() {
         val SemiColon = ctx.SemiColon()
         val CloseCurlyBracket = ctx.CloseCurlyBracket()
         val OpenCurlyBracket = ctx.OpenCurlyBracket()
-        val Namespace = ctx.Namespace()
         val namespaceNameList = ctx.namespaceNameList()
         val getRuleIndex = ctx.getRuleIndex()
 

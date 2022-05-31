@@ -41,12 +41,6 @@ public interface PhpParserVisitor<T> extends ParseTreeVisitor<T> {
 	 */
 	T visitPhpBlock(PhpParser.PhpBlockContext ctx);
 	/**
-	 * Visit a parse tree produced by {@link PhpParser#importStatement}.
-	 * @param ctx the parse tree
-	 * @return the visitor result
-	 */
-	T visitImportStatement(PhpParser.ImportStatementContext ctx);
-	/**
 	 * Visit a parse tree produced by {@link PhpParser#topStatement}.
 	 * @param ctx the parse tree
 	 * @return the visitor result

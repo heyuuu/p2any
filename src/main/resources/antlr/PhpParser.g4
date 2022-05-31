@@ -77,11 +77,7 @@ scriptText
 // PHP
 
 phpBlock
-    : importStatement* topStatement+
-    ;
-
-importStatement
-    : Import Namespace namespaceNameList SemiColon
+    : topStatement+
     ;
 
 topStatement

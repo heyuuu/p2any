@@ -10,10 +10,21 @@ class PhpAstParserTest {
         private val workDir = System.getProperty("user.dir")!!
         val srcRoot = "$workDir/php/src/PhpParser/"
         val dstRoot = "$workDir/runtime/ast_by_java/"
+        val specialSrcRoot = "$workDir/runtime/special_case/php/"
+        val specialDstRoot = "$workDir/runtime/special_case/ast/"
     }
 
     @Test
-    fun testBuildCase() {
+    fun testPhpParserCase() {
+        runCaseInDir(srcRoot, dstRoot)
+    }
+
+    @Test
+    fun testSpecialCase() {
+        runCaseInDir(specialSrcRoot, specialDstRoot)
+    }
+
+    private fun runCaseInDir(srcRoot: String, dstRoot: String) {
         val parser = PhpAstParser()
         val baseDir = File(srcRoot)
         baseDir.walk()

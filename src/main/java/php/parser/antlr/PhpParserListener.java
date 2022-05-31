@@ -58,16 +58,6 @@ public interface PhpParserListener extends ParseTreeListener {
 	 */
 	void exitPhpBlock(PhpParser.PhpBlockContext ctx);
 	/**
-	 * Enter a parse tree produced by {@link PhpParser#importStatement}.
-	 * @param ctx the parse tree
-	 */
-	void enterImportStatement(PhpParser.ImportStatementContext ctx);
-	/**
-	 * Exit a parse tree produced by {@link PhpParser#importStatement}.
-	 * @param ctx the parse tree
-	 */
-	void exitImportStatement(PhpParser.ImportStatementContext ctx);
-	/**
 	 * Enter a parse tree produced by {@link PhpParser#topStatement}.
 	 * @param ctx the parse tree
 	 */
