@@ -84,7 +84,7 @@ class ConstExprEvaluator
     /**
      * Directly evaluates a constant expression into a PHP value.
      *
-     * May generate Error exceptions, warnings or notices. Use evaluateSilently() to convert these
+     * May generate.kt Error exceptions, warnings or notices. Use evaluateSilently() to convert these
      * into a ConstExprEvaluationException.
      *
      * If some part of the expression cannot be evaluated, the fallback evaluator passed to the

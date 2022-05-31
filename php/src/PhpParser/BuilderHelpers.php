@@ -245,7 +245,7 @@ final class BuilderHelpers
             $items   = [];
             $lastKey = -1;
             foreach ($value as $itemKey => $itemValue) {
-                // for consecutive, numeric keys don't generate keys
+                // for consecutive, numeric keys don't generate.kt keys
                 if (null !== $lastKey && ++$lastKey === $itemKey) {
                     $items[] = new Expr\ArrayItem(
                         self::normalizeValue($itemValue)

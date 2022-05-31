@@ -3,6 +3,9 @@ package php.parser
 import org.antlr.v4.runtime.ParserRuleContext
 import org.antlr.v4.runtime.tree.TerminalNode
 import php.ast.AstNode
+import php.ast.Identifier
+import php.ast.StmtLabel
+import php.ast.StmtUse
 import php.parser.antlr.PhpParser
 import php.parser.parsingnode.ParsingListNode
 import php.parser.parsingnode.ParsingTerminalNode
@@ -22,88 +25,28 @@ class PhpAstVisitor : PhpAstBaseVisitor() {
         )
     }
 
+    private fun childrenAsList(ctx: ParserRuleContext): ParsingListNode {
+        val nodes = ctx.children.filterIsInstance<ParserRuleContext>().map { visit(it) }
+        return ParsingListNode(nodes)
+    }
+
+    private fun anyChild(ctx: ParserRuleContext): AstNode {
+        return ctx.children.filterIsInstance<ParserRuleContext>().first().let { visit(it) }
+    }
+
     override fun visitHtmlDocument(ctx: PhpParser.HtmlDocumentContext): AstNode {
-        val Shebang = ctx.Shebang()
-        val phpBlock = ctx.phpBlock()
-        val EOF = ctx.EOF()
-        val inlineHtml = ctx.inlineHtml()
-        val getRuleIndex = ctx.getRuleIndex()
-
-        return todo(ctx)
-    }
-
-    override fun visitInlineHtml(ctx: PhpParser.InlineHtmlContext): AstNode {
-        val htmlElement = ctx.htmlElement()
-        val scriptText = ctx.scriptText()
-        val getRuleIndex = ctx.getRuleIndex()
-
-        return todo(ctx)
-    }
-
-    override fun visitHtmlElement(ctx: PhpParser.HtmlElementContext): AstNode {
-        val HtmlStartDoubleQuoteString = ctx.HtmlStartDoubleQuoteString()
-        val HtmlDtd = ctx.HtmlDtd()
-        val HtmlOpen = ctx.HtmlOpen()
-        val HtmlName = ctx.HtmlName()
-        val HtmlText = ctx.HtmlText()
-        val HtmlHex = ctx.HtmlHex()
-        val XmlStart = ctx.XmlStart()
-        val XmlClose = ctx.XmlClose()
-        val XmlText = ctx.XmlText()
-        val HtmlClose = ctx.HtmlClose()
-        val HtmlStyleOpen = ctx.HtmlStyleOpen()
-        val HtmlSlashClose = ctx.HtmlSlashClose()
-        val HtmlSlash = ctx.HtmlSlash()
-        val HtmlEquals = ctx.HtmlEquals()
-        val HtmlStartQuoteString = ctx.HtmlStartQuoteString()
-        val HtmlEndQuoteString = ctx.HtmlEndQuoteString()
-        val HtmlEndDoubleQuoteString = ctx.HtmlEndDoubleQuoteString()
-        val HtmlDecimal = ctx.HtmlDecimal()
-        val HtmlQuoteString = ctx.HtmlQuoteString()
-        val HtmlDoubleQuoteString = ctx.HtmlDoubleQuoteString()
-        val StyleBody = ctx.StyleBody()
-        val HtmlScriptOpen = ctx.HtmlScriptOpen()
-        val HtmlScriptClose = ctx.HtmlScriptClose()
-        val getRuleIndex = ctx.getRuleIndex()
-
-        return todo(ctx)
-    }
-
-    override fun visitScriptText(ctx: PhpParser.ScriptTextContext): AstNode {
-        val ScriptText = ctx.ScriptText()
-        val getRuleIndex = ctx.getRuleIndex()
-
-        return todo(ctx)
+        if (ctx.Shebang() != null) {
+            unsupported("Shebang")
+        }
+        return childrenAsList(ctx)
     }
 
     override fun visitPhpBlock(ctx: PhpParser.PhpBlockContext): AstNode {
-        val importStatement = ctx.importStatement()
-        val topStatement = ctx.topStatement()
-        val getRuleIndex = ctx.getRuleIndex()
-
-        return todo(ctx)
-    }
-
-    override fun visitImportStatement(ctx: PhpParser.ImportStatementContext): AstNode {
-        val Import = ctx.Import()
-        val SemiColon = ctx.SemiColon()
-        val Namespace = ctx.Namespace()
-        val namespaceNameList = ctx.namespaceNameList()
-        val getRuleIndex = ctx.getRuleIndex()
-
-        return todo(ctx)
+        return childrenAsList(ctx)
     }
 
     override fun visitTopStatement(ctx: PhpParser.TopStatementContext): AstNode {
-        val globalConstantDeclaration = ctx.globalConstantDeclaration()
-        val useDeclaration = ctx.useDeclaration()
-        val getRuleIndex = ctx.getRuleIndex()
-        val namespaceDeclaration = ctx.namespaceDeclaration()
-        val functionDeclaration = ctx.functionDeclaration()
-        val classDeclaration = ctx.classDeclaration()
-        val statement = ctx.statement()
-
-        return todo(ctx)
+        return anyChild(ctx)
     }
 
     override fun visitUseDeclaration(ctx: PhpParser.UseDeclarationContext): AstNode {
@@ -311,34 +254,13 @@ class PhpAstVisitor : PhpAstBaseVisitor() {
     }
 
     override fun visitStatement(ctx: PhpParser.StatementContext): AstNode {
-        val Colon = ctx.Colon()
-        val identifier = ctx.identifier()
-        val SemiColon = ctx.SemiColon()
-        val ifStatement = ctx.ifStatement()
-        val whileStatement = ctx.whileStatement()
-        val doWhileStatement = ctx.doWhileStatement()
-        val forStatement = ctx.forStatement()
-        val switchStatement = ctx.switchStatement()
-        val breakStatement = ctx.breakStatement()
-        val continueStatement = ctx.continueStatement()
-        val returnStatement = ctx.returnStatement()
-        val yieldExpression = ctx.yieldExpression()
-        val globalStatement = ctx.globalStatement()
-        val staticVariableStatement = ctx.staticVariableStatement()
-        val echoStatement = ctx.echoStatement()
-        val expressionStatement = ctx.expressionStatement()
-        val unsetStatement = ctx.unsetStatement()
-        val foreachStatement = ctx.foreachStatement()
-        val tryCatchFinally = ctx.tryCatchFinally()
-        val throwStatement = ctx.throwStatement()
-        val gotoStatement = ctx.gotoStatement()
-        val declareStatement = ctx.declareStatement()
-        val emptyStatement_ = ctx.emptyStatement_()
-        val inlineHtmlStatement = ctx.inlineHtmlStatement()
-        val getRuleIndex = ctx.getRuleIndex()
-        val blockStatement = ctx.blockStatement()
-
-        return todo(ctx)
+        return if (ctx.identifier() !== null) {
+            StmtLabel(visitIdentifier(ctx.identifier()))
+        } else if (ctx.yieldExpression() != null) {
+            todo(ctx)
+        } else {
+            visitChildren(ctx)
+        }
     }
 
     override fun visitEmptyStatement_(ctx: PhpParser.EmptyStatement_Context): AstNode {
@@ -609,6 +531,7 @@ class PhpAstVisitor : PhpAstBaseVisitor() {
     }
 
     override fun visitDeclareStatement(ctx: PhpParser.DeclareStatementContext): AstNode {
+        val declareList = ctx.declareList()
         val Colon = ctx.Colon()
         val Declare = ctx.Declare()
         val innerStatementList = ctx.innerStatementList()
@@ -617,7 +540,6 @@ class PhpAstVisitor : PhpAstBaseVisitor() {
         val CloseRoundBracket = ctx.CloseRoundBracket()
         val getRuleIndex = ctx.getRuleIndex()
         val statement = ctx.statement()
-        val declareList = ctx.declareList()
         val EndDeclare = ctx.EndDeclare()
 
         return todo(ctx)
@@ -1585,121 +1507,8 @@ class PhpAstVisitor : PhpAstBaseVisitor() {
         return todo(ctx)
     }
 
-    override fun visitIdentifier(ctx: PhpParser.IdentifierContext): AstNode {
-        val Default = ctx.Default()
-        val ElseIf = ctx.ElseIf()
-        val IsSet = ctx.IsSet()
-        val Empty = ctx.Empty()
-        val Yield = ctx.Yield()
-        val Eval = ctx.Eval()
-        val Throw = ctx.Throw()
-        val Const = ctx.Const()
-        val Require = ctx.Require()
-        val Include = ctx.Include()
-        val Exit = ctx.Exit()
-        val Use = ctx.Use()
-        val Echo = ctx.Echo()
-        val Callable = ctx.Callable()
-        val Import = ctx.Import()
-        val Print = ctx.Print()
-        val Global = ctx.Global()
-        val Clone = ctx.Clone()
-        val Array = ctx.Array()
-        val Label = ctx.Label()
-        val New = ctx.New()
-        val From = ctx.From()
-        val List = ctx.List()
-        val Trait = ctx.Trait()
-        val Switch = ctx.Switch()
-        val Unset = ctx.Unset()
-        val If = ctx.If()
-        val EndIf = ctx.EndIf()
-        val EndFor = ctx.EndFor()
-        val Try = ctx.Try()
-        val Class = ctx.Class()
-        val For = ctx.For()
-        val Case = ctx.Case()
-        val Break = ctx.Break()
-        val Continue = ctx.Continue()
-        val Return = ctx.Return()
-        val Foreach = ctx.Foreach()
-        val As = ctx.As()
-        val Catch = ctx.Catch()
-        val Finally = ctx.Finally()
-        val Goto = ctx.Goto()
-        val Get = ctx.Get()
-        val Set = ctx.Set()
-        val Parent_ = ctx.Parent_()
-        val Final = ctx.Final()
-        val BoolType = ctx.BoolType()
-        val Abstract = ctx.Abstract()
-        val Int8Cast = ctx.Int8Cast()
-        val IntType = ctx.IntType()
-        val Public = ctx.Public()
-        val Resource = ctx.Resource()
-        val Typeof = ctx.Typeof()
-        val UintCast = ctx.UintCast()
-        val Call = ctx.Call()
-        val Destruct = ctx.Destruct()
-        val Wakeup = ctx.Wakeup()
-        val Sleep = ctx.Sleep()
-        val Autoload = ctx.Autoload()
-        val IsSet__ = ctx.IsSet__()
-        val Unset__ = ctx.Unset__()
-        val Invoke = ctx.Invoke()
-        val SetState = ctx.SetState()
-        val Clone__ = ctx.Clone__()
-        val Class__ = ctx.Class__()
-        val Traic__ = ctx.Traic__()
-        val Method__ = ctx.Method__()
-        val Line__ = ctx.Line__()
-        val File__ = ctx.File__()
-        val Dir__ = ctx.Dir__()
-        val Private = ctx.Private()
-        val Extends = ctx.Extends()
-        val Partial = ctx.Partial()
-        val Else = ctx.Else()
-        val Declare = ctx.Declare()
-        val Var = ctx.Var()
-        val While = ctx.While()
-        val Do = ctx.Do()
-        val EndWhile = ctx.EndWhile()
-        val Namespace = ctx.Namespace()
-        val IncludeOnce = ctx.IncludeOnce()
-        val RequireOnce = ctx.RequireOnce()
-        val InstanceOf = ctx.InstanceOf()
-        val EndSwitch = ctx.EndSwitch()
-        val EndForeach = ctx.EndForeach()
-        val BinaryCast = ctx.BinaryCast()
-        val DoubleCast = ctx.DoubleCast()
-        val DoubleType = ctx.DoubleType()
-        val FloatCast = ctx.FloatCast()
-        val Int16Cast = ctx.Int16Cast()
-        val Int64Type = ctx.Int64Type()
-        val ObjectType = ctx.ObjectType()
-        val Protected = ctx.Protected()
-        val StringType = ctx.StringType()
-        val UnicodeCast = ctx.UnicodeCast()
-        val CallStatic = ctx.CallStatic()
-        val ToString__ = ctx.ToString__()
-        val DebugInfo = ctx.DebugInfo()
-        val Namespace__ = ctx.Namespace__()
-        val Function__ = ctx.Function__()
-        val getRuleIndex = ctx.getRuleIndex()
-        val Function_ = ctx.Function_()
-        val LogicalAnd = ctx.LogicalAnd()
-        val LogicalXor = ctx.LogicalXor()
-        val LogicalOr = ctx.LogicalOr()
-        val BooleanConstant = ctx.BooleanConstant()
-        val EndDeclare = ctx.EndDeclare()
-        val Implements = ctx.Implements()
-        val InsteadOf = ctx.InsteadOf()
-        val Null = ctx.Null()
-        val Constructor = ctx.Constructor()
-        val Interface = ctx.Interface()
-        val Static = ctx.Static()
-
-        return todo(ctx)
+    override fun visitIdentifier(ctx: PhpParser.IdentifierContext): Identifier {
+        return Identifier(ctx.text)
     }
 
     override fun visitMemberModifier(ctx: PhpParser.MemberModifierContext): AstNode {
