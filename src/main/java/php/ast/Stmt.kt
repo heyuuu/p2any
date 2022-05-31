@@ -17,7 +17,7 @@ data class StmtUse(val type: Type, val uses: List<UseUse>) : Stmt {
         TYPE_CONSTANT(3),
     }
 
-    data class UseUse(val type: Type, val name: Name, val alias: Identifier?)
+    data class UseUse(val type: Type, val name: Name, val alias: Identifier?): Stmt
 }
 
 data class StmtGroupUse(val type: StmtUse.Type, val prefix: Name, val uses: List<StmtUse.UseUse>) : Stmt
@@ -60,8 +60,8 @@ class StmtNop() : Stmt
 
 // branch
 data class StmtIf(val branches: List<CondBranch>, val `else`: DefaultBranch?) : Stmt {
-    data class CondBranch(val cond: Expr, val stmts: List<Stmt>)
-    data class DefaultBranch(val stmts: List<Stmt>)
+    data class CondBranch(val cond: Expr, val stmts: List<Stmt>): Stmt
+    data class DefaultBranch(val stmts: List<Stmt>): Stmt
 }
 
 data class StmtTryCatch(val stmts: List<Stmt>, val catches: List<CatchBranch>, val finally: FinallyBranch?) : Stmt {
@@ -70,7 +70,7 @@ data class StmtTryCatch(val stmts: List<Stmt>, val catches: List<CatchBranch>, v
 }
 
 data class StmtSwitch(val cond: Expr, val cases: List<CaseBranch>) : Stmt {
-    data class CaseBranch(val cond: Expr?, val stmts: List<Stmt>)
+    data class CaseBranch(val cond: Expr?, val stmts: List<Stmt>): Stmt
 }
 
 data class StmtFor(val init: List<Expr>, val cond: List<Expr>, val loop: List<Expr>, val stmts: List<Stmt>) : Stmt

@@ -5,11 +5,13 @@ interface Stmt : AstNode
 interface Expr : AstNode
 interface FunctionLike : AstNode
 
-sealed interface Name : AstNode {
-    data class Normal(val parts: List<String>) : Name
-    data class Relative(val parts: List<String>) : Name
-    data class FullyQualified(val parts: List<String>) : Name
-}
+data class Name(val parts: List<String>): AstNode
+
+//sealed interface Name : AstNode {
+//    data class Normal(val parts: List<String>) : Name
+//    data class Relative(val parts: List<String>) : Name
+//    data class FullyQualified(val parts: List<String>) : Name
+//}
 
 data class Identifier(val name: String) : AstNode
 
