@@ -6,7 +6,7 @@ use P2AnyScript\ClassInfo;
 
 require_once __DIR__ . '/../vendor/autoload.php';
 
-class GenNodeTask extends AbstractAstGenTask
+class GenAstDecodeTask extends AbstractAstGenTask
 {
     public function run()
     {
@@ -25,7 +25,13 @@ class GenNodeTask extends AbstractAstGenTask
         }
         $code = join("\n", $lines);
 
-        echo $code;
+        echo collect($this->collect)
+        ->unique()
+            ->sort()
+            ->values()
+            ->join("\n");
+
+        // echo $code;
         FileUtil::saveFile($this->dstFile, $code);
     }
 
@@ -93,4 +99,4 @@ class GenNodeTask extends AbstractAstGenTask
     }
 }
 
-(new GenNodeTask())->run();
+(new GenAstDecodeTask())->run();
