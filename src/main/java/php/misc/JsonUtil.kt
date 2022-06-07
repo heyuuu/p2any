@@ -1,9 +1,8 @@
 package php.misc
 
 import com.fasterxml.jackson.core.PrettyPrinter
-import com.fasterxml.jackson.core.util.DefaultIndenter
-import com.fasterxml.jackson.core.util.DefaultPrettyPrinter
 import com.fasterxml.jackson.databind.ObjectMapper
+import php.misc.json.PhpStylePrettyPrinter
 
 typealias JsonObjectRebuilder = (Map<String, Any?>) -> Any?
 
@@ -14,14 +13,8 @@ object JsonUtil {
     }
 
     fun encodePretty(obj: Any?): String {
-        val objectMapper = ObjectMapper().setDefaultPrettyPrinter(prettyPrinter())
+        val objectMapper = ObjectMapper().setDefaultPrettyPrinter(PhpStylePrettyPrinter())
         return objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(obj)
-    }
-
-    private fun prettyPrinter(): PrettyPrinter {
-        return DefaultPrettyPrinter()
-            .withArrayIndenter(DefaultIndenter("    ", "\n"))
-            .withObjectIndenter(DefaultIndenter("    ", "\n"))
     }
 
     fun decode(json: String, objectRebuilder: JsonObjectRebuilder? = null): Any? {
