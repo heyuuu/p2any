@@ -65,9 +65,9 @@ data class ExprCastInt(override val expr: Expr): ExprCast(expr), Node
 data class ExprCastObject(override val expr: Expr): ExprCast(expr), Node
 data class ExprCastString(override val expr: Expr): ExprCast(expr), Node
 data class ExprCastUnset(override val expr: Expr): ExprCast(expr), Node
-data class ExprClassConstFetch(val `class`: OneOf2<Name, Expr>, val name: Identifier): Expr, Node
+data class ExprClassConstFetch(val `class`: AnyOf2<Name, Expr>, val name: Identifier): Expr, Node
 data class ExprClone(val expr: Expr): Expr, Node
-data class ExprClosure(val static: Boolean, val byRef: Boolean, val params: List<Param>, val uses: List<ExprClosureUse>, val returnType: OneOf3<Identifier, Name, ComplexType>?, val stmts: List<Stmt>): Expr, Node, FunctionLike
+data class ExprClosure(val static: Boolean, val byRef: Boolean, val params: List<Param>, val uses: List<ExprClosureUse>, val returnType: AnyOf3<Identifier, Name, ComplexType>?, val stmts: List<Stmt>): Expr, Node, FunctionLike
 data class ExprClosureUse(val `var`: ExprVariable, val byRef: Boolean): Expr, Node
 data class ExprConstFetch(val name: Name): Expr, Node
 data class ExprEmpty(val expr: Expr): Expr, Node
@@ -75,33 +75,33 @@ class ExprError(): Expr, Node
 data class ExprErrorSuppress(val expr: Expr): Expr, Node
 data class ExprEval(val expr: Expr): Expr, Node
 data class ExprExit(val expr: Expr?): Expr, Node
-data class ExprFuncCall(val name: OneOf2<Name, Expr>, val args: List<Arg>): ExprCallLike(), Node
+data class ExprFuncCall(val name: AnyOf2<Name, Expr>, val args: List<Arg>): ExprCallLike(), Node
 data class ExprInclude(val expr: Expr, val type: Int): Expr, Node
-data class ExprInstanceof(val expr: Expr, val `class`: OneOf2<Name, ExprVariable>): Expr, Node
+data class ExprInstanceof(val expr: Expr, val `class`: AnyOf2<Name, ExprVariable>): Expr, Node
 data class ExprIsset(val vars: List<Expr>): Expr, Node
 data class ExprList(val items: List<ExprArrayItem?>): Expr, Node
-data class ExprMethodCall(val `var`: Expr, val name: OneOf2<Identifier, Expr>, val args: List<Arg>): ExprCallLike(), Node
-data class ExprNew(val `class`: OneOf3<Name, Expr, StmtClass>, val args: List<Arg>): ExprCallLike(), Node
+data class ExprMethodCall(val `var`: Expr, val name: AnyOf2<Identifier, Expr>, val args: List<Arg>): ExprCallLike(), Node
+data class ExprNew(val `class`: AnyOf3<Name, Expr, StmtClass>, val args: List<Arg>): ExprCallLike(), Node
 data class ExprPostDec(val `var`: Expr): Expr, Node
 data class ExprPostInc(val `var`: Expr): Expr, Node
 data class ExprPreDec(val `var`: Expr): Expr, Node
 data class ExprPreInc(val `var`: Expr): Expr, Node
 data class ExprPrint(val expr: Expr): Expr, Node
-data class ExprPropertyFetch(val `var`: Expr, val name: OneOf2<Identifier, Expr>): Expr, Node
+data class ExprPropertyFetch(val `var`: Expr, val name: AnyOf2<Identifier, Expr>): Expr, Node
 data class ExprShellExec(val parts: List<Any>): Expr, Node
-data class ExprStaticCall(val `class`: OneOf2<Name, Expr>, val name: OneOf2<Identifier, Expr>, val args: List<Arg>): ExprCallLike(), Node
-data class ExprStaticPropertyFetch(val `class`: OneOf2<Name, Expr>, val name: OneOf2<Identifier, Expr>): Expr, Node
+data class ExprStaticCall(val `class`: AnyOf2<Name, Expr>, val name: AnyOf2<Identifier, Expr>, val args: List<Arg>): ExprCallLike(), Node
+data class ExprStaticPropertyFetch(val `class`: AnyOf2<Name, Expr>, val name: AnyOf2<Identifier, Expr>): Expr, Node
 data class ExprTernary(val cond: Expr, val `if`: Expr?, val `else`: Expr): Expr, Node
 data class ExprThrow(val expr: Expr): Expr, Node
 data class ExprUnaryMinus(val expr: Expr): Expr, Node
 data class ExprUnaryPlus(val expr: Expr): Expr, Node
-data class ExprVariable(val name: OneOf2<String, Expr>): Expr, Node
+data class ExprVariable(val name: AnyOf2<String, Expr>): Expr, Node
 data class ExprYield(val key: Expr?, val value: Expr?): Expr, Node
 data class ExprYieldFrom(val expr: Expr): Expr, Node
 data class Identifier(val name: String): Node
 data class Name(val parts: List<String>): Node
-data class NullableType(val type: OneOf2<Identifier, Name>): ComplexType(), Node
-data class Param(val type: OneOf3<Identifier, Name, ComplexType>?, val byRef: Boolean, val variadic: Boolean, val `var`: ExprVariable, val default: Expr?): Node
+data class NullableType(val type: AnyOf2<Identifier, Name>): ComplexType(), Node
+data class Param(val type: AnyOf3<Identifier, Name, ComplexType>?, val byRef: Boolean, val variadic: Boolean, val `var`: ExprVariable, val default: Expr?): Node
 interface Scalar: Expr, Node
 data class ScalarDNumber(val value: Double): Scalar, Node
 data class ScalarEncapsed(val parts: List<Expr>): Scalar, Node
@@ -124,7 +124,7 @@ data class StmtCatch(val types: List<Name>, val `var`: ExprVariable, val stmts: 
 data class StmtClass(val flags: Int, val extends: Name?, val implements: List<Name>, override val name: Identifier?, override val stmts: List<Stmt>, override val namespacedName: Name): StmtClassLike(name, stmts, namespacedName), Node
 data class StmtClassConst(val flags: Int, val consts: List<Const>): Stmt, Node
 sealed class StmtClassLike(open val name: Identifier?, open val stmts: List<Stmt>, open val namespacedName: Name): Stmt, Node
-data class StmtClassMethod(val flags: Int, val byRef: Boolean, val name: Identifier, val params: List<Param>, val returnType: OneOf3<Identifier, Name, ComplexType>?, val stmts: List<Stmt>?): Stmt, Node, FunctionLike
+data class StmtClassMethod(val flags: Int, val byRef: Boolean, val name: Identifier, val params: List<Param>, val returnType: AnyOf3<Identifier, Name, ComplexType>?, val stmts: List<Stmt>?): Stmt, Node, FunctionLike
 data class StmtConst(val consts: List<Const>): Stmt, Node
 data class StmtContinue(val num: Expr?): Stmt, Node
 data class StmtDeclare(val declares: List<StmtDeclareDeclare>, val stmts: List<Stmt>?): Stmt, Node
@@ -137,7 +137,7 @@ data class StmtExpression(val expr: Expr): Stmt, Node
 data class StmtFinally(val stmts: List<Stmt>): Stmt, Node
 data class StmtFor(val init: List<Expr>, val cond: List<Expr>, val loop: List<Expr>, val stmts: List<Stmt>): Stmt, Node
 data class StmtForeach(val expr: Expr, val keyVar: Expr?, val byRef: Boolean, val valueVar: Expr, val stmts: List<Stmt>): Stmt, Node
-data class StmtFunction(val byRef: Boolean, val name: Identifier, val params: List<Param>, val returnType: OneOf3<Identifier, Name, ComplexType>?, val stmts: List<Stmt>, val namespacedName: Name): Stmt, Node, FunctionLike
+data class StmtFunction(val byRef: Boolean, val name: Identifier, val params: List<Param>, val returnType: AnyOf3<Identifier, Name, ComplexType>?, val stmts: List<Stmt>, val namespacedName: Name): Stmt, Node, FunctionLike
 data class StmtGlobal(val vars: List<Expr>): Stmt, Node
 data class StmtGoto(val name: Identifier): Stmt, Node
 data class StmtGroupUse(val type: Int, val prefix: Name, val uses: List<StmtUseUse>): Stmt, Node

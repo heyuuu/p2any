@@ -3,99 +3,123 @@
 use P2Any\Utils\FileUtil;
 use P2AnyScript\AbstractAstGenTask;
 use P2AnyScript\ClassInfo;
+use P2AnyScript\TypeInfo;
+use Webmozart\Assert\Assert;
 
 require_once __DIR__ . '/../vendor/autoload.php';
 
 class GenAstDecodeTask extends AbstractAstGenTask
 {
+    protected $dstFile = self::ROOT . '/src/main/java/php/parser/NodeDecoder.kt';
+
     public function run()
     {
         $types = $this->getTypes();
-
-        // ob_start();
-        $lines   = [];
-        $lines[] = "package php.parser.node\n";
-        $lines[] = "";
-        $lines[] = "interface Node";
-        $lines[] = "interface FunctionLike : Node";
-        $lines[] = "";
         ksort($types);
-        foreach ($types as $type => $classInfo) {
-            $lines[] = $this->renderType($classInfo, $types);
-        }
-        $code = join("\n", $lines);
 
-        echo collect($this->collect)
-        ->unique()
-            ->sort()
-            ->values()
-            ->join("\n");
+        // 入口方法
+        $enterFunc = $this->renderEnterFunc($types);
+
+        // 类结束
+        $typesFunc = $this->renderTypesFunc($types);
+
+        // code
+        $code = <<<CODE
+package php.parser
+
+import php.parser.node.*
+
+class NodeDecoder : NodeDecoderAbstract() {
+{$enterFunc}
+
+{$typesFunc}
+}
+CODE;
 
         // echo $code;
         FileUtil::saveFile($this->dstFile, $code);
     }
 
     /**
-     * @param ClassInfo   $classInfo
      * @param ClassInfo[] $types
-     * @return void
+     * @return string
      */
-    protected function renderType(ClassInfo $classInfo, array $types): string
+    protected function renderEnterFunc(array $types): string
     {
-        // interface
-        if ($classInfo->isInterface) {
-            return sprintf("interface %s: %s", $classInfo->type, join(', ', $classInfo->parents));
+        $lines   = [];
+        $lines[] = <<<'CODE'
+    override fun tryResolveNode(nodeType: String, properties: ValueMap): Node? {
+        return when (nodeType) {
+CODE;
+
+        foreach ($types as $type => $classInfo) {
+            if (!$classInfo->isInterface && !$classInfo->isAbstract) {
+                $lines[] = <<<CASE
+            "{$type}" -> decode{$type}(properties)
+CASE;
+            }
+        }
+        $lines[] = <<<'CODE'
+            else -> null
+        }
+    }
+CODE;
+        return join(PHP_EOL, $lines);
+    }
+
+    /**
+     * @param ClassInfo[] $types
+     * @return string
+     */
+    protected function renderTypesFunc(array $types): string
+    {
+        $lines = [];
+        foreach ($types as $type => $classInfo) {
+            if ($classInfo->isInterface || $classInfo->isAbstract) {
+                continue;
+            }
+
+            $lines[] = <<<START
+    private fun decode{$type}(properties: ValueMap): {$type} {
+        return {$type}(
+START;
+            /** @var $type TypeInfo */
+            foreach ($classInfo->properties as $property => $type) {
+                Assert::isInstanceOf($type, TypeInfo::class);
+
+                // todo
+                $indent       = "            ";
+                $varName      = $this->wrapVarName($property);
+                $methodSuffix = ($type->isNullable() ? 'OrNull' : '');
+
+                switch ($type->getType()) {
+                    case TypeInfo::TYPE_SIMPLE:
+                        $method  = 'getAs' . $methodSuffix;
+                        $lines[] = $indent . sprintf('%s = properties.%s("%s", %s::class),', $varName, $method, $property, $type->getTypeName());
+                        break;
+                    case TypeInfo::TYPE_LIST:
+                        $itemType = $type->getItemType();
+                        $method   = 'getAsList' . ($itemType->isNullable() ? 'OfNullable' : '') . $methodSuffix;
+                        $lines[]  = $indent . sprintf('%s = properties.%s("%s", %s::class),', $varName, $method, $property, $itemType->toTypeHintNotNull());
+                        break;
+                    case TypeInfo::TYPE_ANY_OF:
+                        $method  = 'getAsAnyOf' . count($type->getAnyTypes()) . $methodSuffix;
+                        $lines[] = $indent . sprintf('%s = properties.%s("%s", %s),', $varName, $method, $property,
+                                collect($type->getAnyTypes())->map(function (TypeInfo $type) {
+                                    return $type->toTypeHint() . '::class';
+                                })->join(', ')
+                            );
+                        break;
+                }
+            }
+
+            $lines[] = <<<END
+        )
+    }
+END;
         }
 
-        // class
-        $superDesc = collect($classInfo->parents)
-            ->map(function (string $parent) use ($types) {
-                $parentClassInfo = $types[$parent] ?? null;
-                if ($parentClassInfo && !$parentClassInfo->isInterface) {
-                    return sprintf(
-                        "%s(%s)",
-                        $parentClassInfo->type,
-                        collect($parentClassInfo->properties)->keys()
-                            ->map(function (string $name) {
-                                return $this->wrapVarName($name);
-                            })
-                            ->join(', ')
-                    );
-                } else {
-                    return $parent;
-                }
-            })
-            ->join(', ');
-
-        // propertyDesc
-        /** @var ClassInfo|null $superClassInfo */
-        $superClass         = collect($classInfo->parents)
-            ->first(function (string $parent) use ($types) {
-                $parentClassInfo = $types[$parent] ?? null;
-                return $parentClassInfo && !$parentClassInfo->isInterface;
-            });
-        $overrideProperties = $superClass ? $types[$superClass]->properties : [];
-        $propertyDesc       = collect($classInfo->properties)
-            ->map(function (string $type, string $name) use ($overrideProperties, $classInfo) {
-                $varName = $this->wrapVarName($name);
-                if (isset($overrideProperties[$name])) {
-                    return sprintf("override val %s: %s", $varName, $type);
-                } elseif ($classInfo->isAbstract) {
-                    return sprintf("open val %s: %s", $varName, $type);
-                } else {
-                    return sprintf("val %s: %s", $varName, $type);
-                }
-            })
-            ->join(', ');
-
-        // 输出
-        return sprintf(
-            "%sclass %s(%s): %s",
-            $classInfo->isAbstract ? "sealed " : (!empty($classInfo->properties) ? "data " : ''),
-            $classInfo->type,
-            $propertyDesc,
-            $superDesc
-        );
+        return join(PHP_EOL, $lines);
     }
 }
 

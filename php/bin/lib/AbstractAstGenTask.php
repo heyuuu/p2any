@@ -16,17 +16,12 @@ abstract class AbstractAstGenTask
     const ROOT = __DIR__ . '/../../../';
     protected $nodeRoot = self::ROOT . '/php/src/PhpParser/Node/';
     protected $nsPrefix = 'P2Any\\PhpParser\\Node\\';
-    protected $dstFile  = self::ROOT . '/src/main/java/php/parser/node/generate.kt';
 
     protected $typeBlackList = [
         'NameRelative',
         'NameFullyQualified',
         'VarLikeIdentifier',
     ];
-    /**
-     * @var array
-     */
-    protected $collect = [];
 
     private $classes      = null;
     private $baseClassMap = null;
@@ -130,49 +125,47 @@ abstract class AbstractAstGenTask
         return in_array($type, ['Stmt', 'Expr', 'Scalar']);
     }
 
-    protected function guessType(ReflectionProperty $property): string
+    protected function guessType(ReflectionProperty $property): TypeInfo
     {
         // 从 DocComment 的 @var 注释推断类型
         $docComment = $property->getDocComment();
         if (preg_match('/@var ([^ ]+)/', $docComment, $matches)) {
-            $typeDesc        = $matches[1];
-            $type            = $this->mapTypesDesc($typeDesc);
-            $this->collect[] = $typeDesc . "\t=> " . $type;
-            return $type;
+            $typeDesc = $matches[1];
+            return $this->mapTypesDesc($typeDesc);
         }
 
         // 从名称推断类型
         $name = $property->name;
 
         if ($name === 'expr') {
-            return 'Expr';
+            return TypeInfo::simple('Expr');
         } elseif ($name === 'stmts') {
-            return 'List<Stmt>';
+            return TypeInfo::list(TypeInfo::simple('Stmt'));
         }
 
-        return 'Any?';
+        return TypeInfo::simple('Any', '?');
     }
 
-    protected function mapTypeDesc(string $type): string
+    protected function mapTypeDesc(string $type): TypeInfo
     {
         if (Str::endsWith($type, '[]')) {
-            return 'List<' . $this->mapTypesDesc(substr($type, 0, -2)) . '>';
+            return TypeInfo::list($this->mapTypesDesc(substr($type, 0, -2)));
         } elseif (preg_match("/array<(.*)>/", $type, $matches)) {
-            return 'List<' . $this->mapTypesDesc($matches[1]) . '>';
+            return TypeInfo::list($this->mapTypesDesc($matches[1]));
         }
 
         $baseType = Str::afterLast($type, "\\");
 
         // 写死的匹配
         $map = [
-            'int'               => 'Int',
-            'float'             => 'Double',
-            'bool'              => 'Boolean',
-            'string'            => 'String',
-            'array'             => 'List<Any>',
-            'Const_'            => 'Const',
-            'Class_'            => 'StmtClass',
-            'VarLikeIdentifier' => 'Identifier',
+            'int'               => TypeInfo::simple('Int'),
+            'float'             => TypeInfo::simple('Double'),
+            'bool'              => TypeInfo::simple('Boolean'),
+            'string'            => TypeInfo::simple('String'),
+            'array'             => TypeInfo::list(TypeInfo::simple('Any')),
+            'Const_'            => TypeInfo::simple('Const'),
+            'Class_'            => TypeInfo::simple('StmtClass'),
+            'VarLikeIdentifier' => TypeInfo::simple('Identifier'),
         ];
         if (isset($map[$baseType])) {
             return $map[$baseType];
@@ -182,7 +175,7 @@ abstract class AbstractAstGenTask
         $baseClassMap = $this->getBaseClassMap();
         $classes      = $baseClassMap[$baseType] ?? [];
         if (count($classes) == 1) {
-            return $this->mapType($classes[0]);
+            return TypeInfo::simple($this->mapType($classes[0]));
         } elseif (count($classes) > 1) {
             throw new Exception(sprintf('基础类型对应多个类，需特殊处理: base=%s, classes=%s', $baseType, join('|', $classes)));
         }
@@ -191,10 +184,10 @@ abstract class AbstractAstGenTask
         throw new Exception("未匹配上类型注释: " . $type);
     }
 
-    private function mapTypesDesc(string $type): string
+    private function mapTypesDesc(string $type): TypeInfo
     {
         if ($type === '(ArrayItem|null)[]') {
-            return 'List<ExprArrayItem?>';
+            return TypeInfo::list(TypeInfo::simple('ExprArrayItem', true));
         }
         if (false !== strpos($type, '(')) {
             throw new Exception("不支持类型标注带括号的情况");
@@ -203,6 +196,7 @@ abstract class AbstractAstGenTask
         $subTypes = explode('|', $type);
         $nullable = in_array('null', $subTypes);
 
+        /** @var TypeInfo[] $mapSubTypes */
         $mapSubTypes = collect($subTypes)
             ->map(function ($subType) {
                 return in_array($subType, ['null', 'Error']) ? null : $this->mapTypeDesc($subType);
@@ -212,18 +206,14 @@ abstract class AbstractAstGenTask
             ->values()
             ->all();
 
-        $nullableSuffix = $nullable ? '?' : '';
         switch (count($mapSubTypes)) {
             case 0:
                 throw new Exception("类型映射为空: " . $type);
             case 1:
-                return $mapSubTypes[0] . $nullableSuffix;
-            case 2:
-                return sprintf("OneOf2<%s>", join(', ', $mapSubTypes)) . $nullableSuffix;
-            case 3:
-                return sprintf("OneOf3<%s>", join(', ', $mapSubTypes)) . $nullableSuffix;
+                return $mapSubTypes[0]->withNullable($nullable);
+                return TypeInfo::simple($mapSubTypes[0], $nullable);
             default:
-                throw new Exception("类型枚举过多: " . join(', ', $mapSubTypes));
+                return TypeInfo::anyOf($mapSubTypes, $nullable);
         }
     }
 

@@ -8,6 +8,8 @@ require_once __DIR__ . '/../vendor/autoload.php';
 
 class GenNodeTask extends AbstractAstGenTask
 {
+    protected $dstFile = self::ROOT . '/src/main/java/php/parser/node/generate.kt';
+
     public function run()
     {
         $types = $this->getTypes();
