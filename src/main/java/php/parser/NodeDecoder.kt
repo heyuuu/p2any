@@ -95,6 +95,8 @@ class NodeDecoder : NodeDecoderAbstract() {
             "ExprYieldFrom" -> decodeExprYieldFrom(properties)
             "Identifier" -> decodeIdentifier(properties)
             "Name" -> decodeName(properties)
+            "NameFullyQualified" -> decodeNameFullyQualified(properties)
+            "NameRelative" -> decodeNameRelative(properties)
             "NullableType" -> decodeNullableType(properties)
             "Param" -> decodeParam(properties)
             "ScalarDNumber" -> decodeScalarDNumber(properties)
@@ -155,6 +157,7 @@ class NodeDecoder : NodeDecoderAbstract() {
             "StmtUse" -> decodeStmtUse(properties)
             "StmtUseUse" -> decodeStmtUseUse(properties)
             "StmtWhile" -> decodeStmtWhile(properties)
+            "VarLikeIdentifier" -> decodeVarLikeIdentifier(properties)
             else -> null
         }
     }
@@ -677,6 +680,16 @@ class NodeDecoder : NodeDecoderAbstract() {
             parts = properties.getAsList("parts", String::class),
         )
     }
+    private fun decodeNameFullyQualified(properties: ValueMap): NameFullyQualified {
+        return NameFullyQualified(
+            parts = properties.getAsList("parts", String::class),
+        )
+    }
+    private fun decodeNameRelative(properties: ValueMap): NameRelative {
+        return NameRelative(
+            parts = properties.getAsList("parts", String::class),
+        )
+    }
     private fun decodeNullableType(properties: ValueMap): NullableType {
         return NullableType(
             type = properties.getAsAnyOf2("type", Identifier::class, Name::class),
@@ -1027,6 +1040,11 @@ class NodeDecoder : NodeDecoderAbstract() {
         return StmtWhile(
             cond = properties.getAs("cond", Expr::class),
             stmts = properties.getAsList("stmts", Stmt::class),
+        )
+    }
+    private fun decodeVarLikeIdentifier(properties: ValueMap): VarLikeIdentifier {
+        return VarLikeIdentifier(
+            name = properties.getAs("name", String::class),
         )
     }
 }

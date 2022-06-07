@@ -98,8 +98,10 @@ data class ExprUnaryPlus(val expr: Expr): Expr, Node
 data class ExprVariable(val name: AnyOf2<String, Expr>): Expr, Node
 data class ExprYield(val key: Expr?, val value: Expr?): Expr, Node
 data class ExprYieldFrom(val expr: Expr): Expr, Node
-data class Identifier(val name: String): Node
-data class Name(val parts: List<String>): Node
+open class Identifier(open val name: String): Node
+open class Name(open val parts: List<String>): Node
+data class NameFullyQualified(override val parts: List<String>): Name(parts), Node
+data class NameRelative(override val parts: List<String>): Name(parts), Node
 data class NullableType(val type: AnyOf2<Identifier, Name>): ComplexType(), Node
 data class Param(val type: AnyOf3<Identifier, Name, ComplexType>?, val byRef: Boolean, val variadic: Boolean, val `var`: ExprVariable, val default: Expr?): Node
 interface Scalar: Expr, Node
@@ -165,3 +167,4 @@ data class StmtUnset(val vars: List<Expr>): Stmt, Node
 data class StmtUse(val type: Int, val uses: List<StmtUseUse>): Stmt, Node
 data class StmtUseUse(val type: Int, val name: Name, val alias: Identifier?): Stmt, Node
 data class StmtWhile(val cond: Expr, val stmts: List<Stmt>): Stmt, Node
+data class VarLikeIdentifier(override val name: String): Identifier(name), Node

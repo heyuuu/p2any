@@ -78,7 +78,7 @@ class TypeInfo
             case self::TYPE_LIST:
                 return 'List<' . $this->itemType . '>';
             case self::TYPE_ANY_OF:
-                return 'AnyOf' . count($this->anyTypes) . '<' . join(',', $this->anyTypes) . '>';
+                return 'AnyOf' . count($this->anyTypes) . '<' . join(', ', $this->anyTypes) . '>';
         }
     }
 

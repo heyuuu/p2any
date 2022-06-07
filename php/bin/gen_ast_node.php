@@ -22,7 +22,7 @@ class GenNodeTask extends AbstractAstGenTask
         $lines[] = "interface FunctionLike : Node";
         $lines[] = "";
         ksort($types);
-        foreach ($types as $type => $classInfo) {
+        foreach ($types as $classInfo) {
             $lines[] = $this->renderType($classInfo, $types);
         }
         $code = join("\n", $lines);
@@ -43,7 +43,7 @@ class GenNodeTask extends AbstractAstGenTask
             return sprintf("interface %s: %s", $classInfo->type, join(', ', $classInfo->parents));
         }
 
-        // class
+        // SuperClass
         $superDesc = collect($classInfo->parents)
             ->map(function (string $parent) use ($types) {
                 $parentClassInfo = $types[$parent] ?? null;
@@ -63,6 +63,11 @@ class GenNodeTask extends AbstractAstGenTask
             })
             ->join(', ');
 
+        // SubClass
+        $hasSubClass = (bool)collect($types)->first(function (ClassInfo $oneClassInfo) use ($classInfo) {
+            return in_array($classInfo->type, $oneClassInfo->parents);
+        });
+
         // propertyDesc
         /** @var ClassInfo|null $superClassInfo */
         $superClass         = collect($classInfo->parents)
@@ -72,11 +77,11 @@ class GenNodeTask extends AbstractAstGenTask
             });
         $overrideProperties = $superClass ? $types[$superClass]->properties : [];
         $propertyDesc       = collect($classInfo->properties)
-            ->map(function (string $type, string $name) use ($overrideProperties, $classInfo) {
+            ->map(function (string $type, string $name) use ($overrideProperties, $classInfo, $hasSubClass) {
                 $varName = $this->wrapVarName($name);
                 if (isset($overrideProperties[$name])) {
                     return sprintf("override val %s: %s", $varName, $type);
-                } elseif ($classInfo->isAbstract) {
+                } elseif ($classInfo->isAbstract || $hasSubClass) {
                     return sprintf("open val %s: %s", $varName, $type);
                 } else {
                     return sprintf("val %s: %s", $varName, $type);
@@ -85,9 +90,19 @@ class GenNodeTask extends AbstractAstGenTask
             ->join(', ');
 
         // 输出
+        if ($classInfo->isAbstract) {
+            $classModifier = 'sealed ';
+        } elseif ($hasSubClass) {
+            $classModifier = 'open ';
+        } elseif (!empty($classInfo->properties)) {
+            $classModifier = 'data ';
+        } else {
+            $classModifier = '';
+        }
+
         return sprintf(
             "%sclass %s(%s): %s",
-            $classInfo->isAbstract ? "sealed " : (!empty($classInfo->properties) ? "data " : ''),
+            $classModifier,
             $classInfo->type,
             $propertyDesc,
             $superDesc

@@ -18,9 +18,9 @@ abstract class AbstractAstGenTask
     protected $nsPrefix = 'P2Any\\PhpParser\\Node\\';
 
     protected $typeBlackList = [
-        'NameRelative',
-        'NameFullyQualified',
-        'VarLikeIdentifier',
+        // 'NameRelative',
+        // 'NameFullyQualified',
+        // 'VarLikeIdentifier',
     ];
 
     private $classes      = null;
