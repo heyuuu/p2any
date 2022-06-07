@@ -20,6 +20,7 @@ class NodeDecoderTest {
 
     private fun runCaseInDir(srcRoot: String, dstRoot: String) {
         val decoder = NodeDecoder()
+        val encoder = NodeEncoder()
         val baseDir = File(srcRoot)
         baseDir.walk()
             .filter { it.isFile }
@@ -30,7 +31,8 @@ class NodeDecoderTest {
 
                 val dstFilePath = dstRoot + relativePath
                 val result = decoder.decodeFile(file)
-                FileUtil.saveFile(dstFilePath, JsonUtil.encodePretty(result))
+                val json = encoder.encodePretty(result)
+                FileUtil.saveFile(dstFilePath, json)
             }
     }
 }

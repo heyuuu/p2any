@@ -30,16 +30,7 @@ abstract class NodeDecoderAbstract {
 
         // get as list
         fun <T : Any> getAsListOrNull(key: String, itemType: KClass<T>): List<T>? {
-            return getAsOrNull(key, List::class)?.map {
-                println(
-                    "Item: " + (if (it != null) it::class.qualifiedName else "null")
-                )
-                if (it is ValueMap) {
-                    println(it)
-                }
-
-                itemType.cast(it)
-            }
+            return getAsOrNull(key, List::class)?.map { itemType.cast(it) }
         }
 
         fun <T : Any> getAsList(key: String, itemType: KClass<T>): List<T> = getAsListOrNull(key, itemType)!!
@@ -79,11 +70,7 @@ abstract class NodeDecoderAbstract {
     private fun resolveObject(map: ValueMap): Any? {
         val nodeType = map.getAsOrNull("type", String::class)
         val properties = map.getAsOrNull("properties", ValueMap::class)
-        if (nodeType == "StmtNop") {
-            println(properties)
-        }
         if (nodeType !== null && properties !== null) {
-
             return tryResolveNode(nodeType, properties)
         }
 
