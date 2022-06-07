@@ -81,7 +81,7 @@ abstract class AbstractAstGenTask
 
         $classInfo              = new ClassInfo();
         $classInfo->class       = $class;
-        $classInfo->type        = $this->mapType($class);
+        $classInfo->type        = TypeUtil::mapType($class);
         $classInfo->isInterface = $refClass->isInterface() || $this->isMapToInterface($classInfo->type);
         $classInfo->isAbstract  = $refClass->isAbstract();
         $classInfo->parents     = collect(array_merge(
@@ -89,7 +89,7 @@ abstract class AbstractAstGenTask
             $refClass->getInterfaceNames()
         ))
             ->map(function (string $parentName) {
-                return $this->mapType($parentName);
+                return TypeUtil::mapType($parentName);
             })
             ->filter()
             ->unique()
@@ -107,17 +107,6 @@ abstract class AbstractAstGenTask
             ->all();
 
         return $classInfo;
-    }
-
-    protected function mapType(string $class)
-    {
-        if ($class === Node::class || $class === NodeAbstract::class) {
-            return 'Node';
-        } elseif (Str::startsWith($class, $this->nsPrefix)) {
-            return str_replace(['\\', '_'], '', Str::after($class, $this->nsPrefix));
-        } else {
-            return null;
-        }
     }
 
     protected function isMapToInterface(string $type): bool
@@ -175,7 +164,7 @@ abstract class AbstractAstGenTask
         $baseClassMap = $this->getBaseClassMap();
         $classes      = $baseClassMap[$baseType] ?? [];
         if (count($classes) == 1) {
-            return TypeInfo::simple($this->mapType($classes[0]));
+            return TypeInfo::simple(TypeUtil::mapType($classes[0]));
         } elseif (count($classes) > 1) {
             throw new Exception(sprintf('基础类型对应多个类，需特殊处理: base=%s, classes=%s', $baseType, join('|', $classes)));
         }
