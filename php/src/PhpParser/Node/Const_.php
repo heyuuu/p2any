@@ -13,7 +13,7 @@ class Const_ extends NodeAbstract
     /** @var Expr Value */
     public $value;
 
-    /** @var Name Namespaced name (if using NameResolver) */
+    /** @var Name|null Namespaced name (if using NameResolver) */
     public $namespacedName;
 
     /**

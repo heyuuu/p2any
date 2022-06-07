@@ -6,7 +6,7 @@ interface FunctionLike : Node
 
 data class Arg(val value: Expr, val byRef: Boolean, val unpack: Boolean): Node
 sealed class ComplexType(): Node
-data class Const(val name: Identifier, val value: Expr, val namespacedName: Name): Node
+data class Const(val name: Identifier, val value: Expr, val namespacedName: Name?): Node
 interface Expr: Node
 data class ExprArray(val items: List<ExprArrayItem?>): Expr, Node
 data class ExprArrayDimFetch(val `var`: Expr, val dim: Expr?): Expr, Node

@@ -7,19 +7,39 @@ import php.parser.node.Node
 import java.io.File
 import kotlin.reflect.KClass
 import kotlin.reflect.cast
+import kotlin.reflect.full.createInstance
+import kotlin.reflect.full.isSubclassOf
 import kotlin.reflect.safeCast
 
 abstract class NodeDecoderAbstract {
-    protected class ValueMap(val map: Map<String, Any?>) : Map<String, Any?> by map {
+    protected class ValueMap(val map: Map<String, Any?> = emptyMap()) : Map<String, Any?> by map {
         // get as simple
         fun <T : Any> getAs(key: String, type: KClass<T>): T = getAsOrNull(key, type)!!
         fun <T : Any> getAsOrNull(key: String, type: KClass<T>): T? {
-            return map[key]?.let { type.safeCast(it) }
+            return map[key]?.let {
+                if (type.isInstance(it)) {
+                    type.cast(it)
+                } else if (type.isSubclassOf(Map::class) && it is List<*> && it.isEmpty()) {
+                    // 兼容 PHP json_encode 会将空对象输出为空数组的问题
+                    return type.createInstance()
+                } else {
+                    null
+                }
+            }
         }
 
         // get as list
         fun <T : Any> getAsListOrNull(key: String, itemType: KClass<T>): List<T>? {
-            return getAsOrNull(key, List::class)?.map { itemType.cast(it) }
+            return getAsOrNull(key, List::class)?.map {
+                println(
+                    "Item: " + (if (it != null) it::class.qualifiedName else "null")
+                )
+                if (it is ValueMap) {
+                    println(it)
+                }
+
+                itemType.cast(it)
+            }
         }
 
         fun <T : Any> getAsList(key: String, itemType: KClass<T>): List<T> = getAsListOrNull(key, itemType)!!
@@ -59,7 +79,11 @@ abstract class NodeDecoderAbstract {
     private fun resolveObject(map: ValueMap): Any? {
         val nodeType = map.getAsOrNull("type", String::class)
         val properties = map.getAsOrNull("properties", ValueMap::class)
-        if (nodeType != null && properties != null) {
+        if (nodeType == "StmtNop") {
+            println(properties)
+        }
+        if (nodeType !== null && properties !== null) {
+
             return tryResolveNode(nodeType, properties)
         }
 

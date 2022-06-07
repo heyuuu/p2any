@@ -173,7 +173,7 @@ class NodeDecoder : NodeDecoderAbstract() {
         return Const(
             name = properties.getAs("name", Identifier::class),
             value = properties.getAs("value", Expr::class),
-            namespacedName = properties.getAs("namespacedName", Name::class),
+            namespacedName = properties.getAsOrNull("namespacedName", Name::class),
         )
     }
     private fun decodeExprArray(properties: ValueMap): ExprArray {
