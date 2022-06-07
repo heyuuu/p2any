@@ -1,18 +1,13 @@
 package php.parser
 
-import com.google.gson.Gson
-import com.google.gson.JsonArray
-import com.google.gson.JsonElement
-import com.google.gson.JsonNull
-import com.google.gson.JsonObject
-import com.google.gson.JsonPrimitive
 import php.ast.*
+import php.misc.JsonUtil
 import java.io.File
 import kotlin.reflect.KClass
 import kotlin.reflect.KType
 import kotlin.reflect.full.declaredFunctions
-import kotlin.reflect.full.functions
 import kotlin.reflect.full.primaryConstructor
+import kotlin.reflect.safeCast
 
 class PhpIrDecoder {
     companion object {
@@ -170,58 +165,22 @@ class PhpIrDecoder {
 
     fun load(file: File) {
         val json = file.readText()
-        val value = Gson().fromJson(json, JsonElement::class.java)
-        val result = resolve(value)
+        val result = JsonUtil.decode(json) { resolveObject(it) }
 
         println(result)
     }
 
-    private fun resolve(element: JsonElement): Any? {
-        return when (element) {
-            is JsonArray -> element.toList().map { resolve(it) }
-            is JsonObject -> resolveObject(element)
-            is JsonNull -> null
-            is JsonPrimitive -> when {
-                element.isBoolean -> element.asBoolean
-                element.isNumber -> element.asNumber.toInt()
-                element.isString -> element.asString
-                else -> null
-            }
-            else -> throw RuntimeException("预期外的 JsonElement 子类: " + element::class.java)
-        }
-    }
-
-    private fun resolveMap(element: JsonObject): Map<String, Any?> {
-        return element.entrySet().associate { Pair(it.key, resolve(it.value)) }
-    }
-
-    private fun resolveObject(element: JsonObject): Any {
-        val nodeType = element.getAsString("type")?.let { typeMap[it] }
-        val properties = element.getAsObject("properties")
+    private fun resolveObject(map: Map<String, *>): Any? {
+        val nodeType = map["type"]?.let { typeMap[it] }
+        val properties = map["properties"]?.let { Map::class.safeCast(it) }
         return if (nodeType != null && properties != null) {
-            buildNode(nodeType, resolveMap(properties))
+            buildNode(nodeType, properties as Map<String, *>)
         } else {
-            resolveMap(element)
+            map
         }
     }
 
-    private fun JsonObject.getAsString(memberName: String): String? {
-        val member = this[memberName]
-        if (member != null && member is JsonPrimitive) {
-            return member.asString
-        }
-        return null
-    }
-
-    private fun JsonObject.getAsObject(memberName: String): JsonObject? {
-        val member = this[memberName]
-        if (member != null && member is JsonObject) {
-            return member
-        }
-        return null
-    }
-
-    private fun buildNode(nodeType: KClass<out AstNode>, properties: Map<String, Any?>): AstNode {
+    private fun buildNode(nodeType: KClass<out AstNode>, properties: Map<String, *>): AstNode {
         // 自定义构造方式
         this::class.declaredFunctions
             .firstOrNull { it.name == "build${nodeType.simpleName}" }

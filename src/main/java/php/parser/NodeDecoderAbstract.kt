@@ -1,37 +1,20 @@
 package php.parser
 
-import php.misc.JsonDecoder
+import php.misc.JsonUtil
 import php.parser.node.AnyOf2
 import php.parser.node.AnyOf3
 import php.parser.node.Node
 import java.io.File
 import kotlin.reflect.KClass
 import kotlin.reflect.cast
-import kotlin.reflect.full.isSubclassOf
 import kotlin.reflect.safeCast
 
 abstract class NodeDecoderAbstract {
     protected class ValueMap(val map: Map<String, Any?>) : Map<String, Any?> by map {
-        // map number
-        private fun castNumber(value: Number, type: KClass<out Number>): Number {
-            return when (type) {
-                Int::class -> value.toInt()
-                Double::class -> value.toDouble()
-                else -> throw Exception("预期外的 Number 类: " + type.qualifiedName)
-            }
-        }
-
-
         // get as simple
         fun <T : Any> getAs(key: String, type: KClass<T>): T = getAsOrNull(key, type)!!
         fun <T : Any> getAsOrNull(key: String, type: KClass<T>): T? {
-            return map[key]?.let {
-                if (it is Number && type.isSubclassOf(Number::class)) {
-                    castNumber(it, type as KClass<out Number>) as T
-                } else {
-                    type.safeCast(it)
-                }
-            }
+            return map[key]?.let { type.safeCast(it) }
         }
 
         // get as list
@@ -67,10 +50,8 @@ abstract class NodeDecoderAbstract {
         }
     }
 
-    private val jsonDecoder = JsonDecoder { resolveObject(ValueMap(it)) }
-
     fun decode(json: String): Any? {
-        return jsonDecoder.decode(json)
+        return JsonUtil.decode(json) { resolveObject(ValueMap(it)) }
     }
 
     fun decodeFile(file: File) = decode(file.readText())
