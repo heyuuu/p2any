@@ -226,19 +226,13 @@ class NodePrinter : NodePrinterAbstract() {
     private fun escapeString(string: String, vararg quoteChars: Char): String {
         // todo 暂不支持 \f \v
         // todo 暂不支持特殊字符转义
-        return addcslashes(string, setOf('\t', '$', '\\', '\r', '\n') + quoteChars.toSet())
+        return addcslashes(string, EscapeMap.map.keys + quoteChars.toSet())
     }
 
     private fun addcslashes(string: String, chars: Set<Char>): String {
-        val charMap = mapOf(
-            '\t' to "\\t",
-            '\r' to "\\r",
-            '\n' to "\\n"
-        )
-
         var result = string
         chars.forEach { char ->
-            val newValue = charMap.getOrDefault(char, "\\" + char)
+            val newValue = EscapeMap.map.getOrDefault(char, "\\" + char)
             result = result.replace(char.toString(), newValue)
         }
 
@@ -371,7 +365,7 @@ class NodePrinter : NodePrinterAbstract() {
         return when (node) {
             is ExprCastArray -> pPrefixOp(node::class, "(array) ", expr)
             is ExprCastBool -> pPrefixOp(node::class, "(bool) ", expr)
-            is ExprCastDouble -> pPrefixOp(node::class, "(double) ", expr)
+            is ExprCastDouble -> pPrefixOp(node::class, "(float) ", expr)
             is ExprCastInt -> pPrefixOp(node::class, "(int) ", expr)
             is ExprCastObject -> pPrefixOp(node::class, "(object) ", expr)
             is ExprCastString -> pPrefixOp(node::class, "(string) ", expr)
@@ -513,7 +507,7 @@ class NodePrinter : NodePrinterAbstract() {
 
     private fun pExprPreDec(node: ExprPreDec): String {
         val `var` = node.`var`
-        return pPrefixOp(ExprPreDec::class, "++", `var`)
+        return pPrefixOp(ExprPreDec::class, "--", `var`)
     }
 
     private fun pExprPreInc(node: ExprPreInc): String {
@@ -599,7 +593,7 @@ class NodePrinter : NodePrinterAbstract() {
             return "+(" + p(expr) + ")"
         }
 
-        return pPrefixOp(ExprUnaryPlus::class, "-", expr)
+        return pPrefixOp(ExprUnaryPlus::class, "+", expr)
     }
 
     private fun pExprVariable(node: ExprVariable): String {
@@ -685,12 +679,12 @@ class NodePrinter : NodePrinterAbstract() {
         val value = node.value
 
         // TODO 目前只默认使用单引号包裹字符串，可优化
-        return if (value.contains('\n')) {
+        val needEscape = value.toCharArray().any { char -> char < '\u0020' || char == '\'' }
+        return if (needEscape) {
             '"' + escapeString(value, '"') + '"'
         } else {
             "'" + addcslashes(value, setOf('\'', '\\')) + "'"
         }
-
     }
 
     private fun pScalarEncapsed(node: ScalarEncapsed): String {
@@ -726,7 +720,7 @@ class NodePrinter : NodePrinterAbstract() {
     private fun pStmtBreak(node: StmtBreak): String {
         val num = node.num
 
-        return "break" + pNotNull(num, { " " + p(it) })
+        return "break" + pNotNull(num, { " " + p(it) }) + ";"
     }
 
     private fun pStmtCase(node: StmtCase): String {
@@ -741,7 +735,7 @@ class NodePrinter : NodePrinterAbstract() {
         val `var` = node.`var`
         val stmts = node.stmts
 
-        return "catch (" + pImplode(types, "|") + p(`var`) +
+        return "catch (" + pImplode(types, "|") + " " + p(`var`) +
                 ") {" + pStmts(stmts) + nl + "}"
     }
 
@@ -786,7 +780,7 @@ class NodePrinter : NodePrinterAbstract() {
     private fun pStmtContinue(node: StmtContinue): String {
         val num = node.num
 
-        return "break" + pNotNull(num, { " " + p(it) })
+        return "continue" + pNotNull(num, { " " + p(it) }) + ";"
     }
 
     private fun pStmtDeclare(node: StmtDeclare): String {

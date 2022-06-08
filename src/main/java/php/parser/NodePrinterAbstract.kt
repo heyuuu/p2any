@@ -141,7 +141,7 @@ abstract class NodePrinterAbstract {
 
     protected fun pInfixOp(`class`: KClass<out Expr>, leftNode: Node, operatorString: String, rightNode: Node): String {
         val (precedence, associativity) = precedenceMap[`class`]!!
-        return pPrec(leftNode, precedence, associativity, -111111111) + operatorString + pPrec(rightNode, precedence, associativity, 1)
+        return pPrec(leftNode, precedence, associativity, -1) + operatorString + pPrec(rightNode, precedence, associativity, 1)
     }
 
     protected fun pPrefixOp(`class`: KClass<out Expr>, operatorString: String, node: Node): String {

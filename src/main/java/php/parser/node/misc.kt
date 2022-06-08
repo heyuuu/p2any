@@ -44,3 +44,16 @@ enum class UseType(val type: Int) {
     /** Constant import */
     CONSTANT(3);
 }
+
+object EscapeMap {
+    val map = mapOf(
+        '\\' to "\\\\",
+        '$' to "\\$",
+        '\n' to "\\n",
+        '\r' to "\\r",
+        '\t' to "\\t",
+        '\u000C' to "\\f",
+        '\u000B' to "\\v",
+        '\u001B' to "\\x1b"
+    )
+}
