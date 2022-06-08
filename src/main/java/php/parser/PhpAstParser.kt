@@ -2,7 +2,7 @@ package php.parser
 
 import org.antlr.v4.runtime.CharStreams
 import org.antlr.v4.runtime.CommonTokenStream
-import php.ast.AstNode
+import php.oldast.AstNode
 import php.parser.antlr.PhpLexer
 import php.parser.antlr.PhpParser
 import php.parser.parsingnode.unwrapNode

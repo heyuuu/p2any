@@ -1,6 +1,6 @@
 package php.parser.parsingnode
 
-import php.ast.AstNode
+import php.oldast.AstNode
 
 interface ParsingNode : AstNode
 

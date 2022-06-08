@@ -1,4 +1,4 @@
-package php.ast
+package php.oldast
 
 sealed interface NameOrExpr {
     data class ByName(val `class`: Name)

@@ -1,6 +1,6 @@
 package php.parser
 
-import php.ast.*
+import php.oldast.*
 import php.misc.JsonUtil
 import java.io.File
 import kotlin.reflect.KClass

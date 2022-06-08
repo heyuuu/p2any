@@ -2,10 +2,10 @@ package php.parser
 
 import org.antlr.v4.runtime.ParserRuleContext
 import org.antlr.v4.runtime.tree.TerminalNode
-import php.ast.AstNode
-import php.ast.Identifier
-import php.ast.StmtLabel
-import php.ast.StmtUse
+import php.oldast.AstNode
+import php.oldast.Identifier
+import php.oldast.StmtLabel
+import php.oldast.StmtUse
 import php.parser.antlr.PhpParser
 import php.parser.parsingnode.ParsingListNode
 import php.parser.parsingnode.ParsingTerminalNode

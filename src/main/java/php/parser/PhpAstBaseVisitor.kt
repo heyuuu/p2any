@@ -4,7 +4,7 @@ import org.antlr.v4.runtime.ParserRuleContext
 import org.antlr.v4.runtime.tree.ErrorNode
 import org.antlr.v4.runtime.tree.RuleNode
 import org.antlr.v4.runtime.tree.TerminalNode
-import php.ast.AstNode
+import php.oldast.AstNode
 import php.parser.antlr.PhpParser
 import php.parser.antlr.PhpParserBaseVisitor
 import php.parser.exception.UnexpectedException

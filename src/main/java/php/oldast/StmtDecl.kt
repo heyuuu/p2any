@@ -1,4 +1,4 @@
-package php.ast
+package php.oldast
 
 sealed interface StmtDecl : Stmt
 sealed interface StmtClassLike : StmtDecl {
