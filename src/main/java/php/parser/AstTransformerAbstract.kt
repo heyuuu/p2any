@@ -2,10 +2,14 @@ package php.parser
 
 import php.parser.node.AnyOf
 import php.parser.node.Node
+import php.parser.node.Stmt
 import kotlin.reflect.KClass
 import kotlin.reflect.cast
 
 abstract class AstTransformerAbstract {
+    fun transform(node: Stmt) = p(node, php.ast.Stmt::class)
+    fun transform(nodes: List<Stmt>) = nodes.map { transform(it) }
+
     protected abstract fun p(node: Node): php.ast.Node
 
     private fun pAny(value: Any): Any {
