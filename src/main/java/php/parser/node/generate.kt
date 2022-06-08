@@ -146,7 +146,7 @@ data class StmtGroupUse(val type: Int, val prefix: Name, val uses: List<StmtUseU
 data class StmtHaltCompiler(val remaining: String): Stmt, Node
 data class StmtIf(val cond: Expr, val stmts: List<Stmt>, val elseifs: List<StmtElseIf>, val `else`: StmtElse?): Stmt, Node
 data class StmtInlineHTML(val value: String): Stmt, Node
-data class StmtInterface(val extends: List<Name>, override val name: Identifier?, override val stmts: List<Stmt>, override val namespacedName: Name): StmtClassLike(name, stmts, namespacedName), Node
+data class StmtInterface(val extends: List<Name>, override val name: Identifier, override val stmts: List<Stmt>, override val namespacedName: Name): StmtClassLike(name, stmts, namespacedName), Node
 data class StmtLabel(val name: Identifier): Stmt, Node
 data class StmtNamespace(val name: Name?, val stmts: List<Stmt>): Stmt, Node
 class StmtNop(): Stmt, Node
@@ -157,7 +157,7 @@ data class StmtStatic(val vars: List<StmtStaticVar>): Stmt, Node
 data class StmtStaticVar(val `var`: ExprVariable, val default: Expr?): Stmt, Node
 data class StmtSwitch(val cond: Expr, val cases: List<StmtCase>): Stmt, Node
 data class StmtThrow(val expr: Expr): Stmt, Node
-data class StmtTrait(override val name: Identifier?, override val stmts: List<Stmt>, override val namespacedName: Name): StmtClassLike(name, stmts, namespacedName), Node
+data class StmtTrait(override val name: Identifier, override val stmts: List<Stmt>, override val namespacedName: Name): StmtClassLike(name, stmts, namespacedName), Node
 data class StmtTraitUse(val traits: List<Name>, val adaptations: List<StmtTraitUseAdaptation>): Stmt, Node
 sealed class StmtTraitUseAdaptation(open val trait: Name?, open val method: Identifier): Stmt, Node
 data class StmtTraitUseAdaptationAlias(val newModifier: Int?, val newName: Identifier?, override val trait: Name?, override val method: Identifier): StmtTraitUseAdaptation(trait, method), Node

@@ -1,27 +1,28 @@
 package php.parser
 
-import org.junit.Assert.*
 import org.junit.Test
 import php.misc.FileUtil
-import php.misc.JsonUtil
+import php.parser.node.Stmt
 import java.io.File
 
 class NodeDecoderTest {
     companion object {
         private val workDir = System.getProperty("user.dir")!!
-        val srcRoot = "$workDir/runtime/ast_by_php/"
-        val dstRoot = "$workDir/runtime/ast_by_java/"
+        val phpNodeRoot = "$workDir/runtime/case_php/node_json/"
+        val nodeRoot = "$workDir/runtime/case_java/node_json/"
+        val printRoot = "$workDir/runtime/case_java/node_print/"
     }
 
     @Test
     fun testPhpParserCase() {
-        runCaseInDir(srcRoot, dstRoot)
+        runCaseInDir(phpNodeRoot, nodeRoot, printRoot)
     }
 
-    private fun runCaseInDir(srcRoot: String, dstRoot: String) {
+    private fun runCaseInDir(phpNodeRoot: String, nodeRoot: String, printRoot: String) {
         val decoder = NodeDecoder()
         val encoder = NodeEncoder()
-        val baseDir = File(srcRoot)
+        val printer = NodePrinter()
+        val baseDir = File(phpNodeRoot)
         baseDir.walk()
             .filter { it.isFile }
             .filter { it.name.endsWith(".json") }
@@ -29,10 +30,14 @@ class NodeDecoderTest {
                 val relativePath = file.relativeTo(baseDir).path
                 println("Handle file: $relativePath")
 
-                val dstFilePath = dstRoot + relativePath
+                val nodeFile = nodeRoot + relativePath
                 val result = decoder.decodeFile(file)
                 val json = encoder.encodePretty(result)
-                FileUtil.saveFile(dstFilePath, json)
+                FileUtil.saveFile(nodeFile, json)
+
+                val printFile = printRoot + relativePath.replace(".json", ".php")
+                val code = printer.prettyPrintFile(result as List<Stmt>)
+                FileUtil.saveFile(printFile, code)
             }
     }
 }

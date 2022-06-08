@@ -924,7 +924,7 @@ class NodeDecoder : NodeDecoderAbstract() {
     private fun decodeStmtInterface(properties: ValueMap): StmtInterface {
         return StmtInterface(
             extends = properties.getAsList("extends", Name::class),
-            name = properties.getAsOrNull("name", Identifier::class),
+            name = properties.getAs("name", Identifier::class),
             stmts = properties.getAsList("stmts", Stmt::class),
             namespacedName = properties.getAs("namespacedName", Name::class),
         )
@@ -985,7 +985,7 @@ class NodeDecoder : NodeDecoderAbstract() {
     }
     private fun decodeStmtTrait(properties: ValueMap): StmtTrait {
         return StmtTrait(
-            name = properties.getAsOrNull("name", Identifier::class),
+            name = properties.getAs("name", Identifier::class),
             stmts = properties.getAsList("stmts", Stmt::class),
             namespacedName = properties.getAs("namespacedName", Name::class),
         )
