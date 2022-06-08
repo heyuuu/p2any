@@ -9,5 +9,6 @@ class ClassInfo
     public $isInterface = false;
     public $isAbstract  = false;
     public $parents     = [];
+    /** @var TypeInfo[] */
     public $properties  = [];
 }

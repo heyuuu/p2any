@@ -25,7 +25,8 @@ abstract class AbstractAstGenTask
 
     private $classes      = null;
     private $baseClassMap = null;
-    private $types        = null;
+    /** @var ClassInfo[]|null */
+    private $types = [];
 
     protected function getClasses(): array
     {

@@ -8,6 +8,9 @@ use P2Any\PhpParser\Node;
 
 class Interface_ extends ClassLike
 {
+    /** @var Node\Identifier Name */
+    public $name;
+
     /** @var Node\Name[] Extended interfaces */
     public $extends;
 

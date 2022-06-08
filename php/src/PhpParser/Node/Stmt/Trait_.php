@@ -8,6 +8,9 @@ use P2Any\PhpParser\Node;
 
 class Trait_ extends ClassLike
 {
+    /** @var Node\Identifier Name */
+    public $name;
+    
     /**
      * Constructs a trait node.
      *
