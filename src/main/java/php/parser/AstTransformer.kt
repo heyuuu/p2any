@@ -1338,12 +1338,8 @@ class AstTransformer : AstTransformerAbstract() {
         )
     }
 
-    private fun pStmtHaltCompiler(node: StmtHaltCompiler): php.ast.StmtHaltCompiler {
-        val remaining = node.remaining
-
-        return php.ast.StmtHaltCompiler(
-            remaining = remaining,
-        )
+    private fun pStmtHaltCompiler(node: StmtHaltCompiler): php.ast.Stmt {
+        return php.ast.StmtNop
     }
 
     private fun pStmtIf(node: StmtIf): php.ast.StmtIf {

@@ -79,7 +79,6 @@ class AstPrinter : AstPrinterAbstract() {
             is StmtGlobal -> pStmtGlobal(node)
             is StmtGoto -> pStmtGoto(node)
             is StmtGroupUse -> pStmtGroupUse(node)
-            is StmtHaltCompiler -> pStmtHaltCompiler(node)
             is StmtIf -> pStmtIf(node)
             is StmtInlineHTML -> pStmtInlineHTML(node)
             is StmtInterface -> pStmtInterface(node)
@@ -859,12 +858,6 @@ class AstPrinter : AstPrinterAbstract() {
         val uses = node.uses
 
         return "use " + pUseType(type) + pName(prefix) + "\\{" + pCommaSeparated(uses) + "};"
-    }
-
-    private fun pStmtHaltCompiler(node: StmtHaltCompiler): String {
-        val remaining = node.remaining
-
-        return "__halt_compiler();$remaining"
     }
 
     private fun pStmtIf(node: StmtIf): String {
