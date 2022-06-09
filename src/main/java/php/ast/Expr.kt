@@ -3,9 +3,6 @@ package php.ast
 
 interface Expr : Node
 
-class ExprError() : Expr
-class ExprShellExec(val parts: List<Any>) : Expr
-
 data class ExprArray(val items: List<ExprArrayItem?>) : Expr
 data class ExprArrayItem(val key: Expr?, val value: Expr, val byRef: Boolean, val unpack: Boolean) : Expr
 

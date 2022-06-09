@@ -5,10 +5,6 @@ import php.ast.*
 class AstPrinter : AstPrinterAbstract() {
     override fun p(node: Node): String {
         return when (node) {
-            is NameFullyQualified -> pNameFullyQualified(node)
-            is NameRelative -> pNameRelative(node)
-            is VarLikeIdentifier -> pVarLikeIdentifier(node)
-
             is Arg -> pArg(node)
             is Const -> pConst(node)
             is ExprArray -> pExprArray(node)
@@ -27,9 +23,7 @@ class AstPrinter : AstPrinterAbstract() {
             is ExprClosureUse -> pExprClosureUse(node)
             is ExprConstFetch -> pExprConstFetch(node)
             is ExprEmpty -> pExprEmpty(node)
-            is ExprError -> pExprError(node)
             is ExprErrorSuppress -> pExprErrorSuppress(node)
-            is ExprEval -> pExprEval(node)
             is ExprExit -> pExprExit(node)
             is ExprFuncCall -> pExprFuncCall(node)
             is ExprInclude -> pExprInclude(node)
@@ -44,7 +38,6 @@ class AstPrinter : AstPrinterAbstract() {
             is ExprPreInc -> pExprPreInc(node)
             is ExprPrint -> pExprPrint(node)
             is ExprPropertyFetch -> pExprPropertyFetch(node)
-            is ExprShellExec -> pExprShellExec(node)
             is ExprStaticCall -> pExprStaticCall(node)
             is ExprStaticPropertyFetch -> pExprStaticPropertyFetch(node)
             is ExprTernary -> pExprTernary(node)
@@ -109,7 +102,7 @@ class AstPrinter : AstPrinterAbstract() {
             is StmtUse -> pStmtUse(node)
             is StmtUseUse -> pStmtUseUse(node)
             is StmtWhile -> pStmtWhile(node)
-            else -> throw Exception("预期外的 Node 类型: ${node::class.qualifiedName}")
+            else -> throw Exception("预期外的 AstNode 类型: ${node::class.qualifiedName}")
         }
     }
 
@@ -132,8 +125,6 @@ class AstPrinter : AstPrinterAbstract() {
     private fun <T> pNotEmpty(list: List<T>, value: (List<T>) -> String, default: String = ""): String {
         return if (list.isNotEmpty()) value(list) else default
     }
-
-    private fun concat(vararg parts: String) = parts.joinToString("")
 
     private fun unreachableAnyOf(value: Any): Nothing {
         throw Exception("不应触达的 AnyOf 分支, type: ${value::class.qualifiedName}")
@@ -418,18 +409,9 @@ class AstPrinter : AstPrinterAbstract() {
         return "empty(" + p(expr) + ")"
     }
 
-    private fun pExprError(node: ExprError): String {
-        throw Exception("Cannot pretty-print AST with Error nodes")
-    }
-
     private fun pExprErrorSuppress(node: ExprErrorSuppress): String {
         val expr = node.expr
         return pPrefixOp(node, "@", expr)
-    }
-
-    private fun pExprEval(node: ExprEval): String {
-        val expr = node.expr
-        return "eval(" + p(expr) + ")"
     }
 
     private fun pExprExit(node: ExprExit): String {
@@ -523,11 +505,6 @@ class AstPrinter : AstPrinterAbstract() {
         val name = node.name
 
         return pDereferenceLhs(`var`) + "->" + pObjectProperty(name)
-    }
-
-    private fun pExprShellExec(node: ExprShellExec): String {
-        val parts = node.parts
-        return "`" + pEncapsList(parts, '`') + "`"
     }
 
     private fun pExprStaticCall(node: ExprStaticCall): String {
@@ -628,24 +605,15 @@ class AstPrinter : AstPrinterAbstract() {
     }
 
     private fun pIdentifier(node: Identifier): String {
-        val name = node.name
-
-        return name
+        return pIf(node.varLike, "$") + node.name
     }
 
     private fun pName(node: Name): String {
-        val parts = node.parts
-        return parts.joinToString("\\")
-    }
-
-    private fun pNameFullyQualified(node: NameFullyQualified): String {
-        val parts = node.parts
-        return "\\" + parts.joinToString("\\")
-    }
-
-    private fun pNameRelative(node: NameRelative): String {
-        val parts = node.parts
-        return "namespace\\" + parts.joinToString("\\")
+        return if (node.fullyQualified) {
+            "\\" + node.parts.joinToString("\\")
+        } else {
+            node.parts.joinToString("\\")
+        }
     }
 
     private fun pNullableType(node: NullableType): String {
@@ -1067,7 +1035,6 @@ class AstPrinter : AstPrinterAbstract() {
         }
     }
 
-
     private fun pStmtUseUse(node: StmtUseUse): String {
         val type = node.type
         val name = node.name
@@ -1081,10 +1048,5 @@ class AstPrinter : AstPrinterAbstract() {
         val stmts = node.stmts
 
         return "while (" + p(cond) + ") {" + pStmts(stmts) + nl + "}"
-    }
-
-    private fun pVarLikeIdentifier(node: VarLikeIdentifier): String {
-        val name = node.name
-        return "$$name"
     }
 }

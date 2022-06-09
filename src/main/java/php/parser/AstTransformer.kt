@@ -3,12 +3,12 @@ package php.parser
 import php.parser.node.*
 
 class AstTransformer : AstTransformerAbstract() {
+    private fun unsupported(node: Node, message: String? = null): Nothing {
+        throw Exception("不支持的语法节点类型(${node::class.simpleName}) $message")
+    }
+
     override fun p(node: Node): php.ast.Node {
         return when (node) {
-            is NameFullyQualified -> pNameFullyQualified(node)
-            is NameRelative -> pNameRelative(node)
-            is VarLikeIdentifier -> pVarLikeIdentifier(node)
-
             is Arg -> pArg(node)
             is Const -> pConst(node)
             is ExprArray -> pExprArray(node)
@@ -70,9 +70,7 @@ class AstTransformer : AstTransformerAbstract() {
             is ExprClosureUse -> pExprClosureUse(node)
             is ExprConstFetch -> pExprConstFetch(node)
             is ExprEmpty -> pExprEmpty(node)
-            is ExprError -> pExprError(node)
             is ExprErrorSuppress -> pExprErrorSuppress(node)
-            is ExprEval -> pExprEval(node)
             is ExprExit -> pExprExit(node)
             is ExprFuncCall -> pExprFuncCall(node)
             is ExprInclude -> pExprInclude(node)
@@ -87,7 +85,6 @@ class AstTransformer : AstTransformerAbstract() {
             is ExprPreInc -> pExprPreInc(node)
             is ExprPrint -> pExprPrint(node)
             is ExprPropertyFetch -> pExprPropertyFetch(node)
-            is ExprShellExec -> pExprShellExec(node)
             is ExprStaticCall -> pExprStaticCall(node)
             is ExprStaticPropertyFetch -> pExprStaticPropertyFetch(node)
             is ExprTernary -> pExprTernary(node)
@@ -97,8 +94,8 @@ class AstTransformer : AstTransformerAbstract() {
             is ExprVariable -> pExprVariable(node)
             is ExprYield -> pExprYield(node)
             is ExprYieldFrom -> pExprYieldFrom(node)
-            is Identifier -> pIdentifier(node)
             is Name -> pName(node)
+            is Identifier -> pIdentifier(node)
             is NullableType -> pNullableType(node)
             is Param -> pParam(node)
             is ScalarDNumber -> pScalarDNumber(node)
@@ -159,7 +156,13 @@ class AstTransformer : AstTransformerAbstract() {
             is StmtUse -> pStmtUse(node)
             is StmtUseUse -> pStmtUseUse(node)
             is StmtWhile -> pStmtWhile(node)
-            else -> throw Exception("预期外的 Node 类型: ${node::class.qualifiedName}")
+
+            // 异常类型
+            is ExprError -> unsupported(node, "无法转化有语法错误的代码")
+            is ExprShellExec -> unsupported(node, "不支持执行shell命令")
+            is ExprEval -> unsupported(node, "不支持动态执行php代码")
+
+            else -> throw Exception("不应直接处理的 Node 类型: ${node::class.qualifiedName}")
         }
     }
 
@@ -763,24 +766,10 @@ class AstTransformer : AstTransformerAbstract() {
         )
     }
 
-    private fun pExprError(node: ExprError): php.ast.ExprError {
-
-        return php.ast.ExprError(
-        )
-    }
-
     private fun pExprErrorSuppress(node: ExprErrorSuppress): php.ast.ExprErrorSuppress {
         val expr = node.expr
 
         return php.ast.ExprErrorSuppress(
-            expr = p(expr, php.ast.Expr::class),
-        )
-    }
-
-    private fun pExprEval(node: ExprEval): php.ast.ExprEval {
-        val expr = node.expr
-
-        return php.ast.ExprEval(
             expr = p(expr, php.ast.Expr::class),
         )
     }
@@ -911,14 +900,6 @@ class AstTransformer : AstTransformerAbstract() {
         )
     }
 
-    private fun pExprShellExec(node: ExprShellExec): php.ast.ExprShellExec {
-        val parts = node.parts
-
-        return php.ast.ExprShellExec(
-            parts = pList(parts, Any::class),
-        )
-    }
-
     private fun pExprStaticCall(node: ExprStaticCall): php.ast.ExprStaticCall {
         val `class` = node.`class`
         val name = node.name
@@ -1004,35 +985,15 @@ class AstTransformer : AstTransformerAbstract() {
     }
 
     private fun pIdentifier(node: Identifier): php.ast.Identifier {
-        val name = node.name
-
-        return php.ast.Identifier(
-            name = name,
-        )
+        return php.ast.Identifier(node.name, node is VarLikeIdentifier)
     }
 
     private fun pName(node: Name): php.ast.Name {
-        val parts = node.parts
+        if (node is NameRelative) {
+            throw Exception("预期外的 Name 类型(${node::class.qualifiedName})，请确认 node 数据是否执行 php NameResolve。")
+        }
 
-        return php.ast.Name(
-            parts = pList(parts, String::class),
-        )
-    }
-
-    private fun pNameFullyQualified(node: NameFullyQualified): php.ast.NameFullyQualified {
-        val parts = node.parts
-
-        return php.ast.NameFullyQualified(
-            parts = pList(parts, String::class),
-        )
-    }
-
-    private fun pNameRelative(node: NameRelative): php.ast.NameRelative {
-        val parts = node.parts
-
-        return php.ast.NameRelative(
-            parts = pList(parts, String::class),
-        )
+        return php.ast.Name(node.parts, node is NameFullyQualified)
     }
 
     private fun pNullableType(node: NullableType): php.ast.NullableType {
@@ -1092,33 +1053,23 @@ class AstTransformer : AstTransformerAbstract() {
     }
 
     private fun pScalarMagicConstClass(node: ScalarMagicConstClass): php.ast.ScalarMagicConstClass {
-
-        return php.ast.ScalarMagicConstClass(
-        )
+        return php.ast.ScalarMagicConstClass()
     }
 
     private fun pScalarMagicConstDir(node: ScalarMagicConstDir): php.ast.ScalarMagicConstDir {
-
-        return php.ast.ScalarMagicConstDir(
-        )
+        return php.ast.ScalarMagicConstDir()
     }
 
     private fun pScalarMagicConstFile(node: ScalarMagicConstFile): php.ast.ScalarMagicConstFile {
-
-        return php.ast.ScalarMagicConstFile(
-        )
+        return php.ast.ScalarMagicConstFile()
     }
 
     private fun pScalarMagicConstFunction(node: ScalarMagicConstFunction): php.ast.ScalarMagicConstFunction {
-
-        return php.ast.ScalarMagicConstFunction(
-        )
+        return php.ast.ScalarMagicConstFunction()
     }
 
     private fun pScalarMagicConstLine(node: ScalarMagicConstLine): php.ast.ScalarMagicConstLine {
-
-        return php.ast.ScalarMagicConstLine(
-        )
+        return php.ast.ScalarMagicConstLine()
     }
 
     private fun pScalarMagicConstMethod(node: ScalarMagicConstMethod): php.ast.ScalarMagicConstMethod {
@@ -1450,9 +1401,7 @@ class AstTransformer : AstTransformerAbstract() {
     }
 
     private fun pStmtNop(node: StmtNop): php.ast.StmtNop {
-
-        return php.ast.StmtNop(
-        )
+        return php.ast.StmtNop
     }
 
     private fun pStmtProperty(node: StmtProperty): php.ast.StmtProperty {
@@ -1616,14 +1565,6 @@ class AstTransformer : AstTransformerAbstract() {
         return php.ast.StmtWhile(
             cond = p(cond, php.ast.Expr::class),
             stmts = pList(stmts, php.ast.Stmt::class),
-        )
-    }
-
-    private fun pVarLikeIdentifier(node: VarLikeIdentifier): php.ast.VarLikeIdentifier {
-        val name = node.name
-
-        return php.ast.VarLikeIdentifier(
-            name = name,
         )
     }
 }

@@ -6,12 +6,11 @@
 
 ### 不准备支持的特性
 
-- `eval` 执行php代码
-```php
-$value = eval("return 1 + 1;");
-```
+- 不支持执行shell命令的能力。包括 ShellExec 语法，`exec()`、`system()`等函数
+- 不支持动态执行php代码的能力。包括 `eval` 语法。
 
-- ShellExec
+ps
+1. ShellExec 指如下语法
 ```php
 $value = `pwd`;
 ```

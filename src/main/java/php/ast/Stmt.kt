@@ -32,7 +32,7 @@ data class StmtInlineHTML(val value: String): Stmt
 data class StmtInterface(val extends: List<Name>, override val name: Identifier, override val stmts: List<Stmt>, override val namespacedName: Name): StmtClassLike(name, stmts, namespacedName)
 data class StmtLabel(val name: Identifier): Stmt
 data class StmtNamespace(val name: Name?, val stmts: List<Stmt>): Stmt
-class StmtNop(): Stmt
+object StmtNop: Stmt
 data class StmtProperty(val flags: Int, val props: List<StmtPropertyProperty>): Stmt
 data class StmtPropertyProperty(val name: Identifier, val default: Expr?): Stmt
 data class StmtReturn(val expr: Expr?): Stmt

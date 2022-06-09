@@ -19,9 +19,7 @@ sealed class ComplexType() : Node
 
 data class Const(val name: Identifier, val value: Expr, val namespacedName: Name?) : Node
 
-open class Identifier(open val name: String) : Node
-data class VarLikeIdentifier(override val name: String) : Identifier(name)
+open class Identifier(open val name: String, val varLike: Boolean = false) : Node
+data class VarLikeIdentifier(override val name: String) : Identifier(name, true)
 
-open class Name(open val parts: List<String>) : Node
-data class NameFullyQualified(override val parts: List<String>) : Name(parts)
-data class NameRelative(override val parts: List<String>) : Name(parts)
+open class Name(val parts: List<String>, val fullyQualified: Boolean = false) : Node
