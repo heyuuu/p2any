@@ -20,22 +20,6 @@ abstract class AstTransformerAbstract {
         return type.cast(p(node))
     }
 
-    protected fun <T : Any> pOrNull(node: Node?, type: KClass<T>): T? {
-        return node?.let { p(node, type) }
-    }
-
-    protected fun <T : Any> pList(items: List<Any>, type: KClass<T>): List<T> {
-        return items.map { type.cast(pAny(it)) }
-    }
-
-    protected fun <T : Any> pListOrNull(items: List<Any>?, type: KClass<T>): List<T>? {
-        return items?.let { pList(it, type) }
-    }
-
-    protected fun <T : Any> pListOfNullable(items: List<Node?>, type: KClass<T>): List<T?> {
-        return items.map { item -> item?.let { type.cast(pAny(it)) } }
-    }
-
     protected fun <T1 : Any, T2 : Any> pAnyOf2(
         node: AnyOf, type1: KClass<T1>, type2: KClass<T2>
     ): php.ast.AnyOf2<T1, T2> {

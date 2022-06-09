@@ -1,6 +1,6 @@
 package php.ast
 
-sealed interface StmtFlowControl: Stmt
+sealed interface StmtFlowControl : Stmt
 
 data class StmtBreak(val num: Expr?) : StmtFlowControl
 data class StmtContinue(val num: Expr?) : StmtFlowControl

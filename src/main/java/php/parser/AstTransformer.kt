@@ -7,10 +7,33 @@ class AstTransformer : AstTransformerAbstract() {
         throw Exception("不支持的语法节点类型(${node::class.simpleName}) $message")
     }
 
+    private fun pExpr(node: Expr): php.ast.Expr {
+        return p(node, php.ast.Expr::class)
+    }
+
+    private fun pExprOrNull(node: Expr?): php.ast.Expr? {
+        return node?.let { pExpr(it) }
+    }
+
+    private fun pExprs(nodes: List<Expr>): List<php.ast.Expr> {
+        return nodes.map { pExpr(it) }
+    }
+
+    private fun pStmts(nodes: List<Stmt>): List<php.ast.Stmt> {
+        return nodes.map { p(it, php.ast.Stmt::class) }
+    }
+
     override fun p(node: Node): php.ast.Node {
         return when (node) {
+            // special
             is Arg -> pArg(node)
             is Const -> pConst(node)
+            is Name -> pName(node)
+            is Identifier -> pIdentifier(node)
+            is NullableType -> pNullableType(node)
+            is Param -> pParam(node)
+
+            // expr
             is ExprArray -> pExprArray(node)
             is ExprArrayDimFetch -> pExprArrayDimFetch(node)
             is ExprArrayItem -> pExprArrayItem(node)
@@ -94,14 +117,13 @@ class AstTransformer : AstTransformerAbstract() {
             is ExprVariable -> pExprVariable(node)
             is ExprYield -> pExprYield(node)
             is ExprYieldFrom -> pExprYieldFrom(node)
-            is Name -> pName(node)
-            is Identifier -> pIdentifier(node)
-            is NullableType -> pNullableType(node)
-            is Param -> pParam(node)
+
+            // scalar
             is ScalarDNumber -> pScalarDNumber(node)
             is ScalarEncapsed -> pScalarEncapsed(node)
             is ScalarEncapsedStringPart -> pScalarEncapsedStringPart(node)
             is ScalarLNumber -> pScalarLNumber(node)
+            is ScalarString -> pScalarString(node)
             is ScalarMagicConstClass -> pScalarMagicConstClass(node)
             is ScalarMagicConstDir -> pScalarMagicConstDir(node)
             is ScalarMagicConstFile -> pScalarMagicConstFile(node)
@@ -110,10 +132,12 @@ class AstTransformer : AstTransformerAbstract() {
             is ScalarMagicConstMethod -> pScalarMagicConstMethod(node)
             is ScalarMagicConstNamespace -> pScalarMagicConstNamespace(node)
             is ScalarMagicConstTrait -> pScalarMagicConstTrait(node)
-            is ScalarString -> pScalarString(node)
+
+            // stmt
+            is StmtHaltCompiler -> php.ast.StmtNop
+            is StmtNop -> php.ast.StmtNop
+
             is StmtBreak -> pStmtBreak(node)
-            is StmtCase -> pStmtCase(node)
-            is StmtCatch -> pStmtCatch(node)
             is StmtClass -> pStmtClass(node)
             is StmtClassConst -> pStmtClassConst(node)
             is StmtClassMethod -> pStmtClassMethod(node)
@@ -123,38 +147,28 @@ class AstTransformer : AstTransformerAbstract() {
             is StmtDeclareDeclare -> pStmtDeclareDeclare(node)
             is StmtDo -> pStmtDo(node)
             is StmtEcho -> pStmtEcho(node)
-            is StmtElse -> pStmtElse(node)
-            is StmtElseIf -> pStmtElseIf(node)
             is StmtExpression -> pStmtExpression(node)
-            is StmtFinally -> pStmtFinally(node)
             is StmtFor -> pStmtFor(node)
             is StmtForeach -> pStmtForeach(node)
             is StmtFunction -> pStmtFunction(node)
             is StmtGlobal -> pStmtGlobal(node)
             is StmtGoto -> pStmtGoto(node)
             is StmtGroupUse -> pStmtGroupUse(node)
-            is StmtHaltCompiler -> pStmtHaltCompiler(node)
             is StmtIf -> pStmtIf(node)
             is StmtInlineHTML -> pStmtInlineHTML(node)
             is StmtInterface -> pStmtInterface(node)
             is StmtLabel -> pStmtLabel(node)
             is StmtNamespace -> pStmtNamespace(node)
-            is StmtNop -> pStmtNop(node)
             is StmtProperty -> pStmtProperty(node)
-            is StmtPropertyProperty -> pStmtPropertyProperty(node)
             is StmtReturn -> pStmtReturn(node)
             is StmtStatic -> pStmtStatic(node)
-            is StmtStaticVar -> pStmtStaticVar(node)
             is StmtSwitch -> pStmtSwitch(node)
             is StmtThrow -> pStmtThrow(node)
             is StmtTrait -> pStmtTrait(node)
             is StmtTraitUse -> pStmtTraitUse(node)
-            is StmtTraitUseAdaptationAlias -> pStmtTraitUseAdaptationAlias(node)
-            is StmtTraitUseAdaptationPrecedence -> pStmtTraitUseAdaptationPrecedence(node)
             is StmtTryCatch -> pStmtTryCatch(node)
             is StmtUnset -> pStmtUnset(node)
             is StmtUse -> pStmtUse(node)
-            is StmtUseUse -> pStmtUseUse(node)
             is StmtWhile -> pStmtWhile(node)
 
             // 异常类型
@@ -172,7 +186,7 @@ class AstTransformer : AstTransformerAbstract() {
         val unpack = node.unpack
 
         return php.ast.Arg(
-            value = p(value, php.ast.Expr::class),
+            value = pExpr(value),
             byRef = byRef,
             unpack = unpack,
         )
@@ -184,9 +198,9 @@ class AstTransformer : AstTransformerAbstract() {
         val namespacedName = node.namespacedName
 
         return php.ast.Const(
-            name = p(name, php.ast.Identifier::class),
-            value = p(value, php.ast.Expr::class),
-            namespacedName = pOrNull(namespacedName, php.ast.Name::class),
+            name = pIdentifier(name),
+            value = pExpr(value),
+            namespacedName = namespacedName?.let { pName(it) },
         )
     }
 
@@ -194,7 +208,7 @@ class AstTransformer : AstTransformerAbstract() {
         val items = node.items
 
         return php.ast.ExprArray(
-            items = pListOfNullable(items, php.ast.ExprArrayItem::class),
+            items = items.map { it?.let { pExprArrayItem(it) } }
         )
     }
 
@@ -203,8 +217,8 @@ class AstTransformer : AstTransformerAbstract() {
         val dim = node.dim
 
         return php.ast.ExprArrayDimFetch(
-            `var` = p(`var`, php.ast.Expr::class),
-            dim = pOrNull(dim, php.ast.Expr::class),
+            `var` = pExpr(`var`),
+            dim = pExprOrNull(dim),
         )
     }
 
@@ -215,8 +229,8 @@ class AstTransformer : AstTransformerAbstract() {
         val unpack = node.unpack
 
         return php.ast.ExprArrayItem(
-            key = pOrNull(key, php.ast.Expr::class),
-            value = p(value, php.ast.Expr::class),
+            key = pExprOrNull(key),
+            value = pExpr(value),
             byRef = byRef,
             unpack = unpack,
         )
@@ -227,8 +241,8 @@ class AstTransformer : AstTransformerAbstract() {
         val expr = node.expr
 
         return php.ast.ExprAssign(
-            `var` = p(`var`, php.ast.Expr::class),
-            expr = p(expr, php.ast.Expr::class),
+            `var` = pExpr(`var`),
+            expr = pExpr(expr),
         )
     }
 
@@ -237,8 +251,8 @@ class AstTransformer : AstTransformerAbstract() {
         val expr = node.expr
 
         return php.ast.ExprAssignOpBitwiseAnd(
-            `var` = p(`var`, php.ast.Expr::class),
-            expr = p(expr, php.ast.Expr::class),
+            `var` = pExpr(`var`),
+            expr = pExpr(expr),
         )
     }
 
@@ -247,8 +261,8 @@ class AstTransformer : AstTransformerAbstract() {
         val expr = node.expr
 
         return php.ast.ExprAssignOpBitwiseOr(
-            `var` = p(`var`, php.ast.Expr::class),
-            expr = p(expr, php.ast.Expr::class),
+            `var` = pExpr(`var`),
+            expr = pExpr(expr),
         )
     }
 
@@ -257,8 +271,8 @@ class AstTransformer : AstTransformerAbstract() {
         val expr = node.expr
 
         return php.ast.ExprAssignOpBitwiseXor(
-            `var` = p(`var`, php.ast.Expr::class),
-            expr = p(expr, php.ast.Expr::class),
+            `var` = pExpr(`var`),
+            expr = pExpr(expr),
         )
     }
 
@@ -267,8 +281,8 @@ class AstTransformer : AstTransformerAbstract() {
         val expr = node.expr
 
         return php.ast.ExprAssignOpConcat(
-            `var` = p(`var`, php.ast.Expr::class),
-            expr = p(expr, php.ast.Expr::class),
+            `var` = pExpr(`var`),
+            expr = pExpr(expr),
         )
     }
 
@@ -277,8 +291,8 @@ class AstTransformer : AstTransformerAbstract() {
         val expr = node.expr
 
         return php.ast.ExprAssignOpDiv(
-            `var` = p(`var`, php.ast.Expr::class),
-            expr = p(expr, php.ast.Expr::class),
+            `var` = pExpr(`var`),
+            expr = pExpr(expr),
         )
     }
 
@@ -287,8 +301,8 @@ class AstTransformer : AstTransformerAbstract() {
         val expr = node.expr
 
         return php.ast.ExprAssignOpMinus(
-            `var` = p(`var`, php.ast.Expr::class),
-            expr = p(expr, php.ast.Expr::class),
+            `var` = pExpr(`var`),
+            expr = pExpr(expr),
         )
     }
 
@@ -297,8 +311,8 @@ class AstTransformer : AstTransformerAbstract() {
         val expr = node.expr
 
         return php.ast.ExprAssignOpMod(
-            `var` = p(`var`, php.ast.Expr::class),
-            expr = p(expr, php.ast.Expr::class),
+            `var` = pExpr(`var`),
+            expr = pExpr(expr),
         )
     }
 
@@ -307,8 +321,8 @@ class AstTransformer : AstTransformerAbstract() {
         val expr = node.expr
 
         return php.ast.ExprAssignOpMul(
-            `var` = p(`var`, php.ast.Expr::class),
-            expr = p(expr, php.ast.Expr::class),
+            `var` = pExpr(`var`),
+            expr = pExpr(expr),
         )
     }
 
@@ -317,8 +331,8 @@ class AstTransformer : AstTransformerAbstract() {
         val expr = node.expr
 
         return php.ast.ExprAssignOpPlus(
-            `var` = p(`var`, php.ast.Expr::class),
-            expr = p(expr, php.ast.Expr::class),
+            `var` = pExpr(`var`),
+            expr = pExpr(expr),
         )
     }
 
@@ -327,8 +341,8 @@ class AstTransformer : AstTransformerAbstract() {
         val expr = node.expr
 
         return php.ast.ExprAssignOpPow(
-            `var` = p(`var`, php.ast.Expr::class),
-            expr = p(expr, php.ast.Expr::class),
+            `var` = pExpr(`var`),
+            expr = pExpr(expr),
         )
     }
 
@@ -337,8 +351,8 @@ class AstTransformer : AstTransformerAbstract() {
         val expr = node.expr
 
         return php.ast.ExprAssignOpShiftLeft(
-            `var` = p(`var`, php.ast.Expr::class),
-            expr = p(expr, php.ast.Expr::class),
+            `var` = pExpr(`var`),
+            expr = pExpr(expr),
         )
     }
 
@@ -347,8 +361,8 @@ class AstTransformer : AstTransformerAbstract() {
         val expr = node.expr
 
         return php.ast.ExprAssignOpShiftRight(
-            `var` = p(`var`, php.ast.Expr::class),
-            expr = p(expr, php.ast.Expr::class),
+            `var` = pExpr(`var`),
+            expr = pExpr(expr),
         )
     }
 
@@ -357,8 +371,8 @@ class AstTransformer : AstTransformerAbstract() {
         val expr = node.expr
 
         return php.ast.ExprAssignRef(
-            `var` = p(`var`, php.ast.Expr::class),
-            expr = p(expr, php.ast.Expr::class),
+            `var` = pExpr(`var`),
+            expr = pExpr(expr),
         )
     }
 
@@ -367,8 +381,8 @@ class AstTransformer : AstTransformerAbstract() {
         val right = node.right
 
         return php.ast.ExprBinaryOpBitwiseAnd(
-            left = p(left, php.ast.Expr::class),
-            right = p(right, php.ast.Expr::class),
+            left = pExpr(left),
+            right = pExpr(right),
         )
     }
 
@@ -377,8 +391,8 @@ class AstTransformer : AstTransformerAbstract() {
         val right = node.right
 
         return php.ast.ExprBinaryOpBitwiseOr(
-            left = p(left, php.ast.Expr::class),
-            right = p(right, php.ast.Expr::class),
+            left = pExpr(left),
+            right = pExpr(right),
         )
     }
 
@@ -387,8 +401,8 @@ class AstTransformer : AstTransformerAbstract() {
         val right = node.right
 
         return php.ast.ExprBinaryOpBitwiseXor(
-            left = p(left, php.ast.Expr::class),
-            right = p(right, php.ast.Expr::class),
+            left = pExpr(left),
+            right = pExpr(right),
         )
     }
 
@@ -397,8 +411,8 @@ class AstTransformer : AstTransformerAbstract() {
         val right = node.right
 
         return php.ast.ExprBinaryOpBooleanAnd(
-            left = p(left, php.ast.Expr::class),
-            right = p(right, php.ast.Expr::class),
+            left = pExpr(left),
+            right = pExpr(right),
         )
     }
 
@@ -407,8 +421,8 @@ class AstTransformer : AstTransformerAbstract() {
         val right = node.right
 
         return php.ast.ExprBinaryOpBooleanOr(
-            left = p(left, php.ast.Expr::class),
-            right = p(right, php.ast.Expr::class),
+            left = pExpr(left),
+            right = pExpr(right),
         )
     }
 
@@ -417,8 +431,8 @@ class AstTransformer : AstTransformerAbstract() {
         val right = node.right
 
         return php.ast.ExprBinaryOpCoalesce(
-            left = p(left, php.ast.Expr::class),
-            right = p(right, php.ast.Expr::class),
+            left = pExpr(left),
+            right = pExpr(right),
         )
     }
 
@@ -427,8 +441,8 @@ class AstTransformer : AstTransformerAbstract() {
         val right = node.right
 
         return php.ast.ExprBinaryOpConcat(
-            left = p(left, php.ast.Expr::class),
-            right = p(right, php.ast.Expr::class),
+            left = pExpr(left),
+            right = pExpr(right),
         )
     }
 
@@ -437,8 +451,8 @@ class AstTransformer : AstTransformerAbstract() {
         val right = node.right
 
         return php.ast.ExprBinaryOpDiv(
-            left = p(left, php.ast.Expr::class),
-            right = p(right, php.ast.Expr::class),
+            left = pExpr(left),
+            right = pExpr(right),
         )
     }
 
@@ -447,8 +461,8 @@ class AstTransformer : AstTransformerAbstract() {
         val right = node.right
 
         return php.ast.ExprBinaryOpEqual(
-            left = p(left, php.ast.Expr::class),
-            right = p(right, php.ast.Expr::class),
+            left = pExpr(left),
+            right = pExpr(right),
         )
     }
 
@@ -457,8 +471,8 @@ class AstTransformer : AstTransformerAbstract() {
         val right = node.right
 
         return php.ast.ExprBinaryOpGreater(
-            left = p(left, php.ast.Expr::class),
-            right = p(right, php.ast.Expr::class),
+            left = pExpr(left),
+            right = pExpr(right),
         )
     }
 
@@ -467,8 +481,8 @@ class AstTransformer : AstTransformerAbstract() {
         val right = node.right
 
         return php.ast.ExprBinaryOpGreaterOrEqual(
-            left = p(left, php.ast.Expr::class),
-            right = p(right, php.ast.Expr::class),
+            left = pExpr(left),
+            right = pExpr(right),
         )
     }
 
@@ -477,8 +491,8 @@ class AstTransformer : AstTransformerAbstract() {
         val right = node.right
 
         return php.ast.ExprBinaryOpIdentical(
-            left = p(left, php.ast.Expr::class),
-            right = p(right, php.ast.Expr::class),
+            left = pExpr(left),
+            right = pExpr(right),
         )
     }
 
@@ -487,8 +501,8 @@ class AstTransformer : AstTransformerAbstract() {
         val right = node.right
 
         return php.ast.ExprBinaryOpLogicalAnd(
-            left = p(left, php.ast.Expr::class),
-            right = p(right, php.ast.Expr::class),
+            left = pExpr(left),
+            right = pExpr(right),
         )
     }
 
@@ -497,8 +511,8 @@ class AstTransformer : AstTransformerAbstract() {
         val right = node.right
 
         return php.ast.ExprBinaryOpLogicalOr(
-            left = p(left, php.ast.Expr::class),
-            right = p(right, php.ast.Expr::class),
+            left = pExpr(left),
+            right = pExpr(right),
         )
     }
 
@@ -507,8 +521,8 @@ class AstTransformer : AstTransformerAbstract() {
         val right = node.right
 
         return php.ast.ExprBinaryOpLogicalXor(
-            left = p(left, php.ast.Expr::class),
-            right = p(right, php.ast.Expr::class),
+            left = pExpr(left),
+            right = pExpr(right),
         )
     }
 
@@ -517,8 +531,8 @@ class AstTransformer : AstTransformerAbstract() {
         val right = node.right
 
         return php.ast.ExprBinaryOpMinus(
-            left = p(left, php.ast.Expr::class),
-            right = p(right, php.ast.Expr::class),
+            left = pExpr(left),
+            right = pExpr(right),
         )
     }
 
@@ -527,8 +541,8 @@ class AstTransformer : AstTransformerAbstract() {
         val right = node.right
 
         return php.ast.ExprBinaryOpMod(
-            left = p(left, php.ast.Expr::class),
-            right = p(right, php.ast.Expr::class),
+            left = pExpr(left),
+            right = pExpr(right),
         )
     }
 
@@ -537,8 +551,8 @@ class AstTransformer : AstTransformerAbstract() {
         val right = node.right
 
         return php.ast.ExprBinaryOpMul(
-            left = p(left, php.ast.Expr::class),
-            right = p(right, php.ast.Expr::class),
+            left = pExpr(left),
+            right = pExpr(right),
         )
     }
 
@@ -547,8 +561,8 @@ class AstTransformer : AstTransformerAbstract() {
         val right = node.right
 
         return php.ast.ExprBinaryOpNotEqual(
-            left = p(left, php.ast.Expr::class),
-            right = p(right, php.ast.Expr::class),
+            left = pExpr(left),
+            right = pExpr(right),
         )
     }
 
@@ -557,8 +571,8 @@ class AstTransformer : AstTransformerAbstract() {
         val right = node.right
 
         return php.ast.ExprBinaryOpNotIdentical(
-            left = p(left, php.ast.Expr::class),
-            right = p(right, php.ast.Expr::class),
+            left = pExpr(left),
+            right = pExpr(right),
         )
     }
 
@@ -567,8 +581,8 @@ class AstTransformer : AstTransformerAbstract() {
         val right = node.right
 
         return php.ast.ExprBinaryOpPlus(
-            left = p(left, php.ast.Expr::class),
-            right = p(right, php.ast.Expr::class),
+            left = pExpr(left),
+            right = pExpr(right),
         )
     }
 
@@ -577,8 +591,8 @@ class AstTransformer : AstTransformerAbstract() {
         val right = node.right
 
         return php.ast.ExprBinaryOpPow(
-            left = p(left, php.ast.Expr::class),
-            right = p(right, php.ast.Expr::class),
+            left = pExpr(left),
+            right = pExpr(right),
         )
     }
 
@@ -587,8 +601,8 @@ class AstTransformer : AstTransformerAbstract() {
         val right = node.right
 
         return php.ast.ExprBinaryOpShiftLeft(
-            left = p(left, php.ast.Expr::class),
-            right = p(right, php.ast.Expr::class),
+            left = pExpr(left),
+            right = pExpr(right),
         )
     }
 
@@ -597,8 +611,8 @@ class AstTransformer : AstTransformerAbstract() {
         val right = node.right
 
         return php.ast.ExprBinaryOpShiftRight(
-            left = p(left, php.ast.Expr::class),
-            right = p(right, php.ast.Expr::class),
+            left = pExpr(left),
+            right = pExpr(right),
         )
     }
 
@@ -607,8 +621,8 @@ class AstTransformer : AstTransformerAbstract() {
         val right = node.right
 
         return php.ast.ExprBinaryOpSmaller(
-            left = p(left, php.ast.Expr::class),
-            right = p(right, php.ast.Expr::class),
+            left = pExpr(left),
+            right = pExpr(right),
         )
     }
 
@@ -617,8 +631,8 @@ class AstTransformer : AstTransformerAbstract() {
         val right = node.right
 
         return php.ast.ExprBinaryOpSmallerOrEqual(
-            left = p(left, php.ast.Expr::class),
-            right = p(right, php.ast.Expr::class),
+            left = pExpr(left),
+            right = pExpr(right),
         )
     }
 
@@ -627,8 +641,8 @@ class AstTransformer : AstTransformerAbstract() {
         val right = node.right
 
         return php.ast.ExprBinaryOpSpaceship(
-            left = p(left, php.ast.Expr::class),
-            right = p(right, php.ast.Expr::class),
+            left = pExpr(left),
+            right = pExpr(right),
         )
     }
 
@@ -636,7 +650,7 @@ class AstTransformer : AstTransformerAbstract() {
         val expr = node.expr
 
         return php.ast.ExprBitwiseNot(
-            expr = p(expr, php.ast.Expr::class),
+            expr = pExpr(expr),
         )
     }
 
@@ -644,7 +658,7 @@ class AstTransformer : AstTransformerAbstract() {
         val expr = node.expr
 
         return php.ast.ExprBooleanNot(
-            expr = p(expr, php.ast.Expr::class),
+            expr = pExpr(expr),
         )
     }
 
@@ -652,7 +666,7 @@ class AstTransformer : AstTransformerAbstract() {
         val expr = node.expr
 
         return php.ast.ExprCastArray(
-            expr = p(expr, php.ast.Expr::class),
+            expr = pExpr(expr),
         )
     }
 
@@ -660,7 +674,7 @@ class AstTransformer : AstTransformerAbstract() {
         val expr = node.expr
 
         return php.ast.ExprCastBool(
-            expr = p(expr, php.ast.Expr::class),
+            expr = pExpr(expr),
         )
     }
 
@@ -668,7 +682,7 @@ class AstTransformer : AstTransformerAbstract() {
         val expr = node.expr
 
         return php.ast.ExprCastDouble(
-            expr = p(expr, php.ast.Expr::class),
+            expr = pExpr(expr),
         )
     }
 
@@ -676,7 +690,7 @@ class AstTransformer : AstTransformerAbstract() {
         val expr = node.expr
 
         return php.ast.ExprCastInt(
-            expr = p(expr, php.ast.Expr::class),
+            expr = pExpr(expr),
         )
     }
 
@@ -684,7 +698,7 @@ class AstTransformer : AstTransformerAbstract() {
         val expr = node.expr
 
         return php.ast.ExprCastObject(
-            expr = p(expr, php.ast.Expr::class),
+            expr = pExpr(expr),
         )
     }
 
@@ -692,7 +706,7 @@ class AstTransformer : AstTransformerAbstract() {
         val expr = node.expr
 
         return php.ast.ExprCastString(
-            expr = p(expr, php.ast.Expr::class),
+            expr = pExpr(expr),
         )
     }
 
@@ -700,7 +714,7 @@ class AstTransformer : AstTransformerAbstract() {
         val expr = node.expr
 
         return php.ast.ExprCastUnset(
-            expr = p(expr, php.ast.Expr::class),
+            expr = pExpr(expr),
         )
     }
 
@@ -710,7 +724,7 @@ class AstTransformer : AstTransformerAbstract() {
 
         return php.ast.ExprClassConstFetch(
             `class` = pAnyOf2(`class`, php.ast.Name::class, php.ast.Expr::class),
-            name = p(name, php.ast.Identifier::class),
+            name = pIdentifier(name),
         )
     }
 
@@ -718,7 +732,7 @@ class AstTransformer : AstTransformerAbstract() {
         val expr = node.expr
 
         return php.ast.ExprClone(
-            expr = p(expr, php.ast.Expr::class),
+            expr = pExpr(expr),
         )
     }
 
@@ -733,10 +747,10 @@ class AstTransformer : AstTransformerAbstract() {
         return php.ast.ExprClosure(
             static = static,
             byRef = byRef,
-            params = pList(params, php.ast.Param::class),
-            uses = pList(uses, php.ast.ExprClosureUse::class),
+            params = params.map { pParam(it) },
+            uses = uses.map { pExprClosureUse(it) },
             returnType = pAnyOf3OrNull(returnType, php.ast.Identifier::class, php.ast.Name::class, php.ast.ComplexType::class),
-            stmts = pList(stmts, php.ast.Stmt::class),
+            stmts = pStmts(stmts),
         )
     }
 
@@ -745,7 +759,7 @@ class AstTransformer : AstTransformerAbstract() {
         val byRef = node.byRef
 
         return php.ast.ExprClosureUse(
-            `var` = p(`var`, php.ast.ExprVariable::class),
+            `var` = pExprVariable(`var`),
             byRef = byRef,
         )
     }
@@ -754,7 +768,7 @@ class AstTransformer : AstTransformerAbstract() {
         val name = node.name
 
         return php.ast.ExprConstFetch(
-            name = p(name, php.ast.Name::class),
+            name = pName(name),
         )
     }
 
@@ -762,7 +776,7 @@ class AstTransformer : AstTransformerAbstract() {
         val expr = node.expr
 
         return php.ast.ExprEmpty(
-            expr = p(expr, php.ast.Expr::class),
+            expr = pExpr(expr),
         )
     }
 
@@ -770,7 +784,7 @@ class AstTransformer : AstTransformerAbstract() {
         val expr = node.expr
 
         return php.ast.ExprErrorSuppress(
-            expr = p(expr, php.ast.Expr::class),
+            expr = pExpr(expr),
         )
     }
 
@@ -778,7 +792,7 @@ class AstTransformer : AstTransformerAbstract() {
         val expr = node.expr
 
         return php.ast.ExprExit(
-            expr = pOrNull(expr, php.ast.Expr::class),
+            expr = pExprOrNull(expr),
         )
     }
 
@@ -788,7 +802,7 @@ class AstTransformer : AstTransformerAbstract() {
 
         return php.ast.ExprFuncCall(
             name = pAnyOf2(name, php.ast.Name::class, php.ast.Expr::class),
-            args = pList(args, php.ast.Arg::class),
+            args = args.map { pArg(it) },
         )
     }
 
@@ -797,7 +811,7 @@ class AstTransformer : AstTransformerAbstract() {
         val type = node.type
 
         return php.ast.ExprInclude(
-            expr = p(expr, php.ast.Expr::class),
+            expr = pExpr(expr),
             type = type,
         )
     }
@@ -807,7 +821,7 @@ class AstTransformer : AstTransformerAbstract() {
         val `class` = node.`class`
 
         return php.ast.ExprInstanceof(
-            expr = p(expr, php.ast.Expr::class),
+            expr = pExpr(expr),
             `class` = pAnyOf2(`class`, php.ast.Name::class, php.ast.ExprVariable::class),
         )
     }
@@ -816,7 +830,7 @@ class AstTransformer : AstTransformerAbstract() {
         val vars = node.vars
 
         return php.ast.ExprIsset(
-            vars = pList(vars, php.ast.Expr::class),
+            vars = pExprs(vars),
         )
     }
 
@@ -824,7 +838,7 @@ class AstTransformer : AstTransformerAbstract() {
         val items = node.items
 
         return php.ast.ExprList(
-            items = pListOfNullable(items, php.ast.ExprArrayItem::class),
+            items = items.map { it?.let { pExprArrayItem(it) } },
         )
     }
 
@@ -834,9 +848,9 @@ class AstTransformer : AstTransformerAbstract() {
         val args = node.args
 
         return php.ast.ExprMethodCall(
-            `var` = p(`var`, php.ast.Expr::class),
+            `var` = pExpr(`var`),
             name = pAnyOf2(name, php.ast.Identifier::class, php.ast.Expr::class),
-            args = pList(args, php.ast.Arg::class),
+            args = args.map { pArg(it) },
         )
     }
 
@@ -846,7 +860,7 @@ class AstTransformer : AstTransformerAbstract() {
 
         return php.ast.ExprNew(
             `class` = pAnyOf3(`class`, php.ast.Name::class, php.ast.Expr::class, php.ast.StmtClass::class),
-            args = pList(args, php.ast.Arg::class),
+            args = args.map { pArg(it) },
         )
     }
 
@@ -854,7 +868,7 @@ class AstTransformer : AstTransformerAbstract() {
         val `var` = node.`var`
 
         return php.ast.ExprPostDec(
-            `var` = p(`var`, php.ast.Expr::class),
+            `var` = pExpr(`var`),
         )
     }
 
@@ -862,7 +876,7 @@ class AstTransformer : AstTransformerAbstract() {
         val `var` = node.`var`
 
         return php.ast.ExprPostInc(
-            `var` = p(`var`, php.ast.Expr::class),
+            `var` = pExpr(`var`),
         )
     }
 
@@ -870,7 +884,7 @@ class AstTransformer : AstTransformerAbstract() {
         val `var` = node.`var`
 
         return php.ast.ExprPreDec(
-            `var` = p(`var`, php.ast.Expr::class),
+            `var` = pExpr(`var`),
         )
     }
 
@@ -878,7 +892,7 @@ class AstTransformer : AstTransformerAbstract() {
         val `var` = node.`var`
 
         return php.ast.ExprPreInc(
-            `var` = p(`var`, php.ast.Expr::class),
+            `var` = pExpr(`var`),
         )
     }
 
@@ -886,7 +900,7 @@ class AstTransformer : AstTransformerAbstract() {
         val expr = node.expr
 
         return php.ast.ExprPrint(
-            expr = p(expr, php.ast.Expr::class),
+            expr = pExpr(expr),
         )
     }
 
@@ -895,7 +909,7 @@ class AstTransformer : AstTransformerAbstract() {
         val name = node.name
 
         return php.ast.ExprPropertyFetch(
-            `var` = p(`var`, php.ast.Expr::class),
+            `var` = pExpr(`var`),
             name = pAnyOf2(name, php.ast.Identifier::class, php.ast.Expr::class),
         )
     }
@@ -908,7 +922,7 @@ class AstTransformer : AstTransformerAbstract() {
         return php.ast.ExprStaticCall(
             `class` = pAnyOf2(`class`, php.ast.Name::class, php.ast.Expr::class),
             name = pAnyOf2(name, php.ast.Identifier::class, php.ast.Expr::class),
-            args = pList(args, php.ast.Arg::class),
+            args = args.map { pArg(it) },
         )
     }
 
@@ -928,9 +942,9 @@ class AstTransformer : AstTransformerAbstract() {
         val `else` = node.`else`
 
         return php.ast.ExprTernary(
-            cond = p(cond, php.ast.Expr::class),
-            `if` = pOrNull(`if`, php.ast.Expr::class),
-            `else` = p(`else`, php.ast.Expr::class),
+            cond = pExpr(cond),
+            `if` = pExprOrNull(`if`),
+            `else` = pExpr(`else`),
         )
     }
 
@@ -938,7 +952,7 @@ class AstTransformer : AstTransformerAbstract() {
         val expr = node.expr
 
         return php.ast.ExprThrow(
-            expr = p(expr, php.ast.Expr::class),
+            expr = pExpr(expr),
         )
     }
 
@@ -946,7 +960,7 @@ class AstTransformer : AstTransformerAbstract() {
         val expr = node.expr
 
         return php.ast.ExprUnaryMinus(
-            expr = p(expr, php.ast.Expr::class),
+            expr = pExpr(expr),
         )
     }
 
@@ -954,7 +968,7 @@ class AstTransformer : AstTransformerAbstract() {
         val expr = node.expr
 
         return php.ast.ExprUnaryPlus(
-            expr = p(expr, php.ast.Expr::class),
+            expr = pExpr(expr),
         )
     }
 
@@ -971,8 +985,8 @@ class AstTransformer : AstTransformerAbstract() {
         val value = node.value
 
         return php.ast.ExprYield(
-            key = pOrNull(key, php.ast.Expr::class),
-            value = pOrNull(value, php.ast.Expr::class),
+            key = pExprOrNull(key),
+            value = pExprOrNull(value),
         )
     }
 
@@ -980,7 +994,7 @@ class AstTransformer : AstTransformerAbstract() {
         val expr = node.expr
 
         return php.ast.ExprYieldFrom(
-            expr = p(expr, php.ast.Expr::class),
+            expr = pExpr(expr),
         )
     }
 
@@ -1015,8 +1029,8 @@ class AstTransformer : AstTransformerAbstract() {
             type = pAnyOf3OrNull(type, php.ast.Identifier::class, php.ast.Name::class, php.ast.ComplexType::class),
             byRef = byRef,
             variadic = variadic,
-            `var` = p(`var`, php.ast.ExprVariable::class),
-            default = pOrNull(default, php.ast.Expr::class),
+            `var` = pExprVariable(`var`),
+            default = pExprOrNull(default),
         )
     }
 
@@ -1032,7 +1046,7 @@ class AstTransformer : AstTransformerAbstract() {
         val parts = node.parts
 
         return php.ast.ScalarEncapsed(
-            parts = pList(parts, php.ast.Expr::class),
+            parts = pExprs(parts),
         )
     }
 
@@ -1102,7 +1116,7 @@ class AstTransformer : AstTransformerAbstract() {
         val num = node.num
 
         return php.ast.StmtBreak(
-            num = pOrNull(num, php.ast.Expr::class),
+            num = pExprOrNull(num),
         )
     }
 
@@ -1111,20 +1125,8 @@ class AstTransformer : AstTransformerAbstract() {
         val stmts = node.stmts
 
         return php.ast.StmtCase(
-            cond = pOrNull(cond, php.ast.Expr::class),
-            stmts = pList(stmts, php.ast.Stmt::class),
-        )
-    }
-
-    private fun pStmtCatch(node: StmtCatch): php.ast.StmtCatch {
-        val types = node.types
-        val `var` = node.`var`
-        val stmts = node.stmts
-
-        return php.ast.StmtCatch(
-            types = pList(types, php.ast.Name::class),
-            `var` = p(`var`, php.ast.ExprVariable::class),
-            stmts = pList(stmts, php.ast.Stmt::class),
+            cond = pExprOrNull(cond),
+            stmts = pStmts(stmts),
         )
     }
 
@@ -1138,11 +1140,11 @@ class AstTransformer : AstTransformerAbstract() {
 
         return php.ast.StmtClass(
             flags = flags,
-            extends = pOrNull(extends, php.ast.Name::class),
-            implements = pList(implements, php.ast.Name::class),
-            name = pOrNull(name, php.ast.Identifier::class),
-            stmts = pList(stmts, php.ast.Stmt::class),
-            namespacedName = p(namespacedName, php.ast.Name::class),
+            extends = extends?.let { pName(it) },
+            implements = implements.map { pName(it) },
+            name = name?.let { pIdentifier(it) },
+            stmts = pStmts(stmts),
+            namespacedName = pName(namespacedName),
         )
     }
 
@@ -1152,7 +1154,7 @@ class AstTransformer : AstTransformerAbstract() {
 
         return php.ast.StmtClassConst(
             flags = flags,
-            consts = pList(consts, php.ast.Const::class),
+            consts = consts.map { pConst(it) },
         )
     }
 
@@ -1167,10 +1169,10 @@ class AstTransformer : AstTransformerAbstract() {
         return php.ast.StmtClassMethod(
             flags = flags,
             byRef = byRef,
-            name = p(name, php.ast.Identifier::class),
-            params = pList(params, php.ast.Param::class),
+            name = pIdentifier(name),
+            params = params.map { pParam(it) },
             returnType = pAnyOf3OrNull(returnType, php.ast.Identifier::class, php.ast.Name::class, php.ast.ComplexType::class),
-            stmts = pListOrNull(stmts, php.ast.Stmt::class),
+            stmts = stmts?.let { pStmts(it) }
         )
     }
 
@@ -1178,7 +1180,7 @@ class AstTransformer : AstTransformerAbstract() {
         val consts = node.consts
 
         return php.ast.StmtConst(
-            consts = pList(consts, php.ast.Const::class),
+            consts = consts.map { pConst(it) },
         )
     }
 
@@ -1186,7 +1188,7 @@ class AstTransformer : AstTransformerAbstract() {
         val num = node.num
 
         return php.ast.StmtContinue(
-            num = pOrNull(num, php.ast.Expr::class),
+            num = pExprOrNull(num),
         )
     }
 
@@ -1195,8 +1197,8 @@ class AstTransformer : AstTransformerAbstract() {
         val stmts = node.stmts
 
         return php.ast.StmtDeclare(
-            declares = pList(declares, php.ast.StmtDeclareDeclare::class),
-            stmts = pListOrNull(stmts, php.ast.Stmt::class),
+            declares = declares.map { pStmtDeclareDeclare(it) },
+            stmts = stmts?.let { pStmts(it) }
         )
     }
 
@@ -1205,8 +1207,8 @@ class AstTransformer : AstTransformerAbstract() {
         val value = node.value
 
         return php.ast.StmtDeclareDeclare(
-            key = p(key, php.ast.Identifier::class),
-            value = p(value, php.ast.Expr::class),
+            key = pIdentifier(key),
+            value = pExpr(value),
         )
     }
 
@@ -1215,8 +1217,8 @@ class AstTransformer : AstTransformerAbstract() {
         val cond = node.cond
 
         return php.ast.StmtDo(
-            stmts = pList(stmts, php.ast.Stmt::class),
-            cond = p(cond, php.ast.Expr::class),
+            stmts = pStmts(stmts),
+            cond = pExpr(cond),
         )
     }
 
@@ -1224,25 +1226,7 @@ class AstTransformer : AstTransformerAbstract() {
         val exprs = node.exprs
 
         return php.ast.StmtEcho(
-            exprs = pList(exprs, php.ast.Expr::class),
-        )
-    }
-
-    private fun pStmtElse(node: StmtElse): php.ast.StmtElse {
-        val stmts = node.stmts
-
-        return php.ast.StmtElse(
-            stmts = pList(stmts, php.ast.Stmt::class),
-        )
-    }
-
-    private fun pStmtElseIf(node: StmtElseIf): php.ast.StmtElseIf {
-        val cond = node.cond
-        val stmts = node.stmts
-
-        return php.ast.StmtElseIf(
-            cond = p(cond, php.ast.Expr::class),
-            stmts = pList(stmts, php.ast.Stmt::class),
+            exprs = pExprs(exprs),
         )
     }
 
@@ -1250,17 +1234,10 @@ class AstTransformer : AstTransformerAbstract() {
         val expr = node.expr
 
         return php.ast.StmtExpression(
-            expr = p(expr, php.ast.Expr::class),
+            expr = pExpr(expr),
         )
     }
 
-    private fun pStmtFinally(node: StmtFinally): php.ast.StmtFinally {
-        val stmts = node.stmts
-
-        return php.ast.StmtFinally(
-            stmts = pList(stmts, php.ast.Stmt::class),
-        )
-    }
 
     private fun pStmtFor(node: StmtFor): php.ast.StmtFor {
         val init = node.init
@@ -1269,10 +1246,10 @@ class AstTransformer : AstTransformerAbstract() {
         val stmts = node.stmts
 
         return php.ast.StmtFor(
-            init = pList(init, php.ast.Expr::class),
-            cond = pList(cond, php.ast.Expr::class),
-            loop = pList(loop, php.ast.Expr::class),
-            stmts = pList(stmts, php.ast.Stmt::class),
+            init = pExprs(init),
+            cond = pExprs(cond),
+            loop = pExprs(loop),
+            stmts = pStmts(stmts),
         )
     }
 
@@ -1284,11 +1261,11 @@ class AstTransformer : AstTransformerAbstract() {
         val stmts = node.stmts
 
         return php.ast.StmtForeach(
-            expr = p(expr, php.ast.Expr::class),
-            keyVar = pOrNull(keyVar, php.ast.Expr::class),
+            expr = pExpr(expr),
+            keyVar = pExprOrNull(keyVar),
             byRef = byRef,
-            valueVar = p(valueVar, php.ast.Expr::class),
-            stmts = pList(stmts, php.ast.Stmt::class),
+            valueVar = pExpr(valueVar),
+            stmts = pStmts(stmts),
         )
     }
 
@@ -1302,11 +1279,11 @@ class AstTransformer : AstTransformerAbstract() {
 
         return php.ast.StmtFunction(
             byRef = byRef,
-            name = p(name, php.ast.Identifier::class),
-            params = pList(params, php.ast.Param::class),
+            name = pIdentifier(name),
+            params = params.map { pParam(it) },
             returnType = pAnyOf3OrNull(returnType, php.ast.Identifier::class, php.ast.Name::class, php.ast.ComplexType::class),
-            stmts = pList(stmts, php.ast.Stmt::class),
-            namespacedName = p(namespacedName, php.ast.Name::class),
+            stmts = pStmts(stmts),
+            namespacedName = pName(namespacedName),
         )
     }
 
@@ -1314,7 +1291,7 @@ class AstTransformer : AstTransformerAbstract() {
         val vars = node.vars
 
         return php.ast.StmtGlobal(
-            vars = pList(vars, php.ast.Expr::class),
+            vars = pExprs(vars),
         )
     }
 
@@ -1322,7 +1299,7 @@ class AstTransformer : AstTransformerAbstract() {
         val name = node.name
 
         return php.ast.StmtGoto(
-            name = p(name, php.ast.Identifier::class),
+            name = pIdentifier(name),
         )
     }
 
@@ -1333,13 +1310,9 @@ class AstTransformer : AstTransformerAbstract() {
 
         return php.ast.StmtGroupUse(
             type = type,
-            prefix = p(prefix, php.ast.Name::class),
-            uses = pList(uses, php.ast.StmtUseUse::class),
+            prefix = pName(prefix),
+            uses = uses.map { pStmtUseUse(it) },
         )
-    }
-
-    private fun pStmtHaltCompiler(node: StmtHaltCompiler): php.ast.Stmt {
-        return php.ast.StmtNop
     }
 
     private fun pStmtIf(node: StmtIf): php.ast.StmtIf {
@@ -1349,10 +1322,16 @@ class AstTransformer : AstTransformerAbstract() {
         val `else` = node.`else`
 
         return php.ast.StmtIf(
-            cond = p(cond, php.ast.Expr::class),
-            stmts = pList(stmts, php.ast.Stmt::class),
-            elseifs = pList(elseifs, php.ast.StmtElseIf::class),
-            `else` = pOrNull(`else`, php.ast.StmtElse::class),
+            cond = pExpr(cond),
+            stmts = pStmts(stmts),
+            elseifs = elseifs.map {
+                php.ast.StmtElseIf(
+                    pExpr(it.cond), pStmts(it.stmts)
+                )
+            },
+            `else` = `else`?.let {
+                php.ast.StmtElse(pStmts(it.stmts))
+            }
         )
     }
 
@@ -1371,10 +1350,10 @@ class AstTransformer : AstTransformerAbstract() {
         val namespacedName = node.namespacedName
 
         return php.ast.StmtInterface(
-            name = p(name, php.ast.Identifier::class),
-            extends = pList(extends, php.ast.Name::class),
-            stmts = pList(stmts, php.ast.Stmt::class),
-            namespacedName = p(namespacedName, php.ast.Name::class),
+            name = pIdentifier(name),
+            extends = extends.map { pName(it) },
+            stmts = pStmts(stmts),
+            namespacedName = pName(namespacedName),
         )
     }
 
@@ -1382,7 +1361,7 @@ class AstTransformer : AstTransformerAbstract() {
         val name = node.name
 
         return php.ast.StmtLabel(
-            name = p(name, php.ast.Identifier::class),
+            name = pIdentifier(name),
         )
     }
 
@@ -1391,13 +1370,9 @@ class AstTransformer : AstTransformerAbstract() {
         val stmts = node.stmts
 
         return php.ast.StmtNamespace(
-            name = pOrNull(name, php.ast.Name::class),
-            stmts = pList(stmts, php.ast.Stmt::class),
+            name = name?.let { pName(it) },
+            stmts = pStmts(stmts),
         )
-    }
-
-    private fun pStmtNop(node: StmtNop): php.ast.StmtNop {
-        return php.ast.StmtNop
     }
 
     private fun pStmtProperty(node: StmtProperty): php.ast.StmtProperty {
@@ -1406,7 +1381,7 @@ class AstTransformer : AstTransformerAbstract() {
 
         return php.ast.StmtProperty(
             flags = flags,
-            props = pList(props, php.ast.StmtPropertyProperty::class),
+            props = props.map { pStmtPropertyProperty(it) },
         )
     }
 
@@ -1415,8 +1390,8 @@ class AstTransformer : AstTransformerAbstract() {
         val default = node.default
 
         return php.ast.StmtPropertyProperty(
-            name = p(name, php.ast.Identifier::class),
-            default = pOrNull(default, php.ast.Expr::class),
+            name = pIdentifier(name),
+            default = pExprOrNull(default),
         )
     }
 
@@ -1424,7 +1399,7 @@ class AstTransformer : AstTransformerAbstract() {
         val expr = node.expr
 
         return php.ast.StmtReturn(
-            expr = pOrNull(expr, php.ast.Expr::class),
+            expr = pExprOrNull(expr),
         )
     }
 
@@ -1432,7 +1407,7 @@ class AstTransformer : AstTransformerAbstract() {
         val vars = node.vars
 
         return php.ast.StmtStatic(
-            vars = pList(vars, php.ast.StmtStaticVar::class),
+            vars = vars.map { pStmtStaticVar(it) },
         )
     }
 
@@ -1441,8 +1416,8 @@ class AstTransformer : AstTransformerAbstract() {
         val default = node.default
 
         return php.ast.StmtStaticVar(
-            `var` = p(`var`, php.ast.ExprVariable::class),
-            default = pOrNull(default, php.ast.Expr::class),
+            `var` = pExprVariable(`var`),
+            default = pExprOrNull(default),
         )
     }
 
@@ -1451,8 +1426,8 @@ class AstTransformer : AstTransformerAbstract() {
         val cases = node.cases
 
         return php.ast.StmtSwitch(
-            cond = p(cond, php.ast.Expr::class),
-            cases = pList(cases, php.ast.StmtCase::class),
+            cond = pExpr(cond),
+            cases = cases.map { pStmtCase(it) },
         )
     }
 
@@ -1460,7 +1435,7 @@ class AstTransformer : AstTransformerAbstract() {
         val expr = node.expr
 
         return php.ast.StmtThrow(
-            expr = p(expr, php.ast.Expr::class),
+            expr = pExpr(expr),
         )
     }
 
@@ -1470,9 +1445,9 @@ class AstTransformer : AstTransformerAbstract() {
         val namespacedName = node.namespacedName
 
         return php.ast.StmtTrait(
-            name = p(name, php.ast.Identifier::class),
-            stmts = pList(stmts, php.ast.Stmt::class),
-            namespacedName = p(namespacedName, php.ast.Name::class),
+            name = pIdentifier(name),
+            stmts = pStmts(stmts),
+            namespacedName = pName(namespacedName),
         )
     }
 
@@ -1481,9 +1456,16 @@ class AstTransformer : AstTransformerAbstract() {
         val adaptations = node.adaptations
 
         return php.ast.StmtTraitUse(
-            traits = pList(traits, php.ast.Name::class),
-            adaptations = pList(adaptations, php.ast.StmtTraitUseAdaptation::class),
+            traits = traits.map { pName(it) },
+            adaptations = adaptations.map { pStmtTraitUseAdaptationAlias(it) }
         )
+    }
+
+    private fun pStmtTraitUseAdaptationAlias(node: StmtTraitUseAdaptation): php.ast.StmtTraitUseAdaptation {
+        return when (node) {
+            is StmtTraitUseAdaptationAlias -> pStmtTraitUseAdaptationAlias(node)
+            is StmtTraitUseAdaptationPrecedence -> pStmtTraitUseAdaptationPrecedence(node)
+        }
     }
 
     private fun pStmtTraitUseAdaptationAlias(node: StmtTraitUseAdaptationAlias): php.ast.StmtTraitUseAdaptationAlias {
@@ -1494,9 +1476,9 @@ class AstTransformer : AstTransformerAbstract() {
 
         return php.ast.StmtTraitUseAdaptationAlias(
             newModifier = newModifier,
-            newName = pOrNull(newName, php.ast.Identifier::class),
-            trait = pOrNull(trait, php.ast.Name::class),
-            method = p(method, php.ast.Identifier::class),
+            newName = newName?.let { pIdentifier(it) },
+            trait = trait?.let { pName(it) },
+            method = pIdentifier(method),
         )
     }
 
@@ -1506,9 +1488,9 @@ class AstTransformer : AstTransformerAbstract() {
         val method = node.method
 
         return php.ast.StmtTraitUseAdaptationPrecedence(
-            insteadof = pList(insteadof, php.ast.Name::class),
-            trait = pOrNull(trait, php.ast.Name::class),
-            method = p(method, php.ast.Identifier::class),
+            insteadof = insteadof.map { pName(it) },
+            trait = trait?.let { pName(it) },
+            method = pIdentifier(method),
         )
     }
 
@@ -1518,9 +1500,29 @@ class AstTransformer : AstTransformerAbstract() {
         val finally = node.finally
 
         return php.ast.StmtTryCatch(
-            stmts = pList(stmts, php.ast.Stmt::class),
-            catches = pList(catches, php.ast.StmtCatch::class),
-            finally = pOrNull(finally, php.ast.StmtFinally::class),
+            stmts = pStmts(stmts),
+            catches = catches.map { pStmtCatch(it) },
+            finally = finally?.let { pStmtFinally(it) },
+        )
+    }
+
+    private fun pStmtCatch(node: StmtCatch): php.ast.StmtCatch {
+        val types = node.types
+        val `var` = node.`var`
+        val stmts = node.stmts
+
+        return php.ast.StmtCatch(
+            types = types.map { pName(it) },
+            `var` = pExprVariable(`var`),
+            stmts = pStmts(stmts),
+        )
+    }
+
+    private fun pStmtFinally(node: StmtFinally): php.ast.StmtFinally {
+        val stmts = node.stmts
+
+        return php.ast.StmtFinally(
+            stmts = pStmts(stmts),
         )
     }
 
@@ -1528,7 +1530,7 @@ class AstTransformer : AstTransformerAbstract() {
         val vars = node.vars
 
         return php.ast.StmtUnset(
-            vars = pList(vars, php.ast.Expr::class),
+            vars = pExprs(vars),
         )
     }
 
@@ -1538,7 +1540,7 @@ class AstTransformer : AstTransformerAbstract() {
 
         return php.ast.StmtUse(
             type = type,
-            uses = pList(uses, php.ast.StmtUseUse::class),
+            uses = uses.map { pStmtUseUse(it) },
         )
     }
 
@@ -1549,8 +1551,8 @@ class AstTransformer : AstTransformerAbstract() {
 
         return php.ast.StmtUseUse(
             type = type,
-            name = p(name, php.ast.Name::class),
-            alias = pOrNull(alias, php.ast.Identifier::class),
+            name = pName(name),
+            alias = alias?.let { pIdentifier(it) },
         )
     }
 
@@ -1559,8 +1561,8 @@ class AstTransformer : AstTransformerAbstract() {
         val stmts = node.stmts
 
         return php.ast.StmtWhile(
-            cond = p(cond, php.ast.Expr::class),
-            stmts = pList(stmts, php.ast.Stmt::class),
+            cond = pExpr(cond),
+            stmts = pStmts(stmts),
         )
     }
 }
