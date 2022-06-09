@@ -10,7 +10,6 @@ class AstPrinter : AstPrinterAbstract() {
             is Const -> pConst(node)
             is Name -> pName(node)
             is Identifier -> pIdentifier(node)
-            is NullableType -> pNullableType(node)
             is Param -> pParam(node)
 
             // expr
@@ -61,7 +60,6 @@ class AstPrinter : AstPrinterAbstract() {
             // scalar
             is ScalarDNumber -> pScalarDNumber(node)
             is ScalarEncapsed -> pScalarEncapsed(node)
-            is ScalarEncapsedStringPart -> pScalarEncapsedStringPart(node)
             is ScalarLNumber -> pScalarLNumber(node)
             is ScalarString -> pScalarString(node)
             is ScalarMagicConst -> pScalarMagicConst(node)
@@ -103,7 +101,7 @@ class AstPrinter : AstPrinterAbstract() {
             is StmtUse -> pStmtUse(node)
             is StmtWhile -> pStmtWhile(node)
 
-            else -> throw Exception("预期外的 AstNode 类型: ${node::class.qualifiedName}")
+            else -> throw Exception("不应支持输出的 AstNode 类型: ${node::class.qualifiedName}")
         }
     }
 
@@ -137,15 +135,6 @@ class AstPrinter : AstPrinterAbstract() {
 
     private fun unreachableAnyOf(value: Any): Nothing {
         throw Exception("不应触达的 AnyOf 分支, type: ${value::class.qualifiedName}")
-    }
-
-    private fun pAnyOf(anyOf: AnyOf): String {
-        val value = anyOf.value
-        return when (value) {
-            is String -> value
-            is Node -> p(value)
-            else -> unreachableAnyOf(value)
-        }
     }
 
     private fun pDereferenceLhs(node: Node): String {
@@ -189,21 +178,8 @@ class AstPrinter : AstPrinterAbstract() {
         )
     }
 
-    private fun pObjectProperty(node: AnyOf2<Identifier, Expr>): String {
-        return when (val value = node.value) {
-            is Identifier -> value.name
-            is Expr -> "{" + p(value) + "}"
-            else -> unreachableAnyOf(value)
-        }
-    }
-
-    private fun pTypeHint(node: AnyOf3<Identifier, Name, ComplexType>): String {
-        return when (val value = node.value) {
-            is Identifier -> pIdentifier(value)
-            is Name -> pName(value)
-            is ComplexType -> p(value)
-            else -> unreachableAnyOf(value)
-        }
+    private fun pTypeHint(typeHint: TypeHint): String {
+        return typeHint.toCodeString()
     }
 
     private fun pEncapsList(encapsList: List<Any?>, vararg quoteChars: Char): String {
@@ -230,6 +206,47 @@ class AstPrinter : AstPrinterAbstract() {
         }
 
         return result
+    }
+
+    private fun pFuncRef(funcRef: FuncRef): String {
+        return when (funcRef) {
+            is FuncRef.FuncRefStatic -> pCallLhs(funcRef.`class`)
+            is FuncRef.FuncRefDynamic -> pCallLhs(funcRef.`class`)
+        }
+    }
+
+    private fun pClassRef(classRef: ClassRef): String {
+        return when (classRef) {
+            is ClassRef.ClassRefDynamic -> pDereferenceLhs(classRef.name)
+            is ClassRef.ClassRefStatic -> pDereferenceLhs(classRef.name)
+        }
+    }
+
+    private fun pPropertyRef(propertyRef: PropertyRef): String {
+        return when (propertyRef) {
+            is PropertyRef.PropertyRefStatic -> propertyRef.name.name
+            is PropertyRef.PropertyRefDynamic -> "{" + p(propertyRef.name) + "}"
+        }
+    }
+
+    private fun pMethodRef(methodRef: MethodRef): String {
+        return when (methodRef) {
+            is MethodRef.MethodRefStatic -> methodRef.name.name
+            is MethodRef.MethodRefDynamic -> "{" + p(methodRef.name) + "}"
+        }
+    }
+
+    private fun pStaticMethodRef(methodRef: MethodRef): String {
+        return when (methodRef) {
+            is MethodRef.MethodRefStatic -> methodRef.name.name
+            is MethodRef.MethodRefDynamic -> {
+                if (methodRef.name is ExprVariable) {
+                    p(methodRef.name)
+                } else {
+                    "{" + p(methodRef.name) + "}"
+                }
+            }
+        }
     }
 
     ////////////////////
@@ -367,10 +384,10 @@ class AstPrinter : AstPrinterAbstract() {
     }
 
     private fun pExprClassConstFetch(node: ExprClassConstFetch): String {
-        val `class` = node.`class`.value as Node
+        val `class` = node.`class`
         val name = node.name
 
-        return pDereferenceLhs(`class`) + "::" + p(name)
+        return pClassRef(`class`) + "::" + p(name)
     }
 
     private fun pExprClone(node: ExprClone): String {
@@ -426,7 +443,7 @@ class AstPrinter : AstPrinterAbstract() {
         val name = node.name
         val args = node.args
 
-        return pCallLhs(name.value as Node) + "(" + pCommaSeparated(args) + ")"
+        return pFuncRef(name) + "(" + pCommaSeparated(args) + ")"
     }
 
     private fun pExprInclude(node: ExprInclude): String {
@@ -438,9 +455,12 @@ class AstPrinter : AstPrinterAbstract() {
 
     private fun pExprInstanceof(node: ExprInstanceof): String {
         val expr = node.expr
-        val `class` = node.`class`.value as Node
 
-        return pPrec(node, expr, -1) + " instanceof " + pNewVariable(`class`)
+        return pPrec(node, expr, -1) + " instanceof " +
+                when (node) {
+                    is ExprInstanceof.ExprInstanceofName -> pNewVariable(node.`class`)
+                    is ExprInstanceof.ExprInstanceofVariable -> pNewVariable(node.`class`)
+                }
     }
 
     private fun pExprIsset(node: ExprIsset): String {
@@ -459,18 +479,15 @@ class AstPrinter : AstPrinterAbstract() {
         val name = node.name
         val args = node.args
 
-        return pDereferenceLhs(`var`) + "->" + pObjectProperty(name) +
+        return pDereferenceLhs(`var`) + "->" + pMethodRef(name) +
                 "(" + pCommaSeparated(args) + ")"
     }
 
     private fun pExprNew(node: ExprNew): String {
-        val `class` = node.`class`.value as Node
-        val args = node.args
-
-        return when (`class`) {
-            is StmtClass -> "new " + pClassCommon(`class`, pNotEmpty(args, { "(" + pCommaSeparated(it) + ")" }))
-            is Name, is Expr -> "new " + pNewVariable(`class`) + "(" + pCommaSeparated(args) + ")"
-            else -> unreachableAnyOf(`class`)
+        return when (node) {
+            is ExprNew.ExprNewStatic -> "new " + pNewVariable(node.`class`) + "(" + pCommaSeparated(node.args) + ")"
+            is ExprNew.ExprNewDynamic -> "new " + pNewVariable(node.`class`) + "(" + pCommaSeparated(node.args) + ")"
+            is ExprNew.ExprNewAnonymous -> "new " + pClassCommon(node.`class`, pNotEmpty(node.args, { "(" + pCommaSeparated(it) + ")" }))
         }
     }
 
@@ -506,30 +523,23 @@ class AstPrinter : AstPrinterAbstract() {
         val `var` = node.`var`
         val name = node.name
 
-        return pDereferenceLhs(`var`) + "->" + pObjectProperty(name)
+        return pDereferenceLhs(`var`) + "->" + pPropertyRef(name)
     }
 
     private fun pExprStaticCall(node: ExprStaticCall): String {
-        val `class` = node.`class`.value as Node
+        val `class` = node.`class`
         val name = node.name
         val args = node.args
 
-        val property = when (val value = name.value) {
-            is ExprVariable -> p(value)
-            is Expr -> "{" + p(value) + "}"
-            is Identifier -> value.name
-            else -> unreachableAnyOf(value)
-        }
-
-        return pDereferenceLhs(`class`) + "::" + property +
+        return pClassRef(`class`) + "::" + pStaticMethodRef(name) +
                 "(" + pCommaSeparated(args) + ")"
     }
 
     private fun pExprStaticPropertyFetch(node: ExprStaticPropertyFetch): String {
-        val `class` = node.`class`.value as Node
+        val `class` = node.`class`
         val name = node.name
 
-        return pDereferenceLhs(`class`) + "::$" + pObjectProperty(name)
+        return pClassRef(`class`) + "::$" + pPropertyRef(name)
     }
 
     private fun pExprTernary(node: ExprTernary): String {
@@ -573,12 +583,9 @@ class AstPrinter : AstPrinterAbstract() {
     }
 
     private fun pExprVariable(node: ExprVariable): String {
-        val name = node.name
-
-        return when (val value = name.value) {
-            is String -> "$$value"
-            is Expr -> "\${" + p(value) + "}"
-            else -> unreachableAnyOf(value)
+        return when(node) {
+            is ExprVariable.ExprVariableSimple -> "$" + node.name
+            is ExprVariable.ExprVariableDynamic -> "\${" + p(node.name) + "}"
         }
     }
 
@@ -618,11 +625,6 @@ class AstPrinter : AstPrinterAbstract() {
         }
     }
 
-    private fun pNullableType(node: NullableType): String {
-        val type = node.type
-        return "?" + pAnyOf(type)
-    }
-
     private fun pParam(node: Param): String {
         val type = node.type
         val byRef = node.byRef
@@ -659,10 +661,6 @@ class AstPrinter : AstPrinterAbstract() {
 
         // TODO 目前不支持 HEREDOC 模式
         return "\"" + pEncapsList(parts, '"') + "\""
-    }
-
-    private fun pScalarEncapsedStringPart(node: ScalarEncapsedStringPart): String {
-        throw Exception("不应支持输出 EncapsedStringPart")
     }
 
     private fun pScalarLNumber(node: ScalarLNumber): String {

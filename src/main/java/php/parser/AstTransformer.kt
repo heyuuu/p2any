@@ -1,36 +1,177 @@
 package php.parser
 
+import php.ast.*
 import php.parser.node.*
+import php.parser.node.AnyOf2
+import php.parser.node.AnyOf3
+import php.parser.node.Arg
+import php.parser.node.ComplexType
+import php.parser.node.Const
+import php.parser.node.Expr
+import php.parser.node.ExprArray
+import php.parser.node.ExprArrayDimFetch
+import php.parser.node.ExprArrayItem
+import php.parser.node.ExprAssign
+import php.parser.node.ExprAssignOp
+import php.parser.node.ExprAssignOpBitwiseAnd
+import php.parser.node.ExprAssignOpBitwiseOr
+import php.parser.node.ExprAssignOpBitwiseXor
+import php.parser.node.ExprAssignOpConcat
+import php.parser.node.ExprAssignOpDiv
+import php.parser.node.ExprAssignOpMinus
+import php.parser.node.ExprAssignOpMod
+import php.parser.node.ExprAssignOpMul
+import php.parser.node.ExprAssignOpPlus
+import php.parser.node.ExprAssignOpPow
+import php.parser.node.ExprAssignOpShiftLeft
+import php.parser.node.ExprAssignOpShiftRight
+import php.parser.node.ExprAssignRef
+import php.parser.node.ExprBinaryOp
+import php.parser.node.ExprBinaryOpBitwiseAnd
+import php.parser.node.ExprBinaryOpBitwiseOr
+import php.parser.node.ExprBinaryOpBitwiseXor
+import php.parser.node.ExprBinaryOpBooleanAnd
+import php.parser.node.ExprBinaryOpBooleanOr
+import php.parser.node.ExprBinaryOpCoalesce
+import php.parser.node.ExprBinaryOpConcat
+import php.parser.node.ExprBinaryOpDiv
+import php.parser.node.ExprBinaryOpEqual
+import php.parser.node.ExprBinaryOpGreater
+import php.parser.node.ExprBinaryOpGreaterOrEqual
+import php.parser.node.ExprBinaryOpIdentical
+import php.parser.node.ExprBinaryOpLogicalAnd
+import php.parser.node.ExprBinaryOpLogicalOr
+import php.parser.node.ExprBinaryOpLogicalXor
+import php.parser.node.ExprBinaryOpMinus
+import php.parser.node.ExprBinaryOpMod
+import php.parser.node.ExprBinaryOpMul
+import php.parser.node.ExprBinaryOpNotEqual
+import php.parser.node.ExprBinaryOpNotIdentical
+import php.parser.node.ExprBinaryOpPlus
+import php.parser.node.ExprBinaryOpPow
+import php.parser.node.ExprBinaryOpShiftLeft
+import php.parser.node.ExprBinaryOpShiftRight
+import php.parser.node.ExprBinaryOpSmaller
+import php.parser.node.ExprBinaryOpSmallerOrEqual
+import php.parser.node.ExprBinaryOpSpaceship
+import php.parser.node.ExprBitwiseNot
+import php.parser.node.ExprBooleanNot
+import php.parser.node.ExprCast
+import php.parser.node.ExprCastArray
+import php.parser.node.ExprCastBool
+import php.parser.node.ExprCastDouble
+import php.parser.node.ExprCastInt
+import php.parser.node.ExprCastObject
+import php.parser.node.ExprCastString
+import php.parser.node.ExprCastUnset
+import php.parser.node.ExprClassConstFetch
+import php.parser.node.ExprClone
+import php.parser.node.ExprClosure
+import php.parser.node.ExprClosureUse
+import php.parser.node.ExprConstFetch
+import php.parser.node.ExprEmpty
+import php.parser.node.ExprErrorSuppress
+import php.parser.node.ExprExit
+import php.parser.node.ExprFuncCall
+import php.parser.node.ExprInclude
+import php.parser.node.ExprInstanceof
+import php.parser.node.ExprIsset
+import php.parser.node.ExprList
+import php.parser.node.ExprMethodCall
+import php.parser.node.ExprNew
+import php.parser.node.ExprPostDec
+import php.parser.node.ExprPostInc
+import php.parser.node.ExprPreDec
+import php.parser.node.ExprPreInc
+import php.parser.node.ExprPrint
+import php.parser.node.ExprPropertyFetch
+import php.parser.node.ExprStaticCall
+import php.parser.node.ExprStaticPropertyFetch
+import php.parser.node.ExprTernary
+import php.parser.node.ExprThrow
+import php.parser.node.ExprUnaryMinus
+import php.parser.node.ExprUnaryPlus
+import php.parser.node.ExprVariable
+import php.parser.node.ExprYield
+import php.parser.node.ExprYieldFrom
+import php.parser.node.Identifier
+import php.parser.node.Name
+import php.parser.node.Node
+import php.parser.node.NullableType
+import php.parser.node.Param
+import php.parser.node.ScalarDNumber
+import php.parser.node.ScalarEncapsed
+import php.parser.node.ScalarEncapsedStringPart
+import php.parser.node.ScalarLNumber
+import php.parser.node.ScalarMagicConst
+import php.parser.node.ScalarMagicConstClass
+import php.parser.node.ScalarMagicConstDir
+import php.parser.node.ScalarMagicConstFile
+import php.parser.node.ScalarMagicConstFunction
+import php.parser.node.ScalarMagicConstLine
+import php.parser.node.ScalarMagicConstMethod
+import php.parser.node.ScalarMagicConstNamespace
+import php.parser.node.ScalarMagicConstTrait
+import php.parser.node.ScalarString
+import php.parser.node.Stmt
+import php.parser.node.StmtBreak
+import php.parser.node.StmtClass
+import php.parser.node.StmtClassConst
+import php.parser.node.StmtClassMethod
+import php.parser.node.StmtConst
+import php.parser.node.StmtContinue
+import php.parser.node.StmtDeclare
+import php.parser.node.StmtDeclareDeclare
+import php.parser.node.StmtDo
+import php.parser.node.StmtEcho
+import php.parser.node.StmtExpression
+import php.parser.node.StmtFor
+import php.parser.node.StmtForeach
+import php.parser.node.StmtFunction
+import php.parser.node.StmtGlobal
+import php.parser.node.StmtGoto
+import php.parser.node.StmtGroupUse
+import php.parser.node.StmtIf
+import php.parser.node.StmtInlineHTML
+import php.parser.node.StmtInterface
+import php.parser.node.StmtLabel
+import php.parser.node.StmtNamespace
+import php.parser.node.StmtNop
+import php.parser.node.StmtProperty
+import php.parser.node.StmtPropertyProperty
+import php.parser.node.StmtReturn
+import php.parser.node.StmtStatic
+import php.parser.node.StmtStaticVar
+import php.parser.node.StmtSwitch
+import php.parser.node.StmtThrow
+import php.parser.node.StmtTrait
+import php.parser.node.StmtTraitUse
+import php.parser.node.StmtTraitUseAdaptation
+import php.parser.node.StmtTraitUseAdaptationAlias
+import php.parser.node.StmtTraitUseAdaptationPrecedence
+import php.parser.node.StmtTryCatch
+import php.parser.node.StmtUnset
+import php.parser.node.StmtUse
+import php.parser.node.StmtUseUse
+import php.parser.node.StmtWhile
+import kotlin.reflect.KClass
+import kotlin.reflect.cast
 
-class AstTransformer : AstTransformerAbstract() {
-    private fun unsupported(node: Node, message: String? = null): Nothing {
-        throw Exception("不支持的语法节点类型(${node::class.simpleName}) $message")
-    }
+class AstTransformer {
+    fun transform(node: Stmt) = p(node, php.ast.Stmt::class)
+    fun transform(nodes: List<Stmt>) = nodes.map { transform(it) }
 
-    private fun pExpr(node: Expr): php.ast.Expr {
-        return p(node, php.ast.Expr::class)
-    }
+    ////////////////////
+    // entrance
+    ////////////////////
 
-    private fun pExprOrNull(node: Expr?): php.ast.Expr? {
-        return node?.let { pExpr(it) }
-    }
-
-    private fun pExprs(nodes: List<Expr>): List<php.ast.Expr> {
-        return nodes.map { pExpr(it) }
-    }
-
-    private fun pStmts(nodes: List<Stmt>): List<php.ast.Stmt> {
-        return nodes.map { p(it, php.ast.Stmt::class) }
-    }
-
-    override fun p(node: Node): php.ast.Node {
+    fun p(node: Node): php.ast.Node {
         return when (node) {
             // special
             is Arg -> pArg(node)
             is Const -> pConst(node)
             is Name -> pName(node)
             is Identifier -> pIdentifier(node)
-            is NullableType -> pNullableType(node)
             is Param -> pParam(node)
 
             // expr
@@ -133,6 +274,90 @@ class AstTransformer : AstTransformerAbstract() {
         }
     }
 
+    ////////////////////
+    // helpers
+    ////////////////////
+
+    private fun <T : Any> p(node: Node, type: KClass<T>): T {
+        return type.cast(p(node))
+    }
+
+    private fun unsupported(node: Node, message: String? = null): Nothing {
+        throw Exception("不支持的语法节点类型(${node::class.simpleName}) $message")
+    }
+
+    private fun pExpr(node: Expr): php.ast.Expr {
+        return p(node, php.ast.Expr::class)
+    }
+
+    private fun pExprOrNull(node: Expr?): php.ast.Expr? {
+        return node?.let { pExpr(it) }
+    }
+
+    private fun pExprs(nodes: List<Expr>): List<php.ast.Expr> {
+        return nodes.map { pExpr(it) }
+    }
+
+    private fun pStmts(nodes: List<Stmt>): List<php.ast.Stmt> {
+        return nodes.map { p(it, php.ast.Stmt::class) }
+    }
+
+    private fun unreachableAnyOf(value: Any): Nothing {
+        throw Exception("不应触达的 AnyOf 分支, type: ${value::class.qualifiedName}")
+    }
+
+    private fun pTypeHint(node: Node): TypeHint {
+        return when (node) {
+            is NullableType -> pTypeHint(node.type.value as Node).copy(nullable = true)
+            is Identifier -> TypeHint(node.name, nullable = false, isBuiltin = true)
+            is Name -> {
+                assert(node is NameFullyQualified) { "TypeHint 的 Name 必须是 NameFullyQualified" }
+                TypeHint("\\" + node.parts.joinToString("\\"), nullable = false, isBuiltin = false)
+            }
+            else -> throw Exception("预期 TypeHint 应为 Name/Identifier/NullableType，实际为: ${node::class.qualifiedName}")
+        }
+    }
+
+    private fun pTypeHintOrNull(node: AnyOf3<Identifier, Name, ComplexType>?): TypeHint? {
+        return node?.let { pTypeHint(it.value as Node) }
+    }
+
+    private fun pFuncRef(node: AnyOf2<Name, Expr>): FuncRef {
+        return when (val value = node.value) {
+            is Name -> FuncRef.FuncRefStatic(pName(value))
+            is Expr -> FuncRef.FuncRefDynamic(pExpr(value))
+            else -> unreachableAnyOf(value)
+        }
+    }
+
+    private fun pClassRef(node: AnyOf2<Name, Expr>): ClassRef {
+        return when (val value = node.value) {
+            is Name -> ClassRef.ClassRefStatic(pName(value))
+            is Expr -> ClassRef.ClassRefDynamic(pExpr(value))
+            else -> unreachableAnyOf(value)
+        }
+    }
+
+    private fun pPropertyRef(node: AnyOf2<Identifier, Expr>): PropertyRef {
+        return when (val value = node.value) {
+            is Identifier -> PropertyRef.PropertyRefStatic(pIdentifier(value))
+            is Expr -> PropertyRef.PropertyRefDynamic(pExpr(value))
+            else -> unreachableAnyOf(value)
+        }
+    }
+
+    private fun pMethodRef(node: AnyOf2<Identifier, Expr>): MethodRef {
+        return when (val value = node.value) {
+            is Identifier -> MethodRef.MethodRefStatic(pIdentifier(value))
+            is Expr -> MethodRef.MethodRefDynamic(pExpr(value))
+            else -> unreachableAnyOf(value)
+        }
+    }
+
+    ////////////////////
+    // Nodes
+    ////////////////////
+
     private fun pArg(node: Arg): php.ast.Arg {
         val value = node.value
         val byRef = node.byRef
@@ -199,6 +424,16 @@ class AstTransformer : AstTransformerAbstract() {
         )
     }
 
+    private fun pExprAssignRef(node: ExprAssignRef): php.ast.ExprAssignRef {
+        val `var` = node.`var`
+        val expr = node.expr
+
+        return php.ast.ExprAssignRef(
+            `var` = pExpr(`var`),
+            expr = pExpr(expr),
+        )
+    }
+
     private fun pExprAssignOp(node: ExprAssignOp): php.ast.ExprAssignOp {
         val `var` = pExpr(node.`var`)
         val expr = pExpr(node.expr)
@@ -217,136 +452,6 @@ class AstTransformer : AstTransformerAbstract() {
             is ExprAssignOpShiftLeft -> php.ast.ExprAssignOpShiftLeft(`var`, expr)
             is ExprAssignOpShiftRight -> php.ast.ExprAssignOpShiftRight(`var`, expr)
         }
-    }
-
-    private fun pExprAssignOpBitwiseAnd(node: ExprAssignOpBitwiseAnd): php.ast.ExprAssignOpBitwiseAnd {
-        val `var` = node.`var`
-        val expr = node.expr
-
-        return php.ast.ExprAssignOpBitwiseAnd(
-            `var` = pExpr(`var`),
-            expr = pExpr(expr),
-        )
-    }
-
-    private fun pExprAssignOpBitwiseOr(node: ExprAssignOpBitwiseOr): php.ast.ExprAssignOpBitwiseOr {
-        val `var` = node.`var`
-        val expr = node.expr
-
-        return php.ast.ExprAssignOpBitwiseOr(
-            `var` = pExpr(`var`),
-            expr = pExpr(expr),
-        )
-    }
-
-    private fun pExprAssignOpBitwiseXor(node: ExprAssignOpBitwiseXor): php.ast.ExprAssignOpBitwiseXor {
-        val `var` = node.`var`
-        val expr = node.expr
-
-        return php.ast.ExprAssignOpBitwiseXor(
-            `var` = pExpr(`var`),
-            expr = pExpr(expr),
-        )
-    }
-
-    private fun pExprAssignOpConcat(node: ExprAssignOpConcat): php.ast.ExprAssignOpConcat {
-        val `var` = node.`var`
-        val expr = node.expr
-
-        return php.ast.ExprAssignOpConcat(
-            `var` = pExpr(`var`),
-            expr = pExpr(expr),
-        )
-    }
-
-    private fun pExprAssignOpDiv(node: ExprAssignOpDiv): php.ast.ExprAssignOpDiv {
-        val `var` = node.`var`
-        val expr = node.expr
-
-        return php.ast.ExprAssignOpDiv(
-            `var` = pExpr(`var`),
-            expr = pExpr(expr),
-        )
-    }
-
-    private fun pExprAssignOpMinus(node: ExprAssignOpMinus): php.ast.ExprAssignOpMinus {
-        val `var` = node.`var`
-        val expr = node.expr
-
-        return php.ast.ExprAssignOpMinus(
-            `var` = pExpr(`var`),
-            expr = pExpr(expr),
-        )
-    }
-
-    private fun pExprAssignOpMod(node: ExprAssignOpMod): php.ast.ExprAssignOpMod {
-        val `var` = node.`var`
-        val expr = node.expr
-
-        return php.ast.ExprAssignOpMod(
-            `var` = pExpr(`var`),
-            expr = pExpr(expr),
-        )
-    }
-
-    private fun pExprAssignOpMul(node: ExprAssignOpMul): php.ast.ExprAssignOpMul {
-        val `var` = node.`var`
-        val expr = node.expr
-
-        return php.ast.ExprAssignOpMul(
-            `var` = pExpr(`var`),
-            expr = pExpr(expr),
-        )
-    }
-
-    private fun pExprAssignOpPlus(node: ExprAssignOpPlus): php.ast.ExprAssignOpPlus {
-        val `var` = node.`var`
-        val expr = node.expr
-
-        return php.ast.ExprAssignOpPlus(
-            `var` = pExpr(`var`),
-            expr = pExpr(expr),
-        )
-    }
-
-    private fun pExprAssignOpPow(node: ExprAssignOpPow): php.ast.ExprAssignOpPow {
-        val `var` = node.`var`
-        val expr = node.expr
-
-        return php.ast.ExprAssignOpPow(
-            `var` = pExpr(`var`),
-            expr = pExpr(expr),
-        )
-    }
-
-    private fun pExprAssignOpShiftLeft(node: ExprAssignOpShiftLeft): php.ast.ExprAssignOpShiftLeft {
-        val `var` = node.`var`
-        val expr = node.expr
-
-        return php.ast.ExprAssignOpShiftLeft(
-            `var` = pExpr(`var`),
-            expr = pExpr(expr),
-        )
-    }
-
-    private fun pExprAssignOpShiftRight(node: ExprAssignOpShiftRight): php.ast.ExprAssignOpShiftRight {
-        val `var` = node.`var`
-        val expr = node.expr
-
-        return php.ast.ExprAssignOpShiftRight(
-            `var` = pExpr(`var`),
-            expr = pExpr(expr),
-        )
-    }
-
-    private fun pExprAssignRef(node: ExprAssignRef): php.ast.ExprAssignRef {
-        val `var` = node.`var`
-        val expr = node.expr
-
-        return php.ast.ExprAssignRef(
-            `var` = pExpr(`var`),
-            expr = pExpr(expr),
-        )
     }
 
     private fun pExprBinaryOp(node: ExprBinaryOp): php.ast.ExprBinaryOp {
@@ -419,7 +524,7 @@ class AstTransformer : AstTransformerAbstract() {
         val name = node.name
 
         return php.ast.ExprClassConstFetch(
-            `class` = pAnyOf2(`class`, php.ast.Name::class, php.ast.Expr::class),
+            `class` = pClassRef(`class`),
             name = pIdentifier(name),
         )
     }
@@ -445,7 +550,7 @@ class AstTransformer : AstTransformerAbstract() {
             byRef = byRef,
             params = params.map { pParam(it) },
             uses = uses.map { pExprClosureUse(it) },
-            returnType = pAnyOf3OrNull(returnType, php.ast.Identifier::class, php.ast.Name::class, php.ast.ComplexType::class),
+            returnType = pTypeHintOrNull(returnType),
             stmts = pStmts(stmts),
         )
     }
@@ -497,7 +602,7 @@ class AstTransformer : AstTransformerAbstract() {
         val args = node.args
 
         return php.ast.ExprFuncCall(
-            name = pAnyOf2(name, php.ast.Name::class, php.ast.Expr::class),
+            name = pFuncRef(name),
             args = args.map { pArg(it) },
         )
     }
@@ -516,10 +621,11 @@ class AstTransformer : AstTransformerAbstract() {
         val expr = node.expr
         val `class` = node.`class`
 
-        return php.ast.ExprInstanceof(
-            expr = pExpr(expr),
-            `class` = pAnyOf2(`class`, php.ast.Name::class, php.ast.ExprVariable::class),
-        )
+        return when (val value = `class`.value) {
+            is Name -> php.ast.ExprInstanceof.ExprInstanceofName(pExpr(expr), pName(value))
+            is ExprVariable -> php.ast.ExprInstanceof.ExprInstanceofVariable(pExpr(expr), pExprVariable(value))
+            else -> unreachableAnyOf(value)
+        }
     }
 
     private fun pExprIsset(node: ExprIsset): php.ast.ExprIsset {
@@ -545,19 +651,21 @@ class AstTransformer : AstTransformerAbstract() {
 
         return php.ast.ExprMethodCall(
             `var` = pExpr(`var`),
-            name = pAnyOf2(name, php.ast.Identifier::class, php.ast.Expr::class),
+            name = pMethodRef(name),
             args = args.map { pArg(it) },
         )
     }
 
     private fun pExprNew(node: ExprNew): php.ast.ExprNew {
-        val `class` = node.`class`
+        val `class` = node.`class`.value
         val args = node.args
 
-        return php.ast.ExprNew(
-            `class` = pAnyOf3(`class`, php.ast.Name::class, php.ast.Expr::class, php.ast.StmtClass::class),
-            args = args.map { pArg(it) },
-        )
+        return when (`class`) {
+            is Name -> php.ast.ExprNew.ExprNewStatic(pName(`class`), args.map { pArg(it) })
+            is Expr -> php.ast.ExprNew.ExprNewDynamic(pExpr(`class`), args.map { pArg(it) })
+            is StmtClass -> php.ast.ExprNew.ExprNewAnonymous(pStmtClass(`class`), args.map { pArg(it) })
+            else -> TODO()
+        }
     }
 
     private fun pExprPostDec(node: ExprPostDec): php.ast.ExprPostDec {
@@ -606,7 +714,7 @@ class AstTransformer : AstTransformerAbstract() {
 
         return php.ast.ExprPropertyFetch(
             `var` = pExpr(`var`),
-            name = pAnyOf2(name, php.ast.Identifier::class, php.ast.Expr::class),
+            name = pPropertyRef(name)
         )
     }
 
@@ -616,8 +724,8 @@ class AstTransformer : AstTransformerAbstract() {
         val args = node.args
 
         return php.ast.ExprStaticCall(
-            `class` = pAnyOf2(`class`, php.ast.Name::class, php.ast.Expr::class),
-            name = pAnyOf2(name, php.ast.Identifier::class, php.ast.Expr::class),
+            `class` = pClassRef(`class`),
+            name = pMethodRef(name),
             args = args.map { pArg(it) },
         )
     }
@@ -627,8 +735,8 @@ class AstTransformer : AstTransformerAbstract() {
         val name = node.name
 
         return php.ast.ExprStaticPropertyFetch(
-            `class` = pAnyOf2(`class`, php.ast.Name::class, php.ast.Expr::class),
-            name = pAnyOf2(name, php.ast.Identifier::class, php.ast.Expr::class),
+            `class` = pClassRef(`class`),
+            name = pPropertyRef(name),
         )
     }
 
@@ -671,9 +779,11 @@ class AstTransformer : AstTransformerAbstract() {
     private fun pExprVariable(node: ExprVariable): php.ast.ExprVariable {
         val name = node.name
 
-        return php.ast.ExprVariable(
-            name = pAnyOf2(name, String::class, php.ast.Expr::class),
-        )
+        return when (val value = name.value) {
+            is String -> php.ast.ExprVariable.ExprVariableSimple(value)
+            is Expr -> php.ast.ExprVariable.ExprVariableDynamic(pExpr(value))
+            else -> unreachableAnyOf(value)
+        }
     }
 
     private fun pExprYield(node: ExprYield): php.ast.ExprYield {
@@ -706,14 +816,6 @@ class AstTransformer : AstTransformerAbstract() {
         return php.ast.Name(node.parts, node is NameFullyQualified)
     }
 
-    private fun pNullableType(node: NullableType): php.ast.NullableType {
-        val type = node.type
-
-        return php.ast.NullableType(
-            type = pAnyOf2(type, php.ast.Identifier::class, php.ast.Name::class),
-        )
-    }
-
     private fun pParam(node: Param): php.ast.Param {
         val type = node.type
         val byRef = node.byRef
@@ -722,7 +824,7 @@ class AstTransformer : AstTransformerAbstract() {
         val default = node.default
 
         return php.ast.Param(
-            type = pAnyOf3OrNull(type, php.ast.Identifier::class, php.ast.Name::class, php.ast.ComplexType::class),
+            type = pTypeHintOrNull(type),
             byRef = byRef,
             variadic = variadic,
             `var` = pExprVariable(`var`),
@@ -832,7 +934,7 @@ class AstTransformer : AstTransformerAbstract() {
             byRef = byRef,
             name = pIdentifier(name),
             params = params.map { pParam(it) },
-            returnType = pAnyOf3OrNull(returnType, php.ast.Identifier::class, php.ast.Name::class, php.ast.ComplexType::class),
+            returnType = pTypeHintOrNull(returnType),
             stmts = stmts?.let { pStmts(it) }
         )
     }
@@ -942,7 +1044,7 @@ class AstTransformer : AstTransformerAbstract() {
             byRef = byRef,
             name = pIdentifier(name),
             params = params.map { pParam(it) },
-            returnType = pAnyOf3OrNull(returnType, php.ast.Identifier::class, php.ast.Name::class, php.ast.ComplexType::class),
+            returnType = pTypeHintOrNull(returnType),
             stmts = pStmts(stmts),
             namespacedName = pName(namespacedName),
         )

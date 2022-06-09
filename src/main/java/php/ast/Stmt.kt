@@ -3,14 +3,14 @@ package php.ast
 sealed interface Stmt: Node
 
 data class StmtClassConst(val flags: Int, val consts: List<Const>): Stmt
-data class StmtClassMethod(val flags: Int, val byRef: Boolean, val name: Identifier, val params: List<Param>, val returnType: AnyOf3<Identifier, Name, ComplexType>?, val stmts: List<Stmt>?): Stmt,
+data class StmtClassMethod(val flags: Int, val byRef: Boolean, val name: Identifier, val params: List<Param>, val returnType: TypeHint?, val stmts: List<Stmt>?): Stmt,
     Node, FunctionLike
 data class StmtConst(val consts: List<Const>): Stmt
 data class StmtDeclare(val declares: List<StmtDeclareDeclare>, val stmts: List<Stmt>?): Stmt
 data class StmtDeclareDeclare(val key: Identifier, val value: Expr): Stmt
 data class StmtEcho(val exprs: List<Expr>): Stmt
 data class StmtExpression(val expr: Expr): Stmt
-data class StmtFunction(val byRef: Boolean, val name: Identifier, val params: List<Param>, val returnType: AnyOf3<Identifier, Name, ComplexType>?, val stmts: List<Stmt>, val namespacedName: Name): Stmt,
+data class StmtFunction(val byRef: Boolean, val name: Identifier, val params: List<Param>, val returnType: TypeHint?, val stmts: List<Stmt>, val namespacedName: Name): Stmt,
     Node, FunctionLike
 data class StmtGlobal(val vars: List<Expr>): Stmt
 data class StmtGroupUse(val type: Int, val prefix: Name, val uses: List<StmtUseUse>): Stmt

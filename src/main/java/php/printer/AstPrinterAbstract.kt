@@ -1,82 +1,85 @@
 package php.printer
 
 import php.ast.*
+import kotlin.reflect.KClass
 
 abstract class AstPrinterAbstract {
-    companion object {
-        private val precedenceMap = mapOf(
-            // Pair(precedence, associativity)
-            // where for precedence -1 is %left, 0 is %nonassoc and 1 is %right
-            ExprBinaryOpPow::class to Pair(0, 1),
-            ExprBitwiseNot::class to Pair(10, 1),
-            ExprPreInc::class to Pair(10, 1),
-            ExprPreDec::class to Pair(10, 1),
-            ExprPostInc::class to Pair(10, -1),
-            ExprPostDec::class to Pair(10, -1),
-            ExprUnaryPlus::class to Pair(10, 1),
-            ExprUnaryMinus::class to Pair(10, 1),
-            ExprCastInt::class to Pair(10, 1),
-            ExprCastDouble::class to Pair(10, 1),
-            ExprCastString::class to Pair(10, 1),
-            ExprCastArray::class to Pair(10, 1),
-            ExprCastObject::class to Pair(10, 1),
-            ExprCastBool::class to Pair(10, 1),
-            ExprCastUnset::class to Pair(10, 1),
-            ExprErrorSuppress::class to Pair(10, 1),
-            ExprInstanceof::class to Pair(20, 0),
-            ExprBooleanNot::class to Pair(30, 1),
-            ExprBinaryOpMul::class to Pair(40, -1),
-            ExprBinaryOpDiv::class to Pair(40, -1),
-            ExprBinaryOpMod::class to Pair(40, -1),
-            ExprBinaryOpPlus::class to Pair(50, -1),
-            ExprBinaryOpMinus::class to Pair(50, -1),
-            ExprBinaryOpConcat::class to Pair(50, -1),
-            ExprBinaryOpShiftLeft::class to Pair(60, -1),
-            ExprBinaryOpShiftRight::class to Pair(60, -1),
-            ExprBinaryOpSmaller::class to Pair(70, 0),
-            ExprBinaryOpSmallerOrEqual::class to Pair(70, 0),
-            ExprBinaryOpGreater::class to Pair(70, 0),
-            ExprBinaryOpGreaterOrEqual::class to Pair(70, 0),
-            ExprBinaryOpEqual::class to Pair(80, 0),
-            ExprBinaryOpNotEqual::class to Pair(80, 0),
-            ExprBinaryOpIdentical::class to Pair(80, 0),
-            ExprBinaryOpNotIdentical::class to Pair(80, 0),
-            ExprBinaryOpSpaceship::class to Pair(80, 0),
-            ExprBinaryOpBitwiseAnd::class to Pair(90, -1),
-            ExprBinaryOpBitwiseXor::class to Pair(100, -1),
-            ExprBinaryOpBitwiseOr::class to Pair(110, -1),
-            ExprBinaryOpBooleanAnd::class to Pair(120, -1),
-            ExprBinaryOpBooleanOr::class to Pair(130, -1),
-            ExprBinaryOpCoalesce::class to Pair(140, 1),
-            ExprTernary::class to Pair(150, 0),
-            // parser uses %left for assignments, but they really behave as %right
-            ExprAssign::class to Pair(160, 1),
-            ExprAssignRef::class to Pair(160, 1),
-            ExprAssignOpPlus::class to Pair(160, 1),
-            ExprAssignOpMinus::class to Pair(160, 1),
-            ExprAssignOpMul::class to Pair(160, 1),
-            ExprAssignOpDiv::class to Pair(160, 1),
-            ExprAssignOpConcat::class to Pair(160, 1),
-            ExprAssignOpMod::class to Pair(160, 1),
-            ExprAssignOpBitwiseAnd::class to Pair(160, 1),
-            ExprAssignOpBitwiseOr::class to Pair(160, 1),
-            ExprAssignOpBitwiseXor::class to Pair(160, 1),
-            ExprAssignOpShiftLeft::class to Pair(160, 1),
-            ExprAssignOpShiftRight::class to Pair(160, 1),
-            ExprAssignOpPow::class to Pair(160, 1),
-            ExprYieldFrom::class to Pair(165, 1),
-            ExprPrint::class to Pair(168, 1),
-            ExprBinaryOpLogicalAnd::class to Pair(170, -1),
-            ExprBinaryOpLogicalXor::class to Pair(180, -1),
-            ExprBinaryOpLogicalOr::class to Pair(190, -1),
-            ExprInclude::class to Pair(200, -1),
-        )
-    }
-
     protected var indentLevel = 0
     protected val nl get() = "\n" + "    ".repeat(indentLevel)
     protected val docStringEndToken: String = "_DOC_STRING_END_" + Math.random()
     protected var canUseSemicolonNamespaces: Boolean = false
+
+    protected fun getPrecedence(node: Node): Pair<Int, Int>? {
+        return when (node) {
+            // Pair(precedence, associativity)
+            // where for precedence -1 is %left, 0 is %nonassoc and 1 is %right
+            is ExprBinaryOpPow -> Pair(0, 1)
+            is ExprBitwiseNot -> Pair(10, 1)
+            is ExprPreInc -> Pair(10, 1)
+            is ExprPreDec -> Pair(10, 1)
+            is ExprPostInc -> Pair(10, -1)
+            is ExprPostDec -> Pair(10, -1)
+            is ExprUnaryPlus -> Pair(10, 1)
+            is ExprUnaryMinus -> Pair(10, 1)
+            is ExprCastInt -> Pair(10, 1)
+            is ExprCastDouble -> Pair(10, 1)
+            is ExprCastString -> Pair(10, 1)
+            is ExprCastArray -> Pair(10, 1)
+            is ExprCastObject -> Pair(10, 1)
+            is ExprCastBool -> Pair(10, 1)
+            is ExprCastUnset -> Pair(10, 1)
+            is ExprErrorSuppress -> Pair(10, 1)
+            is ExprInstanceof -> Pair(20, 0)
+            is ExprBooleanNot -> Pair(30, 1)
+            is ExprBinaryOpMul -> Pair(40, -1)
+            is ExprBinaryOpDiv -> Pair(40, -1)
+            is ExprBinaryOpMod -> Pair(40, -1)
+            is ExprBinaryOpPlus -> Pair(50, -1)
+            is ExprBinaryOpMinus -> Pair(50, -1)
+            is ExprBinaryOpConcat -> Pair(50, -1)
+            is ExprBinaryOpShiftLeft -> Pair(60, -1)
+            is ExprBinaryOpShiftRight -> Pair(60, -1)
+            is ExprBinaryOpSmaller -> Pair(70, 0)
+            is ExprBinaryOpSmallerOrEqual -> Pair(70, 0)
+            is ExprBinaryOpGreater -> Pair(70, 0)
+            is ExprBinaryOpGreaterOrEqual -> Pair(70, 0)
+            is ExprBinaryOpEqual -> Pair(80, 0)
+            is ExprBinaryOpNotEqual -> Pair(80, 0)
+            is ExprBinaryOpIdentical -> Pair(80, 0)
+            is ExprBinaryOpNotIdentical -> Pair(80, 0)
+            is ExprBinaryOpSpaceship -> Pair(80, 0)
+            is ExprBinaryOpBitwiseAnd -> Pair(90, -1)
+            is ExprBinaryOpBitwiseXor -> Pair(100, -1)
+            is ExprBinaryOpBitwiseOr -> Pair(110, -1)
+            is ExprBinaryOpBooleanAnd -> Pair(120, -1)
+            is ExprBinaryOpBooleanOr -> Pair(130, -1)
+            is ExprBinaryOpCoalesce -> Pair(140, 1)
+            is ExprTernary -> Pair(150, 0)
+            // parser uses %left for assignments, but they really behave as %right
+            is ExprAssign -> Pair(160, 1)
+            is ExprAssignRef -> Pair(160, 1)
+            is ExprAssignOpPlus -> Pair(160, 1)
+            is ExprAssignOpMinus -> Pair(160, 1)
+            is ExprAssignOpMul -> Pair(160, 1)
+            is ExprAssignOpDiv -> Pair(160, 1)
+            is ExprAssignOpConcat -> Pair(160, 1)
+            is ExprAssignOpMod -> Pair(160, 1)
+            is ExprAssignOpBitwiseAnd -> Pair(160, 1)
+            is ExprAssignOpBitwiseOr -> Pair(160, 1)
+            is ExprAssignOpBitwiseXor -> Pair(160, 1)
+            is ExprAssignOpShiftLeft -> Pair(160, 1)
+            is ExprAssignOpShiftRight -> Pair(160, 1)
+            is ExprAssignOpPow -> Pair(160, 1)
+            is ExprYieldFrom -> Pair(165, 1)
+            is ExprPrint -> Pair(168, 1)
+            is ExprBinaryOpLogicalAnd -> Pair(170, -1)
+            is ExprBinaryOpLogicalXor -> Pair(180, -1)
+            is ExprBinaryOpLogicalOr -> Pair(190, -1)
+            is ExprInclude -> Pair(200, -1)
+            else -> null
+        }
+    }
+
 
     fun prettyPrint(stmts: List<Stmt>): String {
         resetState()
@@ -115,13 +118,11 @@ abstract class AstPrinterAbstract {
         canUseSemicolonNamespaces = nodes.none { it is StmtNamespace && it.name == null }
     }
 
-
     protected fun handleMagicTokens(string: String): String {
         return string.replace("$docStringEndToken;\n", ";\n")
             .replace(docStringEndToken, "\n")
     }
-
-
+    
     protected fun pInfixOp(parentNode: Expr, leftNode: Node, operatorString: String, rightNode: Node): String {
         return pPrec(parentNode, leftNode, -1) + operatorString + pPrec(parentNode, rightNode, 1)
     }
@@ -135,9 +136,8 @@ abstract class AstPrinterAbstract {
     }
 
     protected fun pPrec(parentNode: Expr, node: Node, childPosition: Int): String {
-        val (parentPrecedence, parentAssociativity) = precedenceMap[parentNode::class]!!
-        if (precedenceMap.containsKey(node::class)) {
-            val (childPrecedence, _) = precedenceMap[node::class]!!
+        val (parentPrecedence, parentAssociativity) = getPrecedence(parentNode)!!
+        getPrecedence(node)?.let { (childPrecedence, _) ->
             if (childPrecedence > parentPrecedence || (childPrecedence == parentPrecedence && parentAssociativity != childPosition)) {
                 return "(" + p(node) + ")"
             }
