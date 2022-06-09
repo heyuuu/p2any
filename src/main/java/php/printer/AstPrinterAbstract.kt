@@ -1,7 +1,6 @@
 package php.printer
 
 import php.ast.*
-import kotlin.reflect.KClass
 
 abstract class AstPrinterAbstract {
     companion object {
@@ -147,39 +146,16 @@ abstract class AstPrinterAbstract {
         return p(node)
     }
 
-    protected fun pImplode(nodes: List<Node?>, glue: String = ""): String {
-        return nodes.joinToString(glue) { if (it == null) "" else p(it) }
+    protected fun pCommaSeparatedOfNullable(nodes: List<Node?>): String {
+        return pList(nodes, ", ") { if (it == null) "" else p(it) }
     }
 
-    protected fun pCommaSeparated(nodes: List<Node?>): String {
-        return pImplode(nodes, ", ")
-    }
-
-    protected fun pCommaSeparatedMultiline(nodes: List<Node?>, trailingComma: Boolean): String {
-        indentLevel++
-
-        val result = nodes.joinToString(",") { node ->
-            if (node != null) {
-                // todo Node Comments
-                nl + p(node)
-            } else {
-                nl
-            }
-        } + (if (trailingComma) ',' else "")
-
-        indentLevel--
-
-        return result
-    }
 
     protected fun pComments(comments: List<Any>): String {
         TODO()
     }
 
     protected abstract fun p(node: Node): String
-//    protected fun p(node: Node): String {
-//        TODO()
-//    }
 
     protected fun callLhsRequiresParens(node: Node): Boolean {
         return !(node is Name
@@ -247,6 +223,14 @@ abstract class AstPrinterAbstract {
         }
 
         return result
+    }
+
+    protected fun <T : Node> pList(list: List<T>, separator: String = ""): String {
+        return pList(list, separator) { p(it) }
+    }
+
+    protected fun <T : Node> pCommaSeparated(nodes: List<T>, transform: (T) -> String = { p(it) }): String {
+        return pList(nodes, ", ", transform = transform)
     }
 
     protected fun pStmts(nodes: List<Stmt>, indent: Boolean = true): String {

@@ -70,8 +70,6 @@ class AstPrinter : AstPrinterAbstract() {
             is StmtNop -> pStmtNop(node)
 
             is StmtBreak -> pStmtBreak(node)
-            is StmtCase -> pStmtCase(node)
-            is StmtCatch -> pStmtCatch(node)
             is StmtClass -> pStmtClass(node)
             is StmtClassConst -> pStmtClassConst(node)
             is StmtClassMethod -> pStmtClassMethod(node)
@@ -81,10 +79,7 @@ class AstPrinter : AstPrinterAbstract() {
             is StmtDeclareDeclare -> pStmtDeclareDeclare(node)
             is StmtDo -> pStmtDo(node)
             is StmtEcho -> pStmtEcho(node)
-            is StmtElse -> pStmtElse(node)
-            is StmtElseIf -> pStmtElseIf(node)
             is StmtExpression -> pStmtExpression(node)
-            is StmtFinally -> pStmtFinally(node)
             is StmtFor -> pStmtFor(node)
             is StmtForeach -> pStmtForeach(node)
             is StmtFunction -> pStmtFunction(node)
@@ -97,20 +92,15 @@ class AstPrinter : AstPrinterAbstract() {
             is StmtLabel -> pStmtLabel(node)
             is StmtNamespace -> pStmtNamespace(node)
             is StmtProperty -> pStmtProperty(node)
-            is StmtPropertyProperty -> pStmtPropertyProperty(node)
             is StmtReturn -> pStmtReturn(node)
             is StmtStatic -> pStmtStatic(node)
-            is StmtStaticVar -> pStmtStaticVar(node)
             is StmtSwitch -> pStmtSwitch(node)
             is StmtThrow -> pStmtThrow(node)
             is StmtTrait -> pStmtTrait(node)
             is StmtTraitUse -> pStmtTraitUse(node)
-            is StmtTraitUseAdaptationAlias -> pStmtTraitUseAdaptationAlias(node)
-            is StmtTraitUseAdaptationPrecedence -> pStmtTraitUseAdaptationPrecedence(node)
             is StmtTryCatch -> pStmtTryCatch(node)
             is StmtUnset -> pStmtUnset(node)
             is StmtUse -> pStmtUse(node)
-            is StmtUseUse -> pStmtUseUse(node)
             is StmtWhile -> pStmtWhile(node)
 
             else -> throw Exception("预期外的 AstNode 类型: ${node::class.qualifiedName}")
@@ -125,8 +115,16 @@ class AstPrinter : AstPrinterAbstract() {
         return if (node != null) p(node) else ""
     }
 
+    private fun concat(vararg parts: String): String {
+        return parts.joinToString("")
+    }
+
     private fun pIf(cond: Boolean, value: String, default: String = ""): String {
         return if (cond) value else default
+    }
+
+    private fun <T : Any> pNotNull(node: T?, value: (T) -> String): String {
+        return if (node != null) value(node) else ""
     }
 
     private fun <T : Any> pNotNull(node: T?, value: (T) -> String, default: String = ""): String {
@@ -171,19 +169,6 @@ class AstPrinter : AstPrinterAbstract() {
         return pDereferenceLhs(node)
     }
 
-    private fun hasNodeWithComments(nodes: List<Node?>): Boolean {
-        // TODO: node comments
-        return false
-    }
-
-    private fun pMaybeMultiline(nodes: List<Node?>, trailingComma: Boolean = false): String {
-        return if (!hasNodeWithComments(nodes)) {
-            pCommaSeparated(nodes)
-        } else {
-            pCommaSeparatedMultiline(nodes, trailingComma) + nl
-        }
-    }
-
     private fun pClassCommon(node: StmtClass, afterClassToken: String): String {
         val flags = node.flags
         val extends = node.extends
@@ -192,10 +177,16 @@ class AstPrinter : AstPrinterAbstract() {
         val stmts = node.stmts
         val namespacedName = node.namespacedName
 
-        return pModifiers(flags) + "class" + afterClassToken +
-                pNotNull(extends, { " extends " + p(it) }) +
-                pNotEmpty(implements, { " implements " + pCommaSeparated(it) }) +
-                nl + "{" + pStmts(stmts) + nl + "}"
+        return concat(
+            // modifier and (name or args)
+            pModifiers(flags) + "class" + afterClassToken,
+            // extends
+            pNotNull(extends) { " extends " + pName(it) },
+            // interfaces
+            pNotEmpty(implements, { " implements " + pCommaSeparated(it) }),
+            // body
+            nl + "{" + pStmts(stmts) + nl + "}"
+        )
     }
 
     private fun pObjectProperty(node: AnyOf2<Identifier, Expr>): String {
@@ -208,8 +199,8 @@ class AstPrinter : AstPrinterAbstract() {
 
     private fun pTypeHint(node: AnyOf3<Identifier, Name, ComplexType>): String {
         return when (val value = node.value) {
-            is Identifier -> p(value)
-            is Name -> p(value)
+            is Identifier -> pIdentifier(value)
+            is Name -> pName(value)
             is ComplexType -> p(value)
             else -> unreachableAnyOf(value)
         }
@@ -264,7 +255,7 @@ class AstPrinter : AstPrinterAbstract() {
     private fun pExprArray(node: ExprArray): String {
         val items = node.items
 
-        return "[" + pMaybeMultiline(items, true) + "]"
+        return "[" + pCommaSeparatedOfNullable(items) + "]"
     }
 
     private fun pExprArrayDimFetch(node: ExprArrayDimFetch): String {
@@ -435,7 +426,7 @@ class AstPrinter : AstPrinterAbstract() {
         val name = node.name
         val args = node.args
 
-        return pCallLhs(name.value as Node) + "(" + pMaybeMultiline(args) + ")"
+        return pCallLhs(name.value as Node) + "(" + pCommaSeparated(args) + ")"
     }
 
     private fun pExprInclude(node: ExprInclude): String {
@@ -460,7 +451,7 @@ class AstPrinter : AstPrinterAbstract() {
 
     private fun pExprList(node: ExprList): String {
         val items = node.items
-        return "list(" + pCommaSeparated(items) + ")"
+        return "list(" + pCommaSeparatedOfNullable(items) + ")"
     }
 
     private fun pExprMethodCall(node: ExprMethodCall): String {
@@ -469,7 +460,7 @@ class AstPrinter : AstPrinterAbstract() {
         val args = node.args
 
         return pDereferenceLhs(`var`) + "->" + pObjectProperty(name) +
-                "(" + pMaybeMultiline(args) + ")"
+                "(" + pCommaSeparated(args) + ")"
     }
 
     private fun pExprNew(node: ExprNew): String {
@@ -477,8 +468,8 @@ class AstPrinter : AstPrinterAbstract() {
         val args = node.args
 
         return when (`class`) {
-            is StmtClass -> "new " + pClassCommon(`class`, pNotEmpty(args, { "(" + pMaybeMultiline(it) + ")" }))
-            is Name, is Expr -> "new " + pNewVariable(`class`) + "(" + pMaybeMultiline(args) + ")"
+            is StmtClass -> "new " + pClassCommon(`class`, pNotEmpty(args, { "(" + pCommaSeparated(it) + ")" }))
+            is Name, is Expr -> "new " + pNewVariable(`class`) + "(" + pCommaSeparated(args) + ")"
             else -> unreachableAnyOf(`class`)
         }
     }
@@ -531,7 +522,7 @@ class AstPrinter : AstPrinterAbstract() {
         }
 
         return pDereferenceLhs(`class`) + "::" + property +
-                "(" + pMaybeMultiline(args) + ")"
+                "(" + pCommaSeparated(args) + ")"
     }
 
     private fun pExprStaticPropertyFetch(node: ExprStaticPropertyFetch): String {
@@ -596,7 +587,7 @@ class AstPrinter : AstPrinterAbstract() {
         val value = node.value
 
         return if (value == null) {
-            "yield";
+            "yield"
         } else {
             val code = if (key != null) {
                 "yield " + p(key) + " => " + p(value)
@@ -671,8 +662,7 @@ class AstPrinter : AstPrinterAbstract() {
     }
 
     private fun pScalarEncapsedStringPart(node: ScalarEncapsedStringPart): String {
-        val value = node.value
-        throw Exception("不应支持输出 EncapsedStringPart");
+        throw Exception("不应支持输出 EncapsedStringPart")
     }
 
     private fun pScalarLNumber(node: ScalarLNumber): String {
@@ -697,22 +687,6 @@ class AstPrinter : AstPrinterAbstract() {
         val num = node.num
 
         return "break" + pNotNull(num, { " " + p(it) }) + ";"
-    }
-
-    private fun pStmtCase(node: StmtCase): String {
-        val cond = node.cond
-        val stmts = node.stmts
-
-        return pNotNull(cond, { "case " + p(it) }, "default") + ":" + pStmts(stmts)
-    }
-
-    private fun pStmtCatch(node: StmtCatch): String {
-        val types = node.types
-        val `var` = node.`var`
-        val stmts = node.stmts
-
-        return "catch (" + pImplode(types, "|") + " " + p(`var`) +
-                ") {" + pStmts(stmts) + nl + "}"
     }
 
     private fun pStmtClass(node: StmtClass): String {
@@ -742,7 +716,7 @@ class AstPrinter : AstPrinterAbstract() {
         val stmts = node.stmts
 
         return pModifiers(flags) + "function " + pIf(byRef, "&") + name.name +
-                "(" + pMaybeMultiline(params) + ")" +
+                "(" + pCommaSeparated(params) + ")" +
                 pNotNull(returnType, { " : " + pTypeHint(it) }) +
                 pNotNull(stmts, { nl + "{" + pStmts(it) + nl + "}" }, ";")
     }
@@ -787,29 +761,10 @@ class AstPrinter : AstPrinterAbstract() {
         return "echo " + pCommaSeparated(exprs) + ";"
     }
 
-    private fun pStmtElse(node: StmtElse): String {
-        val stmts = node.stmts
-
-        return "else {" + pStmts(stmts) + nl + "}"
-    }
-
-    private fun pStmtElseIf(node: StmtElseIf): String {
-        val cond = node.cond
-        val stmts = node.stmts
-
-        return "elseif (" + p(cond) + ") {" + pStmts(stmts) + nl + "}"
-    }
-
     private fun pStmtExpression(node: StmtExpression): String {
         val expr = node.expr
 
         return p(expr) + ";"
-    }
-
-    private fun pStmtFinally(node: StmtFinally): String {
-        val stmts = node.stmts
-
-        return "finally {" + pStmts(stmts) + nl + "}"
     }
 
     private fun pStmtFor(node: StmtFor): String {
@@ -864,13 +819,6 @@ class AstPrinter : AstPrinterAbstract() {
         return "goto " + name.name + ";"
     }
 
-    private fun pStmtGroupUse(node: StmtGroupUse): String {
-        val type = node.type
-        val prefix = node.prefix
-        val uses = node.uses
-
-        return "use " + pUseType(type) + pName(prefix) + "\\{" + pCommaSeparated(uses) + "};"
-    }
 
     private fun pStmtIf(node: StmtIf): String {
         val cond = node.cond
@@ -878,9 +826,18 @@ class AstPrinter : AstPrinterAbstract() {
         val elseifs = node.elseifs
         val `else` = node.`else`
 
-        return "if (" + p(cond) + ") {" + pStmts(stmts) + nl + "}" +
-                pNotEmpty(elseifs, { " " + pImplode(it, " ") }) +
-                pNotNull(`else`, { " " + p(it) })
+        return concat(
+            // if
+            "if (" + p(cond) + ") {" + pStmts(stmts) + nl + "}",
+            // elseifs
+            pList(elseifs) {
+                " elseif (" + p(it.cond) + ") {" + pStmts(it.stmts) + nl + "}"
+            },
+            // else
+            pNotNull(`else`) {
+                " else {" + pStmts(it.stmts) + nl + "}"
+            }
+        )
     }
 
     private fun pStmtInlineHTML(node: StmtInlineHTML): String {
@@ -903,7 +860,7 @@ class AstPrinter : AstPrinterAbstract() {
     private fun pStmtLabel(node: StmtLabel): String {
         val name = node.name
 
-        return name.name + ":";
+        return name.name + ":"
     }
 
     private fun pStmtNamespace(node: StmtNamespace): String {
@@ -918,7 +875,7 @@ class AstPrinter : AstPrinterAbstract() {
     }
 
     private fun pStmtNop(node: StmtNop): String {
-        return "";
+        return ""
     }
 
     private fun pStmtProperty(node: StmtProperty): String {
@@ -926,40 +883,43 @@ class AstPrinter : AstPrinterAbstract() {
         val props = node.props
 
         val modifiers = if (flags == 0) "var " else pModifiers(flags)
-        return modifiers + pCommaSeparated(props) + ";"
-    }
-
-    private fun pStmtPropertyProperty(node: StmtPropertyProperty): String {
-        val name = node.name
-        val default = node.default
-
-        return "$" + name.name + pNotNull(default, { " = " + p(it) })
+        return modifiers + pCommaSeparated(props) { prop ->
+            "$" + prop.name.name + pNotNull(prop.default) { " = " + p(it) }
+        } + ";"
     }
 
     private fun pStmtReturn(node: StmtReturn): String {
         val expr = node.expr
 
-        return "return" + pNotNull(expr, { " " + p(it) }) + ";"
+        return "return" + pNotNull(expr) { " " + p(it) } + ";"
     }
 
     private fun pStmtStatic(node: StmtStatic): String {
         val vars = node.vars
 
-        return "static " + pCommaSeparated(vars) + ";"
-    }
-
-    private fun pStmtStaticVar(node: StmtStaticVar): String {
-        val `var` = node.`var`
-        val default = node.default
-
-        return p(`var`) + pNotNull(default, { " = " + p(it) })
+        return "static " + pCommaSeparated(vars) {
+            p(it.`var`) + pNotNull(it.default) { default -> " = " + p(default) }
+        } + ";"
     }
 
     private fun pStmtSwitch(node: StmtSwitch): String {
         val cond = node.cond
         val cases = node.cases
 
-        return "switch (" + p(cond) + ") {" + pStmts(cases) + nl + "}"
+        return concat(
+            // start
+            "switch (" + p(cond) + ") {",
+            // cases
+            pList(cases, indent = true) {
+                if (it.cond != null) {
+                    nl + "case " + p(it.cond) + ":" + pStmts(it.stmts)
+                } else {
+                    nl + "default:" + pStmts(it.stmts)
+                }
+            },
+            // end
+            "$nl}"
+        )
     }
 
     private fun pStmtThrow(node: StmtThrow): String {
@@ -981,11 +941,18 @@ class AstPrinter : AstPrinterAbstract() {
         val adaptations = node.adaptations
 
         return "use " + pCommaSeparated(traits) +
-                pNotEmpty(
-                    adaptations,
-                    { " {" + pStmts(it) + nl + "}" },
+                if (adaptations.isEmpty()) {
                     ";"
-                )
+                } else {
+                    " {" + pList(adaptations, indent = true) { nl + pStmtTraitUseAdaptation(it) } + nl + "}"
+                }
+    }
+
+    private fun pStmtTraitUseAdaptation(node: StmtTraitUseAdaptation): String {
+        return when (node) {
+            is StmtTraitUseAdaptationAlias -> pStmtTraitUseAdaptationAlias(node)
+            is StmtTraitUseAdaptationPrecedence -> pStmtTraitUseAdaptationPrecedence(node)
+        }
     }
 
     private fun pStmtTraitUseAdaptationAlias(node: StmtTraitUseAdaptationAlias): String {
@@ -1014,9 +981,18 @@ class AstPrinter : AstPrinterAbstract() {
         val catches = node.catches
         val finally = node.finally
 
-        return "try {" + pStmts(stmts) + nl + "}" +
-                pNotEmpty(catches, { " " + pImplode(it, " ") }) +
-                pNotNull(finally, { " " + p(it) })
+        return concat(
+            // try
+            "try {" + pStmts(stmts) + nl + "}",
+            // catches
+            pList(catches) {
+                " catch (" + pList(it.types, "|") + " " + p(it.`var`) + ") {" + pStmts(it.stmts) + nl + "}"
+            },
+            // finally
+            pNotNull(finally) {
+                " finally {" + pStmts(it.stmts) + nl + "}"
+            }
+        )
     }
 
     private fun pStmtUnset(node: StmtUnset): String {
@@ -1029,7 +1005,15 @@ class AstPrinter : AstPrinterAbstract() {
         val type = node.type
         val uses = node.uses
 
-        return "use " + pUseType(type) + pCommaSeparated(uses) + ";"
+        return "use " + pUseType(type) + pCommaSeparated(uses) { pStmtUseUse(it) } + ";"
+    }
+
+    private fun pStmtGroupUse(node: StmtGroupUse): String {
+        val type = node.type
+        val prefix = node.prefix
+        val uses = node.uses
+
+        return "use " + pUseType(type) + pName(prefix) + "\\{" + pCommaSeparated(uses) { pStmtUseUse(it) } + "};"
     }
 
     private fun pUseType(type: Int): String {
@@ -1045,7 +1029,7 @@ class AstPrinter : AstPrinterAbstract() {
         val name = node.name
         val alias = node.alias
 
-        return pUseType(type) + pName(name) + pNotNull(alias, { " as " + it.name })
+        return pUseType(type) + pName(name) + pNotNull(alias) { " as " + it.name }
     }
 
     private fun pStmtWhile(node: StmtWhile): String {
