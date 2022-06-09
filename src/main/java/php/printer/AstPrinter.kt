@@ -821,23 +821,11 @@ class AstPrinter : AstPrinterAbstract() {
 
 
     private fun pStmtIf(node: StmtIf): String {
-        val cond = node.cond
-        val stmts = node.stmts
-        val elseifs = node.elseifs
-        val `else` = node.`else`
-
-        return concat(
-            // if
-            "if (" + p(cond) + ") {" + pStmts(stmts) + nl + "}",
-            // elseifs
-            pList(elseifs) {
-                " elseif (" + p(it.cond) + ") {" + pStmts(it.stmts) + nl + "}"
-            },
-            // else
-            pNotNull(`else`) {
-                " else {" + pStmts(it.stmts) + nl + "}"
-            }
-        )
+        return pList(node.branches, " else") { (cond, stmts) ->
+            "if (" + p(cond) + ") {" + pStmts(stmts) + nl + "}"
+        } + pNotNull(node.defaultBranch) { stmts ->
+            " else {" + pStmts(stmts) + nl + "}"
+        }
     }
 
     private fun pStmtInlineHTML(node: StmtInlineHTML): String {
@@ -910,11 +898,11 @@ class AstPrinter : AstPrinterAbstract() {
             // start
             "switch (" + p(cond) + ") {",
             // cases
-            pList(cases, indent = true) {
-                if (it.cond != null) {
-                    nl + "case " + p(it.cond) + ":" + pStmts(it.stmts)
+            pList(cases, indent = true) { (cond, stmts) ->
+                if (cond != null) {
+                    nl + "case " + p(cond) + ":" + pStmts(stmts)
                 } else {
-                    nl + "default:" + pStmts(it.stmts)
+                    nl + "default:" + pStmts(stmts)
                 }
             },
             // end
@@ -985,12 +973,12 @@ class AstPrinter : AstPrinterAbstract() {
             // try
             "try {" + pStmts(stmts) + nl + "}",
             // catches
-            pList(catches) {
-                " catch (" + pList(it.types, "|") + " " + p(it.`var`) + ") {" + pStmts(it.stmts) + nl + "}"
+            pList(catches) { (types, `var`, stmts) ->
+                " catch (" + pList(types, "|") + " " + p(`var`) + ") {" + pStmts(stmts) + nl + "}"
             },
             // finally
-            pNotNull(finally) {
-                " finally {" + pStmts(it.stmts) + nl + "}"
+            pNotNull(finally) { stmts ->
+                " finally {" + pStmts(stmts) + nl + "}"
             }
         )
     }

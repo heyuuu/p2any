@@ -791,16 +791,6 @@ class AstTransformer : AstTransformerAbstract() {
         )
     }
 
-    private fun pStmtCase(node: StmtCase): php.ast.StmtCase {
-        val cond = node.cond
-        val stmts = node.stmts
-
-        return php.ast.StmtCase(
-            cond = pExprOrNull(cond),
-            stmts = pStmts(stmts),
-        )
-    }
-
     private fun pStmtClass(node: StmtClass): php.ast.StmtClass {
         val flags = node.flags
         val extends = node.extends
@@ -993,15 +983,14 @@ class AstTransformer : AstTransformerAbstract() {
         val `else` = node.`else`
 
         return php.ast.StmtIf(
-            cond = pExpr(cond),
-            stmts = pStmts(stmts),
-            elseifs = elseifs.map {
-                php.ast.StmtElseIf(
-                    pExpr(it.cond), pStmts(it.stmts)
-                )
-            },
-            `else` = `else`?.let {
-                php.ast.StmtElse(pStmts(it.stmts))
+            branches = listOf(
+                Pair(pExpr(cond), pStmts(stmts)),
+                *elseifs.map {
+                    Pair(pExpr(it.cond), pStmts(it.stmts))
+                }.toTypedArray()
+            ),
+            defaultBranch = `else`?.let {
+                pStmts(it.stmts)
             }
         )
     }
@@ -1098,7 +1087,9 @@ class AstTransformer : AstTransformerAbstract() {
 
         return php.ast.StmtSwitch(
             cond = pExpr(cond),
-            cases = cases.map { pStmtCase(it) },
+            cases = cases.map { (cond, stmts) ->
+                Pair(pExprOrNull(cond), pStmts(stmts))
+            },
         )
     }
 
@@ -1172,28 +1163,14 @@ class AstTransformer : AstTransformerAbstract() {
 
         return php.ast.StmtTryCatch(
             stmts = pStmts(stmts),
-            catches = catches.map { pStmtCatch(it) },
-            finally = finally?.let { pStmtFinally(it) },
-        )
-    }
-
-    private fun pStmtCatch(node: StmtCatch): php.ast.StmtCatch {
-        val types = node.types
-        val `var` = node.`var`
-        val stmts = node.stmts
-
-        return php.ast.StmtCatch(
-            types = types.map { pName(it) },
-            `var` = pExprVariable(`var`),
-            stmts = pStmts(stmts),
-        )
-    }
-
-    private fun pStmtFinally(node: StmtFinally): php.ast.StmtFinally {
-        val stmts = node.stmts
-
-        return php.ast.StmtFinally(
-            stmts = pStmts(stmts),
+            catches = catches.map { (types, `var`, stmts) ->
+                php.ast.StmtTryCatch.CatchBranch(
+                    types = types.map { pName(it) },
+                    `var` = pExprVariable(`var`),
+                    stmts = pStmts(stmts),
+                )
+            },
+            finally = finally?.let { pStmts(it.stmts) },
         )
     }
 
