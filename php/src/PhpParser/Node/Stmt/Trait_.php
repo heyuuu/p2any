@@ -8,7 +8,7 @@ use P2Any\PhpParser\Node;
 
 class Trait_ extends ClassLike
 {
-    /** @var Node\Identifier Name */
+    /** @var Node\Identifier Name (override type-hint)*/
     public $name;
     
     /**
