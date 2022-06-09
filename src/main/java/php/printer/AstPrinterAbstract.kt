@@ -5,7 +5,7 @@ import kotlin.reflect.KClass
 
 abstract class AstPrinterAbstract {
     companion object {
-        val precedenceMap = mapOf(
+        private val precedenceMap = mapOf(
             // Pair(precedence, associativity)
             // where for precedence -1 is %left, 0 is %nonassoc and 1 is %right
             ExprBinaryOpPow::class to Pair(0, 1),
@@ -139,22 +139,20 @@ abstract class AstPrinterAbstract {
         return result
     }
 
-    protected fun pInfixOp(`class`: KClass<out Expr>, leftNode: Node, operatorString: String, rightNode: Node): String {
-        val (precedence, associativity) = precedenceMap[`class`]!!
-        return pPrec(leftNode, precedence, associativity, -1) + operatorString + pPrec(rightNode, precedence, associativity, 1)
+    protected fun pInfixOp(parentNode: Expr, leftNode: Node, operatorString: String, rightNode: Node): String {
+        return pPrec(parentNode, leftNode, -1) + operatorString + pPrec(parentNode, rightNode, 1)
     }
 
-    protected fun pPrefixOp(`class`: KClass<out Expr>, operatorString: String, node: Node): String {
-        val (precedence, associativity) = precedenceMap[`class`]!!
-        return operatorString + pPrec(node, precedence, associativity, 1)
+    protected fun pPrefixOp(parentNode: Expr, operatorString: String, node: Node): String {
+        return operatorString + pPrec(parentNode, node, 1)
     }
 
-    protected fun pPostfixOp(`class`: KClass<out Expr>, node: Node, operatorString: String): String {
-        val (precedence, associativity) = precedenceMap[`class`]!!
-        return pPrec(node, precedence, associativity, -1) + operatorString
+    protected fun pPostfixOp(parentNode: Expr, node: Node, operatorString: String): String {
+        return pPrec(parentNode, node, -1) + operatorString
     }
 
-    protected fun pPrec(node: Node, parentPrecedence: Int, parentAssociativity: Int, childPosition: Int): String {
+    protected fun pPrec(parentNode: Expr, node: Node, childPosition: Int): String {
+        val (parentPrecedence, parentAssociativity) = precedenceMap[parentNode::class]!!
         if (precedenceMap.containsKey(node::class)) {
             val (childPrecedence, _) = precedenceMap[node::class]!!
             if (childPrecedence > parentPrecedence || (childPrecedence == parentPrecedence && parentAssociativity != childPosition)) {

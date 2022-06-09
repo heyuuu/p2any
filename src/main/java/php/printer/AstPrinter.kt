@@ -285,14 +285,14 @@ class AstPrinter : AstPrinterAbstract() {
         val `var` = node.`var`
         val expr = node.expr
 
-        return pInfixOp(ExprAssign::class, `var`, " = ", expr)
+        return pInfixOp(node, `var`, " = ", expr)
     }
 
     private fun pExprAssignRef(node: ExprAssignRef): String {
         val `var` = node.`var`
         val expr = node.expr
 
-        return pInfixOp(ExprAssignRef::class, `var`, " =& ", expr)
+        return pInfixOp(node, `var`, " =& ", expr)
     }
 
     private fun pExprAssignOp(node: ExprAssignOp): String {
@@ -300,18 +300,18 @@ class AstPrinter : AstPrinterAbstract() {
         val expr = node.expr
 
         return when (node) {
-            is ExprAssignOpPlus -> pInfixOp(ExprAssignOpPlus::class, `var`, " += ", expr)
-            is ExprAssignOpMinus -> pInfixOp(ExprAssignOpMinus::class, `var`, " -= ", expr)
-            is ExprAssignOpMul -> pInfixOp(ExprAssignOpMul::class, `var`, " *= ", expr)
-            is ExprAssignOpDiv -> pInfixOp(ExprAssignOpDiv::class, `var`, " /= ", expr)
-            is ExprAssignOpConcat -> pInfixOp(ExprAssignOpConcat::class, `var`, " .= ", expr)
-            is ExprAssignOpMod -> pInfixOp(ExprAssignOpMod::class, `var`, " %= ", expr)
-            is ExprAssignOpBitwiseAnd -> pInfixOp(ExprAssignOpBitwiseAnd::class, `var`, " &= ", expr)
-            is ExprAssignOpBitwiseOr -> pInfixOp(ExprAssignOpBitwiseOr::class, `var`, " |= ", expr)
-            is ExprAssignOpBitwiseXor -> pInfixOp(ExprAssignOpBitwiseXor::class, `var`, " ^= ", expr)
-            is ExprAssignOpShiftLeft -> pInfixOp(ExprAssignOpShiftLeft::class, `var`, " <<= ", expr)
-            is ExprAssignOpShiftRight -> pInfixOp(ExprAssignOpShiftRight::class, `var`, " >>= ", expr)
-            is ExprAssignOpPow -> pInfixOp(ExprAssignOpPow::class, `var`, " **= ", expr)
+            is ExprAssignOpPlus -> pInfixOp(node, `var`, " += ", expr)
+            is ExprAssignOpMinus -> pInfixOp(node, `var`, " -= ", expr)
+            is ExprAssignOpMul -> pInfixOp(node, `var`, " *= ", expr)
+            is ExprAssignOpDiv -> pInfixOp(node, `var`, " /= ", expr)
+            is ExprAssignOpConcat -> pInfixOp(node, `var`, " .= ", expr)
+            is ExprAssignOpMod -> pInfixOp(node, `var`, " %= ", expr)
+            is ExprAssignOpBitwiseAnd -> pInfixOp(node, `var`, " &= ", expr)
+            is ExprAssignOpBitwiseOr -> pInfixOp(node, `var`, " |= ", expr)
+            is ExprAssignOpBitwiseXor -> pInfixOp(node, `var`, " ^= ", expr)
+            is ExprAssignOpShiftLeft -> pInfixOp(node, `var`, " <<= ", expr)
+            is ExprAssignOpShiftRight -> pInfixOp(node, `var`, " >>= ", expr)
+            is ExprAssignOpPow -> pInfixOp(node, `var`, " **= ", expr)
         }
     }
 
@@ -320,56 +320,56 @@ class AstPrinter : AstPrinterAbstract() {
         val right = node.right
 
         return when (node) {
-            is ExprBinaryOpPlus -> pInfixOp(ExprBinaryOpPlus::class, left, " + ", right)
-            is ExprBinaryOpMinus -> pInfixOp(ExprBinaryOpMinus::class, left, " - ", right)
-            is ExprBinaryOpMul -> pInfixOp(ExprBinaryOpMul::class, left, " * ", right)
-            is ExprBinaryOpDiv -> pInfixOp(ExprBinaryOpDiv::class, left, " / ", right)
-            is ExprBinaryOpConcat -> pInfixOp(ExprBinaryOpConcat::class, left, " . ", right)
-            is ExprBinaryOpMod -> pInfixOp(ExprBinaryOpMod::class, left, " % ", right)
-            is ExprBinaryOpBooleanAnd -> pInfixOp(ExprBinaryOpBooleanAnd::class, left, " && ", right)
-            is ExprBinaryOpBooleanOr -> pInfixOp(ExprBinaryOpBooleanOr::class, left, " || ", right)
-            is ExprBinaryOpBitwiseAnd -> pInfixOp(ExprBinaryOpBitwiseAnd::class, left, " & ", right)
-            is ExprBinaryOpBitwiseOr -> pInfixOp(ExprBinaryOpBitwiseOr::class, left, " | ", right)
-            is ExprBinaryOpBitwiseXor -> pInfixOp(ExprBinaryOpBitwiseXor::class, left, " ^ ", right)
-            is ExprBinaryOpShiftLeft -> pInfixOp(ExprBinaryOpShiftLeft::class, left, " << ", right)
-            is ExprBinaryOpShiftRight -> pInfixOp(ExprBinaryOpShiftRight::class, left, " >> ", right)
-            is ExprBinaryOpPow -> pInfixOp(ExprBinaryOpPow::class, left, " ** ", right)
-            is ExprBinaryOpLogicalAnd -> pInfixOp(ExprBinaryOpLogicalAnd::class, left, " and ", right)
-            is ExprBinaryOpLogicalOr -> pInfixOp(ExprBinaryOpLogicalOr::class, left, " or ", right)
-            is ExprBinaryOpLogicalXor -> pInfixOp(ExprBinaryOpLogicalXor::class, left, " xor ", right)
-            is ExprBinaryOpEqual -> pInfixOp(ExprBinaryOpEqual::class, left, " == ", right)
-            is ExprBinaryOpNotEqual -> pInfixOp(ExprBinaryOpNotEqual::class, left, " != ", right)
-            is ExprBinaryOpIdentical -> pInfixOp(ExprBinaryOpIdentical::class, left, " === ", right)
-            is ExprBinaryOpNotIdentical -> pInfixOp(ExprBinaryOpNotIdentical::class, left, " !== ", right)
-            is ExprBinaryOpSpaceship -> pInfixOp(ExprBinaryOpSpaceship::class, left, " <=> ", right)
-            is ExprBinaryOpGreater -> pInfixOp(ExprBinaryOpGreater::class, left, " > ", right)
-            is ExprBinaryOpGreaterOrEqual -> pInfixOp(ExprBinaryOpGreaterOrEqual::class, left, " >= ", right)
-            is ExprBinaryOpSmaller -> pInfixOp(ExprBinaryOpSmaller::class, left, " < ", right)
-            is ExprBinaryOpSmallerOrEqual -> pInfixOp(ExprBinaryOpSmallerOrEqual::class, left, " <= ", right)
-            is ExprBinaryOpCoalesce -> pInfixOp(ExprBinaryOpCoalesce::class, left, " ?? ", right)
+            is ExprBinaryOpPlus -> pInfixOp(node, left, " + ", right)
+            is ExprBinaryOpMinus -> pInfixOp(node, left, " - ", right)
+            is ExprBinaryOpMul -> pInfixOp(node, left, " * ", right)
+            is ExprBinaryOpDiv -> pInfixOp(node, left, " / ", right)
+            is ExprBinaryOpConcat -> pInfixOp(node, left, " . ", right)
+            is ExprBinaryOpMod -> pInfixOp(node, left, " % ", right)
+            is ExprBinaryOpBooleanAnd -> pInfixOp(node, left, " && ", right)
+            is ExprBinaryOpBooleanOr -> pInfixOp(node, left, " || ", right)
+            is ExprBinaryOpBitwiseAnd -> pInfixOp(node, left, " & ", right)
+            is ExprBinaryOpBitwiseOr -> pInfixOp(node, left, " | ", right)
+            is ExprBinaryOpBitwiseXor -> pInfixOp(node, left, " ^ ", right)
+            is ExprBinaryOpShiftLeft -> pInfixOp(node, left, " << ", right)
+            is ExprBinaryOpShiftRight -> pInfixOp(node, left, " >> ", right)
+            is ExprBinaryOpPow -> pInfixOp(node, left, " ** ", right)
+            is ExprBinaryOpLogicalAnd -> pInfixOp(node, left, " and ", right)
+            is ExprBinaryOpLogicalOr -> pInfixOp(node, left, " or ", right)
+            is ExprBinaryOpLogicalXor -> pInfixOp(node, left, " xor ", right)
+            is ExprBinaryOpEqual -> pInfixOp(node, left, " == ", right)
+            is ExprBinaryOpNotEqual -> pInfixOp(node, left, " != ", right)
+            is ExprBinaryOpIdentical -> pInfixOp(node, left, " === ", right)
+            is ExprBinaryOpNotIdentical -> pInfixOp(node, left, " !== ", right)
+            is ExprBinaryOpSpaceship -> pInfixOp(node, left, " <=> ", right)
+            is ExprBinaryOpGreater -> pInfixOp(node, left, " > ", right)
+            is ExprBinaryOpGreaterOrEqual -> pInfixOp(node, left, " >= ", right)
+            is ExprBinaryOpSmaller -> pInfixOp(node, left, " < ", right)
+            is ExprBinaryOpSmallerOrEqual -> pInfixOp(node, left, " <= ", right)
+            is ExprBinaryOpCoalesce -> pInfixOp(node, left, " ?? ", right)
         }
     }
 
     private fun pExprBitwiseNot(node: ExprBitwiseNot): String {
         val expr = node.expr
-        return pPrefixOp(ExprBitwiseNot::class, "~", expr)
+        return pPrefixOp(node, "~", expr)
     }
 
     private fun pExprBooleanNot(node: ExprBooleanNot): String {
         val expr = node.expr
-        return pPrefixOp(ExprBooleanNot::class, "!", expr)
+        return pPrefixOp(node, "!", expr)
     }
 
     private fun pExprCast(node: ExprCast): String {
         val expr = node.expr
         return when (node) {
-            is ExprCastArray -> pPrefixOp(node::class, "(array) ", expr)
-            is ExprCastBool -> pPrefixOp(node::class, "(bool) ", expr)
-            is ExprCastDouble -> pPrefixOp(node::class, "(float) ", expr)
-            is ExprCastInt -> pPrefixOp(node::class, "(int) ", expr)
-            is ExprCastObject -> pPrefixOp(node::class, "(object) ", expr)
-            is ExprCastString -> pPrefixOp(node::class, "(string) ", expr)
-            is ExprCastUnset -> pPrefixOp(node::class, "(unset) ", expr)
+            is ExprCastArray -> pPrefixOp(node, "(array) ", expr)
+            is ExprCastBool -> pPrefixOp(node, "(bool) ", expr)
+            is ExprCastDouble -> pPrefixOp(node, "(float) ", expr)
+            is ExprCastInt -> pPrefixOp(node, "(int) ", expr)
+            is ExprCastObject -> pPrefixOp(node, "(object) ", expr)
+            is ExprCastString -> pPrefixOp(node, "(string) ", expr)
+            is ExprCastUnset -> pPrefixOp(node, "(unset) ", expr)
         }
     }
 
@@ -424,7 +424,7 @@ class AstPrinter : AstPrinterAbstract() {
 
     private fun pExprErrorSuppress(node: ExprErrorSuppress): String {
         val expr = node.expr
-        return pPrefixOp(ExprErrorSuppress::class, "@", expr)
+        return pPrefixOp(node, "@", expr)
     }
 
     private fun pExprEval(node: ExprEval): String {
@@ -456,10 +456,7 @@ class AstPrinter : AstPrinterAbstract() {
         val expr = node.expr
         val `class` = node.`class`.value as Node
 
-        val (precedence, associativity) = precedenceMap[ExprInstanceof::class]!!
-
-        return pPrec(expr, precedence, associativity, -1) +
-                " instanceof " + pNewVariable(`class`)
+        return pPrec(node, expr, -1) + " instanceof " + pNewVariable(`class`)
     }
 
     private fun pExprIsset(node: ExprIsset): String {
@@ -496,29 +493,29 @@ class AstPrinter : AstPrinterAbstract() {
     private fun pExprPostDec(node: ExprPostDec): String {
         val `var` = node.`var`
 
-        return pPostfixOp(ExprPostDec::class, `var`, "--")
+        return pPostfixOp(node, `var`, "--")
     }
 
     private fun pExprPostInc(node: ExprPostInc): String {
         val `var` = node.`var`
 
-        return pPostfixOp(ExprPostInc::class, `var`, "++")
+        return pPostfixOp(node, `var`, "++")
     }
 
     private fun pExprPreDec(node: ExprPreDec): String {
         val `var` = node.`var`
-        return pPrefixOp(ExprPreDec::class, "--", `var`)
+        return pPrefixOp(node, "--", `var`)
     }
 
     private fun pExprPreInc(node: ExprPreInc): String {
         val `var` = node.`var`
-        return pPrefixOp(ExprPreInc::class, "++", `var`)
+        return pPrefixOp(node, "++", `var`)
     }
 
     private fun pExprPrint(node: ExprPrint): String {
         val expr = node.expr
 
-        return pPrefixOp(ExprPrint::class, "print ", expr)
+        return pPrefixOp(node, "print ", expr)
     }
 
     private fun pExprPropertyFetch(node: ExprPropertyFetch): String {
@@ -562,9 +559,9 @@ class AstPrinter : AstPrinterAbstract() {
         val `else` = node.`else`
 
         return if (`if` != null) {
-            pInfixOp(ExprTernary::class, cond, " ? " + p(`if`) + " : ", `else`)
+            pInfixOp(node, cond, " ? " + p(`if`) + " : ", `else`)
         } else {
-            pInfixOp(ExprTernary::class, cond, " ?: ", `else`)
+            pInfixOp(node, cond, " ?: ", `else`)
         }
     }
 
@@ -582,7 +579,7 @@ class AstPrinter : AstPrinterAbstract() {
             return "-(" + p(expr) + ")"
         }
 
-        return pPrefixOp(ExprUnaryMinus::class, "-", expr)
+        return pPrefixOp(node, "-", expr)
     }
 
     private fun pExprUnaryPlus(node: ExprUnaryPlus): String {
@@ -593,7 +590,7 @@ class AstPrinter : AstPrinterAbstract() {
             return "+(" + p(expr) + ")"
         }
 
-        return pPrefixOp(ExprUnaryPlus::class, "+", expr)
+        return pPrefixOp(node, "+", expr)
     }
 
     private fun pExprVariable(node: ExprVariable): String {
@@ -627,7 +624,7 @@ class AstPrinter : AstPrinterAbstract() {
     private fun pExprYieldFrom(node: ExprYieldFrom): String {
         val expr = node.expr
 
-        return pPrefixOp(ExprYieldFrom::class, "yield from ", expr)
+        return pPrefixOp(node, "yield from ", expr)
     }
 
     private fun pIdentifier(node: Identifier): String {
