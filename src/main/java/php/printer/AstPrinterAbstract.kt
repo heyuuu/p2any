@@ -122,22 +122,6 @@ abstract class AstPrinterAbstract {
             .replace(docStringEndToken, "\n")
     }
 
-    protected fun pStmts(nodes: List<Stmt>, indent: Boolean = true): String {
-        if (indent) {
-            indentLevel++
-        }
-
-        val result = nodes.joinToString("") { node ->
-            // todo Node Comments
-            nl + p(node)
-        }
-
-        if (indent) {
-            indentLevel--
-        }
-
-        return result
-    }
 
     protected fun pInfixOp(parentNode: Expr, leftNode: Node, operatorString: String, rightNode: Node): String {
         return pPrec(parentNode, leftNode, -1) + operatorString + pPrec(parentNode, rightNode, 1)
@@ -242,4 +226,31 @@ abstract class AstPrinterAbstract {
             modifierNames.joinToString(" ")
         }
     }
+
+    ////////////////////
+    // helpers
+    ////////////////////
+    protected fun <T> pList(
+        list: List<T>,
+        separator: String = "",
+        indent: Boolean = false,
+        transform: (T) -> String
+    ): String {
+        if (indent) {
+            indentLevel++
+        }
+
+        val result = list.joinToString(separator, transform = transform)
+
+        if (indent) {
+            indentLevel--
+        }
+
+        return result
+    }
+
+    protected fun pStmts(nodes: List<Stmt>, indent: Boolean = true): String {
+        return pList(nodes, indent = indent) { nl + p(it) }
+    }
+
 }

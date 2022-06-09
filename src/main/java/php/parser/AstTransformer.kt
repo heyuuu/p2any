@@ -37,56 +37,16 @@ class AstTransformer : AstTransformerAbstract() {
             is ExprArray -> pExprArray(node)
             is ExprArrayDimFetch -> pExprArrayDimFetch(node)
             is ExprArrayItem -> pExprArrayItem(node)
+
             is ExprAssign -> pExprAssign(node)
-            is ExprAssignOpBitwiseAnd -> pExprAssignOpBitwiseAnd(node)
-            is ExprAssignOpBitwiseOr -> pExprAssignOpBitwiseOr(node)
-            is ExprAssignOpBitwiseXor -> pExprAssignOpBitwiseXor(node)
-            is ExprAssignOpConcat -> pExprAssignOpConcat(node)
-            is ExprAssignOpDiv -> pExprAssignOpDiv(node)
-            is ExprAssignOpMinus -> pExprAssignOpMinus(node)
-            is ExprAssignOpMod -> pExprAssignOpMod(node)
-            is ExprAssignOpMul -> pExprAssignOpMul(node)
-            is ExprAssignOpPlus -> pExprAssignOpPlus(node)
-            is ExprAssignOpPow -> pExprAssignOpPow(node)
-            is ExprAssignOpShiftLeft -> pExprAssignOpShiftLeft(node)
-            is ExprAssignOpShiftRight -> pExprAssignOpShiftRight(node)
             is ExprAssignRef -> pExprAssignRef(node)
-            is ExprBinaryOpBitwiseAnd -> pExprBinaryOpBitwiseAnd(node)
-            is ExprBinaryOpBitwiseOr -> pExprBinaryOpBitwiseOr(node)
-            is ExprBinaryOpBitwiseXor -> pExprBinaryOpBitwiseXor(node)
-            is ExprBinaryOpBooleanAnd -> pExprBinaryOpBooleanAnd(node)
-            is ExprBinaryOpBooleanOr -> pExprBinaryOpBooleanOr(node)
-            is ExprBinaryOpCoalesce -> pExprBinaryOpCoalesce(node)
-            is ExprBinaryOpConcat -> pExprBinaryOpConcat(node)
-            is ExprBinaryOpDiv -> pExprBinaryOpDiv(node)
-            is ExprBinaryOpEqual -> pExprBinaryOpEqual(node)
-            is ExprBinaryOpGreater -> pExprBinaryOpGreater(node)
-            is ExprBinaryOpGreaterOrEqual -> pExprBinaryOpGreaterOrEqual(node)
-            is ExprBinaryOpIdentical -> pExprBinaryOpIdentical(node)
-            is ExprBinaryOpLogicalAnd -> pExprBinaryOpLogicalAnd(node)
-            is ExprBinaryOpLogicalOr -> pExprBinaryOpLogicalOr(node)
-            is ExprBinaryOpLogicalXor -> pExprBinaryOpLogicalXor(node)
-            is ExprBinaryOpMinus -> pExprBinaryOpMinus(node)
-            is ExprBinaryOpMod -> pExprBinaryOpMod(node)
-            is ExprBinaryOpMul -> pExprBinaryOpMul(node)
-            is ExprBinaryOpNotEqual -> pExprBinaryOpNotEqual(node)
-            is ExprBinaryOpNotIdentical -> pExprBinaryOpNotIdentical(node)
-            is ExprBinaryOpPlus -> pExprBinaryOpPlus(node)
-            is ExprBinaryOpPow -> pExprBinaryOpPow(node)
-            is ExprBinaryOpShiftLeft -> pExprBinaryOpShiftLeft(node)
-            is ExprBinaryOpShiftRight -> pExprBinaryOpShiftRight(node)
-            is ExprBinaryOpSmaller -> pExprBinaryOpSmaller(node)
-            is ExprBinaryOpSmallerOrEqual -> pExprBinaryOpSmallerOrEqual(node)
-            is ExprBinaryOpSpaceship -> pExprBinaryOpSpaceship(node)
+            is ExprAssignOp -> pExprAssignOp(node)
+            is ExprBinaryOp -> pExprBinaryOp(node)
+            is ExprCast -> pExprCast(node)
+
             is ExprBitwiseNot -> pExprBitwiseNot(node)
             is ExprBooleanNot -> pExprBooleanNot(node)
-            is ExprCastArray -> pExprCastArray(node)
-            is ExprCastBool -> pExprCastBool(node)
-            is ExprCastDouble -> pExprCastDouble(node)
-            is ExprCastInt -> pExprCastInt(node)
-            is ExprCastObject -> pExprCastObject(node)
-            is ExprCastString -> pExprCastString(node)
-            is ExprCastUnset -> pExprCastUnset(node)
+
             is ExprClassConstFetch -> pExprClassConstFetch(node)
             is ExprClone -> pExprClone(node)
             is ExprClosure -> pExprClosure(node)
@@ -124,14 +84,7 @@ class AstTransformer : AstTransformerAbstract() {
             is ScalarEncapsedStringPart -> pScalarEncapsedStringPart(node)
             is ScalarLNumber -> pScalarLNumber(node)
             is ScalarString -> pScalarString(node)
-            is ScalarMagicConstClass -> pScalarMagicConstClass(node)
-            is ScalarMagicConstDir -> pScalarMagicConstDir(node)
-            is ScalarMagicConstFile -> pScalarMagicConstFile(node)
-            is ScalarMagicConstFunction -> pScalarMagicConstFunction(node)
-            is ScalarMagicConstLine -> pScalarMagicConstLine(node)
-            is ScalarMagicConstMethod -> pScalarMagicConstMethod(node)
-            is ScalarMagicConstNamespace -> pScalarMagicConstNamespace(node)
-            is ScalarMagicConstTrait -> pScalarMagicConstTrait(node)
+            is ScalarMagicConst -> pScalarMagicConst(node)
 
             // stmt
             is StmtHaltCompiler -> php.ast.StmtNop
@@ -244,6 +197,26 @@ class AstTransformer : AstTransformerAbstract() {
             `var` = pExpr(`var`),
             expr = pExpr(expr),
         )
+    }
+
+    private fun pExprAssignOp(node: ExprAssignOp): php.ast.ExprAssignOp {
+        val `var` = pExpr(node.`var`)
+        val expr = pExpr(node.expr)
+
+        return when (node) {
+            is ExprAssignOpBitwiseAnd -> php.ast.ExprAssignOpBitwiseAnd(`var`, expr)
+            is ExprAssignOpBitwiseOr -> php.ast.ExprAssignOpBitwiseOr(`var`, expr)
+            is ExprAssignOpBitwiseXor -> php.ast.ExprAssignOpBitwiseXor(`var`, expr)
+            is ExprAssignOpConcat -> php.ast.ExprAssignOpConcat(`var`, expr)
+            is ExprAssignOpDiv -> php.ast.ExprAssignOpDiv(`var`, expr)
+            is ExprAssignOpMinus -> php.ast.ExprAssignOpMinus(`var`, expr)
+            is ExprAssignOpMod -> php.ast.ExprAssignOpMod(`var`, expr)
+            is ExprAssignOpMul -> php.ast.ExprAssignOpMul(`var`, expr)
+            is ExprAssignOpPlus -> php.ast.ExprAssignOpPlus(`var`, expr)
+            is ExprAssignOpPow -> php.ast.ExprAssignOpPow(`var`, expr)
+            is ExprAssignOpShiftLeft -> php.ast.ExprAssignOpShiftLeft(`var`, expr)
+            is ExprAssignOpShiftRight -> php.ast.ExprAssignOpShiftRight(`var`, expr)
+        }
     }
 
     private fun pExprAssignOpBitwiseAnd(node: ExprAssignOpBitwiseAnd): php.ast.ExprAssignOpBitwiseAnd {
@@ -376,274 +349,39 @@ class AstTransformer : AstTransformerAbstract() {
         )
     }
 
-    private fun pExprBinaryOpBitwiseAnd(node: ExprBinaryOpBitwiseAnd): php.ast.ExprBinaryOpBitwiseAnd {
-        val left = node.left
-        val right = node.right
+    private fun pExprBinaryOp(node: ExprBinaryOp): php.ast.ExprBinaryOp {
+        val left = pExpr(node.left)
+        val right = pExpr(node.right)
 
-        return php.ast.ExprBinaryOpBitwiseAnd(
-            left = pExpr(left),
-            right = pExpr(right),
-        )
-    }
-
-    private fun pExprBinaryOpBitwiseOr(node: ExprBinaryOpBitwiseOr): php.ast.ExprBinaryOpBitwiseOr {
-        val left = node.left
-        val right = node.right
-
-        return php.ast.ExprBinaryOpBitwiseOr(
-            left = pExpr(left),
-            right = pExpr(right),
-        )
-    }
-
-    private fun pExprBinaryOpBitwiseXor(node: ExprBinaryOpBitwiseXor): php.ast.ExprBinaryOpBitwiseXor {
-        val left = node.left
-        val right = node.right
-
-        return php.ast.ExprBinaryOpBitwiseXor(
-            left = pExpr(left),
-            right = pExpr(right),
-        )
-    }
-
-    private fun pExprBinaryOpBooleanAnd(node: ExprBinaryOpBooleanAnd): php.ast.ExprBinaryOpBooleanAnd {
-        val left = node.left
-        val right = node.right
-
-        return php.ast.ExprBinaryOpBooleanAnd(
-            left = pExpr(left),
-            right = pExpr(right),
-        )
-    }
-
-    private fun pExprBinaryOpBooleanOr(node: ExprBinaryOpBooleanOr): php.ast.ExprBinaryOpBooleanOr {
-        val left = node.left
-        val right = node.right
-
-        return php.ast.ExprBinaryOpBooleanOr(
-            left = pExpr(left),
-            right = pExpr(right),
-        )
-    }
-
-    private fun pExprBinaryOpCoalesce(node: ExprBinaryOpCoalesce): php.ast.ExprBinaryOpCoalesce {
-        val left = node.left
-        val right = node.right
-
-        return php.ast.ExprBinaryOpCoalesce(
-            left = pExpr(left),
-            right = pExpr(right),
-        )
-    }
-
-    private fun pExprBinaryOpConcat(node: ExprBinaryOpConcat): php.ast.ExprBinaryOpConcat {
-        val left = node.left
-        val right = node.right
-
-        return php.ast.ExprBinaryOpConcat(
-            left = pExpr(left),
-            right = pExpr(right),
-        )
-    }
-
-    private fun pExprBinaryOpDiv(node: ExprBinaryOpDiv): php.ast.ExprBinaryOpDiv {
-        val left = node.left
-        val right = node.right
-
-        return php.ast.ExprBinaryOpDiv(
-            left = pExpr(left),
-            right = pExpr(right),
-        )
-    }
-
-    private fun pExprBinaryOpEqual(node: ExprBinaryOpEqual): php.ast.ExprBinaryOpEqual {
-        val left = node.left
-        val right = node.right
-
-        return php.ast.ExprBinaryOpEqual(
-            left = pExpr(left),
-            right = pExpr(right),
-        )
-    }
-
-    private fun pExprBinaryOpGreater(node: ExprBinaryOpGreater): php.ast.ExprBinaryOpGreater {
-        val left = node.left
-        val right = node.right
-
-        return php.ast.ExprBinaryOpGreater(
-            left = pExpr(left),
-            right = pExpr(right),
-        )
-    }
-
-    private fun pExprBinaryOpGreaterOrEqual(node: ExprBinaryOpGreaterOrEqual): php.ast.ExprBinaryOpGreaterOrEqual {
-        val left = node.left
-        val right = node.right
-
-        return php.ast.ExprBinaryOpGreaterOrEqual(
-            left = pExpr(left),
-            right = pExpr(right),
-        )
-    }
-
-    private fun pExprBinaryOpIdentical(node: ExprBinaryOpIdentical): php.ast.ExprBinaryOpIdentical {
-        val left = node.left
-        val right = node.right
-
-        return php.ast.ExprBinaryOpIdentical(
-            left = pExpr(left),
-            right = pExpr(right),
-        )
-    }
-
-    private fun pExprBinaryOpLogicalAnd(node: ExprBinaryOpLogicalAnd): php.ast.ExprBinaryOpLogicalAnd {
-        val left = node.left
-        val right = node.right
-
-        return php.ast.ExprBinaryOpLogicalAnd(
-            left = pExpr(left),
-            right = pExpr(right),
-        )
-    }
-
-    private fun pExprBinaryOpLogicalOr(node: ExprBinaryOpLogicalOr): php.ast.ExprBinaryOpLogicalOr {
-        val left = node.left
-        val right = node.right
-
-        return php.ast.ExprBinaryOpLogicalOr(
-            left = pExpr(left),
-            right = pExpr(right),
-        )
-    }
-
-    private fun pExprBinaryOpLogicalXor(node: ExprBinaryOpLogicalXor): php.ast.ExprBinaryOpLogicalXor {
-        val left = node.left
-        val right = node.right
-
-        return php.ast.ExprBinaryOpLogicalXor(
-            left = pExpr(left),
-            right = pExpr(right),
-        )
-    }
-
-    private fun pExprBinaryOpMinus(node: ExprBinaryOpMinus): php.ast.ExprBinaryOpMinus {
-        val left = node.left
-        val right = node.right
-
-        return php.ast.ExprBinaryOpMinus(
-            left = pExpr(left),
-            right = pExpr(right),
-        )
-    }
-
-    private fun pExprBinaryOpMod(node: ExprBinaryOpMod): php.ast.ExprBinaryOpMod {
-        val left = node.left
-        val right = node.right
-
-        return php.ast.ExprBinaryOpMod(
-            left = pExpr(left),
-            right = pExpr(right),
-        )
-    }
-
-    private fun pExprBinaryOpMul(node: ExprBinaryOpMul): php.ast.ExprBinaryOpMul {
-        val left = node.left
-        val right = node.right
-
-        return php.ast.ExprBinaryOpMul(
-            left = pExpr(left),
-            right = pExpr(right),
-        )
-    }
-
-    private fun pExprBinaryOpNotEqual(node: ExprBinaryOpNotEqual): php.ast.ExprBinaryOpNotEqual {
-        val left = node.left
-        val right = node.right
-
-        return php.ast.ExprBinaryOpNotEqual(
-            left = pExpr(left),
-            right = pExpr(right),
-        )
-    }
-
-    private fun pExprBinaryOpNotIdentical(node: ExprBinaryOpNotIdentical): php.ast.ExprBinaryOpNotIdentical {
-        val left = node.left
-        val right = node.right
-
-        return php.ast.ExprBinaryOpNotIdentical(
-            left = pExpr(left),
-            right = pExpr(right),
-        )
-    }
-
-    private fun pExprBinaryOpPlus(node: ExprBinaryOpPlus): php.ast.ExprBinaryOpPlus {
-        val left = node.left
-        val right = node.right
-
-        return php.ast.ExprBinaryOpPlus(
-            left = pExpr(left),
-            right = pExpr(right),
-        )
-    }
-
-    private fun pExprBinaryOpPow(node: ExprBinaryOpPow): php.ast.ExprBinaryOpPow {
-        val left = node.left
-        val right = node.right
-
-        return php.ast.ExprBinaryOpPow(
-            left = pExpr(left),
-            right = pExpr(right),
-        )
-    }
-
-    private fun pExprBinaryOpShiftLeft(node: ExprBinaryOpShiftLeft): php.ast.ExprBinaryOpShiftLeft {
-        val left = node.left
-        val right = node.right
-
-        return php.ast.ExprBinaryOpShiftLeft(
-            left = pExpr(left),
-            right = pExpr(right),
-        )
-    }
-
-    private fun pExprBinaryOpShiftRight(node: ExprBinaryOpShiftRight): php.ast.ExprBinaryOpShiftRight {
-        val left = node.left
-        val right = node.right
-
-        return php.ast.ExprBinaryOpShiftRight(
-            left = pExpr(left),
-            right = pExpr(right),
-        )
-    }
-
-    private fun pExprBinaryOpSmaller(node: ExprBinaryOpSmaller): php.ast.ExprBinaryOpSmaller {
-        val left = node.left
-        val right = node.right
-
-        return php.ast.ExprBinaryOpSmaller(
-            left = pExpr(left),
-            right = pExpr(right),
-        )
-    }
-
-    private fun pExprBinaryOpSmallerOrEqual(node: ExprBinaryOpSmallerOrEqual): php.ast.ExprBinaryOpSmallerOrEqual {
-        val left = node.left
-        val right = node.right
-
-        return php.ast.ExprBinaryOpSmallerOrEqual(
-            left = pExpr(left),
-            right = pExpr(right),
-        )
-    }
-
-    private fun pExprBinaryOpSpaceship(node: ExprBinaryOpSpaceship): php.ast.ExprBinaryOpSpaceship {
-        val left = node.left
-        val right = node.right
-
-        return php.ast.ExprBinaryOpSpaceship(
-            left = pExpr(left),
-            right = pExpr(right),
-        )
+        return when (node) {
+            is ExprBinaryOpBitwiseAnd -> php.ast.ExprBinaryOpBitwiseAnd(left, right)
+            is ExprBinaryOpBitwiseOr -> php.ast.ExprBinaryOpBitwiseOr(left, right)
+            is ExprBinaryOpBitwiseXor -> php.ast.ExprBinaryOpBitwiseXor(left, right)
+            is ExprBinaryOpBooleanAnd -> php.ast.ExprBinaryOpBooleanAnd(left, right)
+            is ExprBinaryOpBooleanOr -> php.ast.ExprBinaryOpBooleanOr(left, right)
+            is ExprBinaryOpCoalesce -> php.ast.ExprBinaryOpCoalesce(left, right)
+            is ExprBinaryOpConcat -> php.ast.ExprBinaryOpConcat(left, right)
+            is ExprBinaryOpDiv -> php.ast.ExprBinaryOpDiv(left, right)
+            is ExprBinaryOpEqual -> php.ast.ExprBinaryOpEqual(left, right)
+            is ExprBinaryOpGreater -> php.ast.ExprBinaryOpGreater(left, right)
+            is ExprBinaryOpGreaterOrEqual -> php.ast.ExprBinaryOpGreaterOrEqual(left, right)
+            is ExprBinaryOpIdentical -> php.ast.ExprBinaryOpIdentical(left, right)
+            is ExprBinaryOpLogicalAnd -> php.ast.ExprBinaryOpLogicalAnd(left, right)
+            is ExprBinaryOpLogicalOr -> php.ast.ExprBinaryOpLogicalOr(left, right)
+            is ExprBinaryOpLogicalXor -> php.ast.ExprBinaryOpLogicalXor(left, right)
+            is ExprBinaryOpMinus -> php.ast.ExprBinaryOpMinus(left, right)
+            is ExprBinaryOpMod -> php.ast.ExprBinaryOpMod(left, right)
+            is ExprBinaryOpMul -> php.ast.ExprBinaryOpMul(left, right)
+            is ExprBinaryOpNotEqual -> php.ast.ExprBinaryOpNotEqual(left, right)
+            is ExprBinaryOpNotIdentical -> php.ast.ExprBinaryOpNotIdentical(left, right)
+            is ExprBinaryOpPlus -> php.ast.ExprBinaryOpPlus(left, right)
+            is ExprBinaryOpPow -> php.ast.ExprBinaryOpPow(left, right)
+            is ExprBinaryOpShiftLeft -> php.ast.ExprBinaryOpShiftLeft(left, right)
+            is ExprBinaryOpShiftRight -> php.ast.ExprBinaryOpShiftRight(left, right)
+            is ExprBinaryOpSmaller -> php.ast.ExprBinaryOpSmaller(left, right)
+            is ExprBinaryOpSmallerOrEqual -> php.ast.ExprBinaryOpSmallerOrEqual(left, right)
+            is ExprBinaryOpSpaceship -> php.ast.ExprBinaryOpSpaceship(left, right)
+        }
     }
 
     private fun pExprBitwiseNot(node: ExprBitwiseNot): php.ast.ExprBitwiseNot {
@@ -662,60 +400,18 @@ class AstTransformer : AstTransformerAbstract() {
         )
     }
 
-    private fun pExprCastArray(node: ExprCastArray): php.ast.ExprCastArray {
-        val expr = node.expr
+    private fun pExprCast(node: ExprCast): php.ast.ExprCast {
+        val expr = pExpr(node.expr)
 
-        return php.ast.ExprCastArray(
-            expr = pExpr(expr),
-        )
-    }
-
-    private fun pExprCastBool(node: ExprCastBool): php.ast.ExprCastBool {
-        val expr = node.expr
-
-        return php.ast.ExprCastBool(
-            expr = pExpr(expr),
-        )
-    }
-
-    private fun pExprCastDouble(node: ExprCastDouble): php.ast.ExprCastDouble {
-        val expr = node.expr
-
-        return php.ast.ExprCastDouble(
-            expr = pExpr(expr),
-        )
-    }
-
-    private fun pExprCastInt(node: ExprCastInt): php.ast.ExprCastInt {
-        val expr = node.expr
-
-        return php.ast.ExprCastInt(
-            expr = pExpr(expr),
-        )
-    }
-
-    private fun pExprCastObject(node: ExprCastObject): php.ast.ExprCastObject {
-        val expr = node.expr
-
-        return php.ast.ExprCastObject(
-            expr = pExpr(expr),
-        )
-    }
-
-    private fun pExprCastString(node: ExprCastString): php.ast.ExprCastString {
-        val expr = node.expr
-
-        return php.ast.ExprCastString(
-            expr = pExpr(expr),
-        )
-    }
-
-    private fun pExprCastUnset(node: ExprCastUnset): php.ast.ExprCastUnset {
-        val expr = node.expr
-
-        return php.ast.ExprCastUnset(
-            expr = pExpr(expr),
-        )
+        return when (node) {
+            is ExprCastArray -> php.ast.ExprCastArray(expr)
+            is ExprCastBool -> php.ast.ExprCastBool(expr)
+            is ExprCastDouble -> php.ast.ExprCastDouble(expr)
+            is ExprCastInt -> php.ast.ExprCastInt(expr)
+            is ExprCastObject -> php.ast.ExprCastObject(expr)
+            is ExprCastString -> php.ast.ExprCastString(expr)
+            is ExprCastUnset -> php.ast.ExprCastUnset(expr)
+        }
     }
 
     private fun pExprClassConstFetch(node: ExprClassConstFetch): php.ast.ExprClassConstFetch {
@@ -1066,42 +762,17 @@ class AstTransformer : AstTransformerAbstract() {
         )
     }
 
-    private fun pScalarMagicConstClass(node: ScalarMagicConstClass): php.ast.ScalarMagicConstClass {
-        return php.ast.ScalarMagicConstClass()
-    }
-
-    private fun pScalarMagicConstDir(node: ScalarMagicConstDir): php.ast.ScalarMagicConstDir {
-        return php.ast.ScalarMagicConstDir()
-    }
-
-    private fun pScalarMagicConstFile(node: ScalarMagicConstFile): php.ast.ScalarMagicConstFile {
-        return php.ast.ScalarMagicConstFile()
-    }
-
-    private fun pScalarMagicConstFunction(node: ScalarMagicConstFunction): php.ast.ScalarMagicConstFunction {
-        return php.ast.ScalarMagicConstFunction()
-    }
-
-    private fun pScalarMagicConstLine(node: ScalarMagicConstLine): php.ast.ScalarMagicConstLine {
-        return php.ast.ScalarMagicConstLine()
-    }
-
-    private fun pScalarMagicConstMethod(node: ScalarMagicConstMethod): php.ast.ScalarMagicConstMethod {
-
-        return php.ast.ScalarMagicConstMethod(
-        )
-    }
-
-    private fun pScalarMagicConstNamespace(node: ScalarMagicConstNamespace): php.ast.ScalarMagicConstNamespace {
-
-        return php.ast.ScalarMagicConstNamespace(
-        )
-    }
-
-    private fun pScalarMagicConstTrait(node: ScalarMagicConstTrait): php.ast.ScalarMagicConstTrait {
-
-        return php.ast.ScalarMagicConstTrait(
-        )
+    private fun pScalarMagicConst(node: ScalarMagicConst): php.ast.ScalarMagicConst {
+        return when (node) {
+            is ScalarMagicConstClass -> php.ast.ScalarMagicConstClass()
+            is ScalarMagicConstDir -> php.ast.ScalarMagicConstDir()
+            is ScalarMagicConstFile -> php.ast.ScalarMagicConstFile()
+            is ScalarMagicConstFunction -> php.ast.ScalarMagicConstFunction()
+            is ScalarMagicConstLine -> php.ast.ScalarMagicConstLine()
+            is ScalarMagicConstMethod -> php.ast.ScalarMagicConstMethod()
+            is ScalarMagicConstNamespace -> php.ast.ScalarMagicConstNamespace()
+            is ScalarMagicConstTrait -> php.ast.ScalarMagicConstTrait()
+        }
     }
 
     private fun pScalarString(node: ScalarString): php.ast.ScalarString {

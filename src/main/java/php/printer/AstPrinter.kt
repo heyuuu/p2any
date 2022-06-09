@@ -5,18 +5,28 @@ import php.ast.*
 class AstPrinter : AstPrinterAbstract() {
     override fun p(node: Node): String {
         return when (node) {
+            // special
             is Arg -> pArg(node)
             is Const -> pConst(node)
+            is Name -> pName(node)
+            is Identifier -> pIdentifier(node)
+            is NullableType -> pNullableType(node)
+            is Param -> pParam(node)
+
+            // expr
             is ExprArray -> pExprArray(node)
             is ExprArrayDimFetch -> pExprArrayDimFetch(node)
             is ExprArrayItem -> pExprArrayItem(node)
+
             is ExprAssign -> pExprAssign(node)
-            is ExprAssignOp -> pExprAssignOp(node)
             is ExprAssignRef -> pExprAssignRef(node)
+            is ExprAssignOp -> pExprAssignOp(node)
             is ExprBinaryOp -> pExprBinaryOp(node)
+            is ExprCast -> pExprCast(node)
+
             is ExprBitwiseNot -> pExprBitwiseNot(node)
             is ExprBooleanNot -> pExprBooleanNot(node)
-            is ExprCast -> pExprCast(node)
+
             is ExprClassConstFetch -> pExprClassConstFetch(node)
             is ExprClone -> pExprClone(node)
             is ExprClosure -> pExprClosure(node)
@@ -47,16 +57,18 @@ class AstPrinter : AstPrinterAbstract() {
             is ExprVariable -> pExprVariable(node)
             is ExprYield -> pExprYield(node)
             is ExprYieldFrom -> pExprYieldFrom(node)
-            is Identifier -> pIdentifier(node)
-            is Name -> pName(node)
-            is NullableType -> pNullableType(node)
-            is Param -> pParam(node)
+
+            // scalar
             is ScalarDNumber -> pScalarDNumber(node)
             is ScalarEncapsed -> pScalarEncapsed(node)
             is ScalarEncapsedStringPart -> pScalarEncapsedStringPart(node)
             is ScalarLNumber -> pScalarLNumber(node)
-            is ScalarMagicConst -> pScalarMagicConst(node)
             is ScalarString -> pScalarString(node)
+            is ScalarMagicConst -> pScalarMagicConst(node)
+
+            // stmt
+            is StmtNop -> pStmtNop(node)
+
             is StmtBreak -> pStmtBreak(node)
             is StmtCase -> pStmtCase(node)
             is StmtCatch -> pStmtCatch(node)
@@ -84,7 +96,6 @@ class AstPrinter : AstPrinterAbstract() {
             is StmtInterface -> pStmtInterface(node)
             is StmtLabel -> pStmtLabel(node)
             is StmtNamespace -> pStmtNamespace(node)
-            is StmtNop -> pStmtNop(node)
             is StmtProperty -> pStmtProperty(node)
             is StmtPropertyProperty -> pStmtPropertyProperty(node)
             is StmtReturn -> pStmtReturn(node)
@@ -101,6 +112,7 @@ class AstPrinter : AstPrinterAbstract() {
             is StmtUse -> pStmtUse(node)
             is StmtUseUse -> pStmtUseUse(node)
             is StmtWhile -> pStmtWhile(node)
+
             else -> throw Exception("预期外的 AstNode 类型: ${node::class.qualifiedName}")
         }
     }
