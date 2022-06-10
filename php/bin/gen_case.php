@@ -8,7 +8,7 @@ use P2AnyScript\NodeJsonEncoder;
 
 require_once __DIR__ . '/../vendor/autoload.php';
 
-$srcRoot   = __DIR__ . '/../src/PhpParser/';
+$srcRoot  = __DIR__ . '/../../runtime/case_code/';
 $nodeRoot  = __DIR__ . '/../../runtime/case_php/node_json/';
 $printRoot = __DIR__ . '/../../runtime/case_php/node_print/';
 

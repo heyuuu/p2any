@@ -14,8 +14,26 @@ class NodeDecoderTest {
     }
 
     @Test
+    fun testAll() {
+        runCaseGroup(null)
+    }
+
+    @Test
+    fun testBase() {
+        runCaseGroup("base")
+    }
+
+    @Test
     fun testPhpParserCase() {
-        runCaseInDir(phpNodeRoot, nodeRoot, printRoot)
+        runCaseGroup("PhpParser")
+    }
+
+    private fun runCaseGroup(group: String?) {
+        if (group == null) {
+            runCaseInDir(phpNodeRoot, nodeRoot, printRoot)
+        } else {
+            runCaseInDir("$phpNodeRoot$group/", "$nodeRoot$group/", "$printRoot$group/")
+        }
     }
 
     private fun runCaseInDir(phpNodeRoot: String, nodeRoot: String, printRoot: String) {

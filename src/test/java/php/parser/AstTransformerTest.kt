@@ -14,8 +14,26 @@ class AstTransformerTest {
     }
 
     @Test
+    fun testAll() {
+        runCaseGroup(null)
+    }
+
+    @Test
+    fun testBase() {
+        runCaseGroup("base")
+    }
+
+    @Test
     fun testPhpParserCase() {
-        runCaseInDir(phpNodeRoot, astPrintRoot)
+        runCaseGroup("PhpParser")
+    }
+
+    private fun runCaseGroup(group: String?) {
+        if (group == null) {
+            runCaseInDir(phpNodeRoot, astPrintRoot)
+        } else {
+            runCaseInDir("$phpNodeRoot$group/", "$astPrintRoot$group/")
+        }
     }
 
     private fun runCaseInDir(phpNodeRoot: String, astPrintRoot: String) {
