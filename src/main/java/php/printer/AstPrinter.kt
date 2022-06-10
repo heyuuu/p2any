@@ -7,7 +7,6 @@ class AstPrinter : AstPrinterAbstract() {
         return when (node) {
             // special
             is Arg -> pArg(node)
-            is Const -> pConst(node)
             is Name -> pName(node)
             is Identifier -> pIdentifier(node)
             is Param -> pParam(node)
@@ -105,6 +104,8 @@ class AstPrinter : AstPrinterAbstract() {
         }
     }
 
+    fun pExpr(node: Expr): String = p(node)
+
     ////////////////////
     // helpers
     ////////////////////
@@ -113,8 +114,8 @@ class AstPrinter : AstPrinterAbstract() {
         return if (node != null) p(node) else ""
     }
 
-    private fun concat(vararg parts: String): String {
-        return parts.joinToString("")
+    private fun concat(vararg parts: String?): String {
+        return parts.filterNotNull().joinToString("")
     }
 
     private fun pIf(cond: Boolean, value: String, default: String = ""): String {
@@ -259,14 +260,6 @@ class AstPrinter : AstPrinterAbstract() {
         val unpack = node.unpack
 
         return pIf(byRef, "&") + pIf(unpack, "...") + p(value)
-    }
-
-    private fun pConst(node: Const): String {
-        val name = node.name
-        val value = node.value
-        val namespacedName = node.namespacedName
-
-        return name.name + " = " + p(value)
     }
 
     private fun pExprArray(node: ExprArray): String {
@@ -582,7 +575,7 @@ class AstPrinter : AstPrinterAbstract() {
     }
 
     private fun pExprVariable(node: ExprVariable): String {
-        return when(node) {
+        return when (node) {
             is ExprVariable.ExprVariableSimple -> "$" + node.name
             is ExprVariable.ExprVariableDynamic -> "\${" + p(node.name) + "}"
         }
@@ -699,9 +692,10 @@ class AstPrinter : AstPrinterAbstract() {
 
     private fun pStmtClassConst(node: StmtClassConst): String {
         val flags = node.flags
-        val consts = node.consts
+        val name = node.name
+        val value = node.value
 
-        return pModifiers(flags) + "const " + pCommaSeparated(consts) + ";"
+        return pModifiers(flags) + "const " + name.name + " = " + pExpr(value) + ";"
     }
 
     private fun pStmtClassMethod(node: StmtClassMethod): String {
@@ -719,9 +713,10 @@ class AstPrinter : AstPrinterAbstract() {
     }
 
     private fun pStmtConst(node: StmtConst): String {
-        val consts = node.consts
+        val namespacedName = node.simpleName
+        val value = node.value
 
-        return "const " + pCommaSeparated(consts) + ";"
+        return "const " + namespacedName + " = " + pExpr(value) + ";"
     }
 
     private fun pStmtContinue(node: StmtContinue): String {
@@ -865,12 +860,19 @@ class AstPrinter : AstPrinterAbstract() {
 
     private fun pStmtProperty(node: StmtProperty): String {
         val flags = node.flags
-        val props = node.props
+        val name = node.name
+        val default = node.default
 
-        val modifiers = if (flags == 0) "var " else pModifiers(flags)
-        return modifiers + pCommaSeparated(props) { prop ->
-            "$" + prop.name.name + pNotNull(prop.default) { " = " + p(it) }
-        } + ";"
+        return concat(
+            // modifiers
+            if (flags == 0) "var " else pModifiers(flags),
+            // var
+            "$" + name.name,
+            // default
+            default?.let { " = " + p(it) },
+            // end
+            ";"
+        )
     }
 
     private fun pStmtReturn(node: StmtReturn): String {

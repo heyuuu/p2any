@@ -1,11 +1,10 @@
 package php.ast
 
-sealed interface Stmt: Node
+interface Stmt: Node
 
-data class StmtClassConst(val flags: Int, val consts: List<Const>): Stmt
-data class StmtClassMethod(val flags: Int, val byRef: Boolean, val name: Identifier, val params: List<Param>, val returnType: TypeHint?, val stmts: List<Stmt>?): Stmt,
-    Node, FunctionLike
-data class StmtConst(val consts: List<Const>): Stmt
+data class StmtConst(val name: Name, val value: Expr): Stmt {
+    val simpleName: String get() = name.last()
+}
 data class StmtDeclare(val declares: List<StmtDeclareDeclare>, val stmts: List<Stmt>?): Stmt
 data class StmtDeclareDeclare(val key: Identifier, val value: Expr): Stmt
 data class StmtEcho(val exprs: List<Expr>): Stmt
@@ -17,8 +16,6 @@ data class StmtGroupUse(val type: Int, val prefix: Name, val uses: List<StmtUseU
 data class StmtInlineHTML(val value: String): Stmt
 data class StmtNamespace(val name: Name?, val stmts: List<Stmt>): Stmt
 object StmtNop: Stmt
-data class StmtProperty(val flags: Int, val props: List<StmtPropertyProperty>): Stmt
-data class StmtPropertyProperty(val name: Identifier, val default: Expr?): Stmt
 data class StmtStatic(val vars: List<StmtStaticVar>): Stmt
 data class StmtStaticVar(val `var`: ExprVariable, val default: Expr?): Stmt
 data class StmtUnset(val vars: List<Expr>): Stmt

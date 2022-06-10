@@ -138,7 +138,6 @@ import php.parser.node.StmtLabel
 import php.parser.node.StmtNamespace
 import php.parser.node.StmtNop
 import php.parser.node.StmtProperty
-import php.parser.node.StmtPropertyProperty
 import php.parser.node.StmtReturn
 import php.parser.node.StmtStatic
 import php.parser.node.StmtStaticVar
@@ -158,18 +157,21 @@ import kotlin.reflect.KClass
 import kotlin.reflect.cast
 
 class AstTransformer {
-    fun transform(node: Stmt) = p(node, php.ast.Stmt::class)
-    fun transform(nodes: List<Stmt>) = nodes.map { transform(it) }
+    private sealed interface ParsingNode : php.ast.Node {
+        data class StmtList<T : php.ast.Stmt>(val nodes: List<T>) : ParsingNode, php.ast.Stmt
+    }
 
     ////////////////////
     // entrance
     ////////////////////
 
+    fun transform(node: Stmt) = p(node, php.ast.Stmt::class)
+    fun transform(nodes: List<Stmt>) = nodes.map { transform(it) }
+
     fun p(node: Node): php.ast.Node {
         return when (node) {
             // special
             is Arg -> pArg(node)
-            is Const -> pConst(node)
             is Name -> pName(node)
             is Identifier -> pIdentifier(node)
             is Param -> pParam(node)
@@ -299,7 +301,7 @@ class AstTransformer {
     }
 
     private fun pStmts(nodes: List<Stmt>): List<php.ast.Stmt> {
-        return nodes.map { p(it, php.ast.Stmt::class) }
+        return nodes.map { p(it, php.ast.Stmt::class) }.flatMap { if (it is ParsingNode.StmtList<*>) it.nodes else listOf(it) }
     }
 
     private fun unreachableAnyOf(value: Any): Nothing {
@@ -367,18 +369,6 @@ class AstTransformer {
             value = pExpr(value),
             byRef = byRef,
             unpack = unpack,
-        )
-    }
-
-    private fun pConst(node: Const): php.ast.Const {
-        val name = node.name
-        val value = node.value
-        val namespacedName = node.namespacedName
-
-        return php.ast.Const(
-            name = pIdentifier(name),
-            value = pExpr(value),
-            namespacedName = namespacedName?.let { pName(it) },
         )
     }
 
@@ -911,14 +901,19 @@ class AstTransformer {
         )
     }
 
-    private fun pStmtClassConst(node: StmtClassConst): php.ast.StmtClassConst {
+    private fun pStmtClassConst(node: StmtClassConst): ParsingNode.StmtList<php.ast.StmtClassConst> {
         val flags = node.flags
         val consts = node.consts
 
-        return php.ast.StmtClassConst(
-            flags = flags,
-            consts = consts.map { pConst(it) },
-        )
+        return ParsingNode.StmtList(consts.map { constNode ->
+            assert(constNode.namespacedName == null) { "ClassConst 的 namespacedName 应为 null" }
+
+            php.ast.StmtClassConst(
+                flags = flags,
+                name = pIdentifier(constNode.name),
+                value = pExpr(constNode.value)
+            )
+        })
     }
 
     private fun pStmtClassMethod(node: StmtClassMethod): php.ast.StmtClassMethod {
@@ -939,12 +934,16 @@ class AstTransformer {
         )
     }
 
-    private fun pStmtConst(node: StmtConst): php.ast.StmtConst {
-        val consts = node.consts
+    private fun pStmtConst(node: StmtConst): ParsingNode.StmtList<php.ast.StmtConst> {
+        return ParsingNode.StmtList(node.consts.map { constNode ->
+            assert(constNode.namespacedName != null) { "StmtConst 的 namespacedName 不应为 null" }
+            assert(constNode.namespacedName!!.parts.last() == constNode.name.name) { "StmtConst 的 namespacedName 和 name 不匹配" }
 
-        return php.ast.StmtConst(
-            consts = consts.map { pConst(it) },
-        )
+            php.ast.StmtConst(
+                name = pName(constNode.namespacedName!!),
+                value = pExpr(constNode.value)
+            )
+        })
     }
 
     private fun pStmtContinue(node: StmtContinue): php.ast.StmtContinue {
@@ -1137,23 +1136,18 @@ class AstTransformer {
         )
     }
 
-    private fun pStmtProperty(node: StmtProperty): php.ast.StmtProperty {
+    private fun pStmtProperty(node: StmtProperty): ParsingNode.StmtList<php.ast.StmtProperty> {
         val flags = node.flags
         val props = node.props
 
-        return php.ast.StmtProperty(
-            flags = flags,
-            props = props.map { pStmtPropertyProperty(it) },
-        )
-    }
-
-    private fun pStmtPropertyProperty(node: StmtPropertyProperty): php.ast.StmtPropertyProperty {
-        val name = node.name
-        val default = node.default
-
-        return php.ast.StmtPropertyProperty(
-            name = pIdentifier(name),
-            default = pExprOrNull(default),
+        return ParsingNode.StmtList(
+            props.map { prop ->
+                php.ast.StmtProperty(
+                    flags = flags,
+                    name = pIdentifier(prop.name),
+                    default = pExprOrNull(prop.default)
+                )
+            }
         )
     }
 
