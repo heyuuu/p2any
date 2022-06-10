@@ -379,7 +379,6 @@ class AstPrinter : AstPrinterAbstract() {
             is ExprCastInt -> pPrefixOp(node, "(int) ", expr)
             is ExprCastObject -> pPrefixOp(node, "(object) ", expr)
             is ExprCastString -> pPrefixOp(node, "(string) ", expr)
-            is ExprCastUnset -> pPrefixOp(node, "(unset) ", expr)
         }
     }
 

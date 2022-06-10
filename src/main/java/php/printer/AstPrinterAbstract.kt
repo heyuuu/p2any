@@ -27,7 +27,6 @@ abstract class AstPrinterAbstract {
             is ExprCastArray -> Pair(10, 1)
             is ExprCastObject -> Pair(10, 1)
             is ExprCastBool -> Pair(10, 1)
-            is ExprCastUnset -> Pair(10, 1)
             is ExprErrorSuppress -> Pair(10, 1)
             is ExprInstanceof -> Pair(20, 0)
             is ExprBooleanNot -> Pair(30, 1)
@@ -122,7 +121,7 @@ abstract class AstPrinterAbstract {
         return string.replace("$docStringEndToken;\n", ";\n")
             .replace(docStringEndToken, "\n")
     }
-    
+
     protected fun pInfixOp(parentNode: Expr, leftNode: Node, operatorString: String, rightNode: Node): String {
         return pPrec(parentNode, leftNode, -1) + operatorString + pPrec(parentNode, rightNode, 1)
     }

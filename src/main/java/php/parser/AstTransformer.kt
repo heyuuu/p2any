@@ -515,7 +515,7 @@ class AstTransformer {
             is ExprCastInt -> php.ast.ExprCastInt(expr)
             is ExprCastObject -> php.ast.ExprCastObject(expr)
             is ExprCastString -> php.ast.ExprCastString(expr)
-            is ExprCastUnset -> php.ast.ExprCastUnset(expr)
+            is ExprCastUnset -> unsupported(node, "不支持已废弃的 unset cast 语法")
         }
     }
 
