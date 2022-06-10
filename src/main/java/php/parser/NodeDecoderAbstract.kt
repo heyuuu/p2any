@@ -33,13 +33,17 @@ abstract class NodeDecoderAbstract {
             return getAsOrNull(key, List::class)?.map { itemType.cast(it) }
         }
 
-        fun <T : Any> getAsList(key: String, itemType: KClass<T>): List<T> = getAsListOrNull(key, itemType)!!
+        fun <T : Any> getAsList(key: String, itemType: KClass<T>): List<T> {
+            return getAs(key, List::class).map { itemType.cast(it) }
+        }
 
         fun <T : Any> getAsListOfNullableOrNull(key: String, itemType: KClass<T>): List<T?>? {
             return getAsOrNull(key, List::class)?.map { itemType.safeCast(it) }
         }
 
-        fun <T : Any> getAsListOfNullable(key: String, itemType: KClass<T>): List<T?> = getAsListOrNull(key, itemType)!!
+        fun <T : Any> getAsListOfNullable(key: String, itemType: KClass<T>): List<T?> {
+            return getAs(key, List::class).map { itemType.safeCast(it) }
+        }
 
         // get as any-of
         fun <T1 : Any, T2 : Any> getAsAnyOf2OrNull(key: String, type1: KClass<T1>, type2: KClass<T2>): AnyOf2<T1, T2>? {
