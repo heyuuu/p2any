@@ -73,7 +73,6 @@ class AstPrinter : AstPrinterAbstract() {
             is StmtConst -> pStmtConst(node)
             is StmtContinue -> pStmtContinue(node)
             is StmtDeclare -> pStmtDeclare(node)
-            is StmtDeclareDeclare -> pStmtDeclareDeclare(node)
             is StmtDo -> pStmtDo(node)
             is StmtEcho -> pStmtEcho(node)
             is StmtExpression -> pStmtExpression(node)
@@ -82,7 +81,6 @@ class AstPrinter : AstPrinterAbstract() {
             is StmtFunction -> pStmtFunction(node)
             is StmtGlobal -> pStmtGlobal(node)
             is StmtGoto -> pStmtGoto(node)
-            is StmtGroupUse -> pStmtGroupUse(node)
             is StmtIf -> pStmtIf(node)
             is StmtInlineHTML -> pStmtInlineHTML(node)
             is StmtInterface -> pStmtInterface(node)
@@ -729,15 +727,12 @@ class AstPrinter : AstPrinterAbstract() {
         val declares = node.declares
         val stmts = node.stmts
 
-        return "declare (" + pCommaSeparated(declares) + ")" +
-                pNotNull(stmts, { "{" + pStmts(it) + nl + "}" }, ";")
-    }
-
-    private fun pStmtDeclareDeclare(node: StmtDeclareDeclare): String {
-        val key = node.key
-        val value = node.value
-
-        return key.name + "=" + p(value)
+        return concat(
+            "declare (",
+            pList(declares, ", ") { (key, value) -> key.name + "=" + p(value) },
+            ")",
+            pNotNull(stmts, { "{" + pStmts(it) + nl + "}" }, ";")
+        )
     }
 
     private fun pStmtDo(node: StmtDo): String {
@@ -989,34 +984,13 @@ class AstPrinter : AstPrinterAbstract() {
     }
 
     private fun pStmtUse(node: StmtUse): String {
-        val type = node.type
-        val uses = node.uses
-
-        return "use " + pUseType(type) + pCommaSeparated(uses) { pStmtUseUse(it) } + ";"
-    }
-
-    private fun pStmtGroupUse(node: StmtGroupUse): String {
-        val type = node.type
-        val prefix = node.prefix
-        val uses = node.uses
-
-        return "use " + pUseType(type) + pName(prefix) + "\\{" + pCommaSeparated(uses) { pStmtUseUse(it) } + "};"
-    }
-
-    private fun pUseType(type: Int): String {
-        return when (type) {
-            UseType.FUNCTION.type -> "function "
-            UseType.CONSTANT.type -> "const "
-            else -> ""
+        val type = when (node.type) {
+            StmtUse.Type.NORMAL -> ""
+            StmtUse.Type.FUNCTION -> "function "
+            StmtUse.Type.CONSTANT -> "const "
         }
-    }
 
-    private fun pStmtUseUse(node: StmtUseUse): String {
-        val type = node.type
-        val name = node.name
-        val alias = node.alias
-
-        return pUseType(type) + pName(name) + pNotNull(alias) { " as " + it.name }
+        return "use " + type + pName(node.name) + pNotNull(node.alias) { " as " + it.name } + ";"
     }
 
     private fun pStmtWhile(node: StmtWhile): String {

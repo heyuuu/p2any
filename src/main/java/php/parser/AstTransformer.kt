@@ -6,7 +6,6 @@ import php.parser.node.AnyOf2
 import php.parser.node.AnyOf3
 import php.parser.node.Arg
 import php.parser.node.ComplexType
-import php.parser.node.Const
 import php.parser.node.Expr
 import php.parser.node.ExprArray
 import php.parser.node.ExprArrayDimFetch
@@ -153,6 +152,7 @@ import php.parser.node.StmtUnset
 import php.parser.node.StmtUse
 import php.parser.node.StmtUseUse
 import php.parser.node.StmtWhile
+import php.parser.node.UseType
 import kotlin.reflect.KClass
 import kotlin.reflect.cast
 
@@ -240,7 +240,6 @@ class AstTransformer {
             is StmtConst -> pStmtConst(node)
             is StmtContinue -> pStmtContinue(node)
             is StmtDeclare -> pStmtDeclare(node)
-            is StmtDeclareDeclare -> pStmtDeclareDeclare(node)
             is StmtDo -> pStmtDo(node)
             is StmtEcho -> pStmtEcho(node)
             is StmtExpression -> pStmtExpression(node)
@@ -959,18 +958,8 @@ class AstTransformer {
         val stmts = node.stmts
 
         return php.ast.StmtDeclare(
-            declares = declares.map { pStmtDeclareDeclare(it) },
+            declares = declares.map { Pair(pIdentifier(it.key), pExpr(it.value)) },
             stmts = stmts?.let { pStmts(it) }
-        )
-    }
-
-    private fun pStmtDeclareDeclare(node: StmtDeclareDeclare): php.ast.StmtDeclareDeclare {
-        val key = node.key
-        val value = node.value
-
-        return php.ast.StmtDeclareDeclare(
-            key = pIdentifier(key),
-            value = pExpr(value),
         )
     }
 
@@ -1065,17 +1054,6 @@ class AstTransformer {
         )
     }
 
-    private fun pStmtGroupUse(node: StmtGroupUse): php.ast.StmtGroupUse {
-        val type = node.type
-        val prefix = node.prefix
-        val uses = node.uses
-
-        return php.ast.StmtGroupUse(
-            type = type,
-            prefix = pName(prefix),
-            uses = uses.map { pStmtUseUse(it) },
-        )
-    }
 
     private fun pStmtIf(node: StmtIf): php.ast.StmtIf {
         val cond = node.cond
@@ -1278,26 +1256,45 @@ class AstTransformer {
         )
     }
 
-    private fun pStmtUse(node: StmtUse): php.ast.StmtUse {
-        val type = node.type
-        val uses = node.uses
+    private fun pStmtUse(node: StmtUse): ParsingNode.StmtList<php.ast.StmtUse> {
+        // 映射 use 类型，默认为 Normal
+        val type = pUseType(node.type) ?: php.ast.StmtUse.Type.NORMAL;
 
-        return php.ast.StmtUse(
-            type = type,
-            uses = uses.map { pStmtUseUse(it) },
-        )
+        return ParsingNode.StmtList(node.uses.map { use ->
+            assert(pUseType(use.type) == null) { "Node 中 StmtUse 下的 StmtUseUse 不可指定类型" }
+
+            php.ast.StmtUse(
+                type = type,
+                name = pName(use.name),
+                alias = use.alias?.let { pIdentifier(it) }
+            )
+        })
     }
 
-    private fun pStmtUseUse(node: StmtUseUse): php.ast.StmtUseUse {
-        val type = node.type
-        val name = node.name
-        val alias = node.alias
+    private fun pStmtGroupUse(node: StmtGroupUse): ParsingNode.StmtList<php.ast.StmtUse> {
+        val type = pUseType(node.type)
+        val prefixParts = node.prefix.parts
 
-        return php.ast.StmtUseUse(
-            type = type,
-            name = pName(name),
-            alias = alias?.let { pIdentifier(it) },
-        )
+        return ParsingNode.StmtList(node.uses.map { use ->
+            val useType = pUseType(use.type)
+            assert(type == null || useType == null) { "Node.StmtGroupUse 中 StmtGroupUse 和 StmtUseUse 不可同时指定类型" }
+
+            val realType = type ?: useType ?: php.ast.StmtUse.Type.NORMAL
+            php.ast.StmtUse(
+                type = realType,
+                name = php.ast.Name(prefixParts + use.name.parts),
+                alias = use.alias?.let { pIdentifier(it) }
+            )
+        })
+    }
+
+    private fun pUseType(type: Int): php.ast.StmtUse.Type? {
+        return when (type) {
+            UseType.NORMAL.type -> php.ast.StmtUse.Type.NORMAL
+            UseType.FUNCTION.type -> php.ast.StmtUse.Type.FUNCTION
+            UseType.CONSTANT.type -> php.ast.StmtUse.Type.CONSTANT
+            else -> null
+        }
     }
 
     private fun pStmtWhile(node: StmtWhile): php.ast.StmtWhile {

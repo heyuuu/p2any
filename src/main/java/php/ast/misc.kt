@@ -34,17 +34,6 @@ enum class IncludeType(val type: Int, val code: String) {
     }
 }
 
-enum class UseType(val type: Int) {
-    /** Class or namespace import */
-    NORMAL(1),
-
-    /** Function import */
-    FUNCTION(2),
-
-    /** Constant import */
-    CONSTANT(3);
-}
-
 object EscapeMap {
     val map = mapOf(
         '\\' to "\\\\",
