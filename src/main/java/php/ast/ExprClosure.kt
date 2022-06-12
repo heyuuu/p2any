@@ -5,7 +5,7 @@ data class ExprClosure(
     val byRef: Boolean,
     val params: List<Param>,
     val uses: List<ExprClosureUse>,
-    val returnType: AnyOf3<Identifier, Name, ComplexType>?,
+    val returnType: TypeHint?,
     val stmts: List<Stmt>
 ) : Expr, FunctionLike {
 

@@ -25,10 +25,6 @@ class TypeInfo
     {
         Assert::true((bool)preg_match('/^\w+$/', $typeName), 'TypeName 必须为纯字母字符');
 
-        if ($typeName === 'List<Param>') {
-            var_dump(func_get_args());
-        }
-
         $typeInfo           = new TypeInfo();
         $typeInfo->type     = self::TYPE_SIMPLE;
         $typeInfo->typeName = $typeName;

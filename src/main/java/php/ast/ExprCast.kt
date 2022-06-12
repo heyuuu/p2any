@@ -10,4 +10,3 @@ data class ExprCastDouble(override val expr: Expr) : ExprCast
 data class ExprCastInt(override val expr: Expr) : ExprCast
 data class ExprCastObject(override val expr: Expr) : ExprCast
 data class ExprCastString(override val expr: Expr) : ExprCast
-data class ExprCastUnset(override val expr: Expr) : ExprCast // todo delete

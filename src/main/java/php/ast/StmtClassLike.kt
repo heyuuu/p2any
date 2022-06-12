@@ -1,5 +1,16 @@
 package php.ast
 
+data class StmtClassConst(val flags: Int, val name: Identifier, val value: Expr) : Stmt
+data class StmtProperty(val flags: Int, val name: Identifier, val default: Expr?) : Stmt
+data class StmtClassMethod(
+    val flags: Int,
+    val byRef: Boolean,
+    val name: Identifier,
+    val params: List<Param>,
+    val returnType: TypeHint?,
+    val stmts: List<Stmt>?
+) : Stmt, FunctionLike
+
 sealed interface StmtClassLike : Stmt {
     val name: Identifier?
     val stmts: List<Stmt>

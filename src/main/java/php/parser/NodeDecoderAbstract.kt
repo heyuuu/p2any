@@ -4,6 +4,7 @@ import php.misc.JsonUtil
 import php.parser.node.AnyOf2
 import php.parser.node.AnyOf3
 import php.parser.node.Node
+import php.parser.node.Stmt
 import java.io.File
 import kotlin.reflect.KClass
 import kotlin.reflect.cast
@@ -33,13 +34,17 @@ abstract class NodeDecoderAbstract {
             return getAsOrNull(key, List::class)?.map { itemType.cast(it) }
         }
 
-        fun <T : Any> getAsList(key: String, itemType: KClass<T>): List<T> = getAsListOrNull(key, itemType)!!
+        fun <T : Any> getAsList(key: String, itemType: KClass<T>): List<T> {
+            return getAs(key, List::class).map { itemType.cast(it) }
+        }
 
         fun <T : Any> getAsListOfNullableOrNull(key: String, itemType: KClass<T>): List<T?>? {
             return getAsOrNull(key, List::class)?.map { itemType.safeCast(it) }
         }
 
-        fun <T : Any> getAsListOfNullable(key: String, itemType: KClass<T>): List<T?> = getAsListOrNull(key, itemType)!!
+        fun <T : Any> getAsListOfNullable(key: String, itemType: KClass<T>): List<T?> {
+            return getAs(key, List::class).map { itemType.safeCast(it) }
+        }
 
         // get as any-of
         fun <T1 : Any, T2 : Any> getAsAnyOf2OrNull(key: String, type1: KClass<T1>, type2: KClass<T2>): AnyOf2<T1, T2>? {
@@ -61,8 +66,13 @@ abstract class NodeDecoderAbstract {
         }
     }
 
-    fun decode(json: String): Any? {
-        return JsonUtil.decode(json) { resolveObject(ValueMap(it)) }
+    fun decode(json: String): List<Stmt> {
+        val nodes = JsonUtil.decode(json) { resolveObject(ValueMap(it)) }
+        if (nodes is List<*> && nodes.all { it is Stmt }) {
+            return nodes as List<Stmt>
+        } else {
+            throw Exception("node 数据 decode 失败: 解析结果不是 List<Stmt>")
+        }
     }
 
     fun decodeFile(file: File) = decode(file.readText())
