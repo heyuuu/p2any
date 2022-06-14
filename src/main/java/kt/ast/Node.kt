@@ -1,4 +1,4 @@
-package php.ast
+package kt.ast
 
 
 interface Node
@@ -17,7 +17,7 @@ data class TypeHint(
     val name: String,
     val nullable: Boolean,
     val isBuiltin: Boolean
-): Node {
+) {
     fun toCodeString() = name + (if (nullable) "?" else "")
 }
 

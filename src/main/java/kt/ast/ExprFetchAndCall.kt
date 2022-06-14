@@ -1,21 +1,21 @@
-package php.ast
+package kt.ast
 
-sealed interface FuncRef: Node {
+sealed interface FuncRef {
     data class FuncRefStatic(val `class`: Name) : FuncRef
     data class FuncRefDynamic(val `class`: Expr) : FuncRef
 }
 
-sealed interface ClassRef: Node {
+sealed interface ClassRef {
     data class ClassRefStatic(val name: Name) : ClassRef
     data class ClassRefDynamic(val name: Expr) : ClassRef
 }
 
-sealed interface PropertyRef: Node {
+sealed interface PropertyRef {
     data class PropertyRefStatic(val name: Identifier) : PropertyRef
     data class PropertyRefDynamic(val name: Expr) : PropertyRef
 }
 
-sealed interface MethodRef: Node {
+sealed interface MethodRef {
     data class MethodRefStatic(val name: Identifier) : MethodRef
     data class MethodRefDynamic(val name: Expr) : MethodRef
 }
